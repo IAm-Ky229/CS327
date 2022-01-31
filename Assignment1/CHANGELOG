@@ -1,0 +1,5 @@
+Jan 28th: Made bordering boulders for UI. Just got started so I can think about how to resolve some problems I've found, such as making multiple plains, or placing buildings effectively.
+
+Jan 30th: Did basically all of the difficult implementation. Plains can be placed, tall grass can be placed, exits are placed along with paths. Tried a few different iterations of seperating plains / tall grasses. Eventually came up with a solution I think is acceptable for the purpose of the game (try again if overlap). Also implemented building placement, based on where paths are.
+
+Jan 31st: Cleaned up dirty parts of my code. Implemented a switch statement. Fixed random number generators to be within a certain range. Added comments for clarity. Indented a lot of stuff to where it should be. ALso verified that empty space would be either left as empty, be a tree (7% chance), or a rock (3% chance). Created changelog and readme to document development process.

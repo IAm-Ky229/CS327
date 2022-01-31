@@ -1,0 +1,9 @@
+Jan 19th: Setup base project, get started on implementing recursive function
+
+Jan 22nd: Improve recursive function, now getting some solved output. Not recursing nearly enough times
+
+Jan 23rd: Change recursive operation to be more robust. Create functions to assign 2-D array values to shorten code
+
+Jan 24th: Finalize and check to see that I am getting 1728 lines of output, and that the lines are valid paths with numbers 1 - 25
+
+Jan 25th: Create CHANGELOG / README and turn in

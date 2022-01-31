@@ -1,0 +1,25 @@
+moveKnight: Recursive function to solve for all tours. Takes in an x value, y value, the current step count, and a 2-D array to backtrack if we hit a dead end. Operation is fairly simple. 
+
+We first check to see if we hit 25 steps. If we did, we print out the current path. If we did not, we assign the next x move and next y move. The next x and y moves are assigned using two 1 dimenstional arrays. Two 1-D arrays is probably the most fool proof way to do this.
+
+We check to see if the next move is valid. If it is, we add the next move to the stored moves array. We also mark this move on the backtrack 2-D array.
+
+The recursive call comes next. If we find that moveKnight returned 1 (valid path), we don't do anything (don't backtrack).  However, if we find that moveKnight returned a 0 (invalid path), we will reset the most recent entry in the backtrack array (to -1).
+
+Notably. We don't need to "clear" parts of the stored moves array. Paths will continually be overwritten, meaning we do not need to add removing on top of resetting our 2-D backtrack.
+
+After everything there is a return 0 at the end of the recursive function. This serves as telling the previous recursive call that we hit a dead end, and will trigger resetting elements in the 2-D backtrack array.
+
+
+checkValidity: Checks to see if the x value is within the range 0 - 4. Also checks to see if the y value is in the range 0 - 4. Finally, checks to see if the attempted move has already been taken in the past. Returns 1 if all of this is true.
+
+
+setupBoard: Sets up the main playing board with the values 1 - 25, as described in the assignment.
+
+
+setupBacktrack: Sets up the backtrack array so that -1 means the space is unvisited. This function is called every time we start from a new space on the board.
+
+
+printPath: Once called, will print out the contents of the path array constructed by the recursive moveKnight calls.
+
+main: Main simply calls the board setup functions, then iterates over every starting spot in the chess board.
