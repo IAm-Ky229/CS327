@@ -22,3 +22,4 @@ We do the same thing with the pokecenter, except now we choose a column, and ite
 fill_blank_space: Lastly, we will mix up the areas with nothing assigned to them. There is a 90% chance that nothing will happen to the space. A 7% chance it will become a tree. And a 3% chance that the space will turn into a rock.
 
 print_map(): Now that everything is assigned, iterate over the map. Use the switch case on every part of the 2-D array, and print out the corresponding map element.
+* I realized that I was accessing the X dimension first then the Y dimension when I was creating the 2-D array (array[X][Y]). I'm not sure if I'm straight up not allowed to do this, because everything still works. In the future, I'll try to make array accessing the Y dimension first (array[Y][X]), as Jeremy showed in class.
