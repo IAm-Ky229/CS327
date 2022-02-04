@@ -3,30 +3,41 @@
 #include <time.h>
 #include "terrain_generation.h"
 
-// Struct to store individual maps
-generated_map_t map_data;
 
-/*
 int main(int argc, char *argv[]) {
 
   // Random seed 
   srand(time(NULL));
 
-  // Function calls need to happen in this order
-  place_clearings();
-  place_tall_grass();
-  place_border_boulders();
-  place_exits();
-  place_paths();
-  place_buildings();
-  fill_blank_space();
+  // Struct to store individual maps
+  generated_map_t map_data;
 
-  print_map();
+  // I was getting some weird memory problems without initializing
+  // everything to nothing
+  int i;
+  int j;
+
+  for(i = 0; i < VERTICAL; i++) {
+    for(j = 0; j < HORIZONTAL; j++) {
+      map_data.generate_map[j][i] = nothing;
+    }
+  }
+
+  // Function calls need to happen in this order
+  place_clearings(&map_data);
+  place_tall_grass(&map_data);
+  place_border_boulders(&map_data);
+  place_exits(&map_data);
+  place_paths(&map_data);
+  place_buildings(&map_data);
+  fill_blank_space(&map_data);
+
+  print_map(&map_data);
   return 0;
 }
-*/
 
-void print_map() {
+
+void print_map(generated_map_t *map_data) {
 
   int i;
   int j;
@@ -35,7 +46,7 @@ void print_map() {
     for(j = 0; j < HORIZONTAL; j++) {
 
       // Switch statement for every enumeration
-      switch(map_data.generate_map[j][i]) {
+      switch(map_data -> generate_map[j][i]) {
       case boulder :
 	printf("%%");
 	break;
@@ -73,30 +84,30 @@ void print_map() {
 
 }
 
-void place_border_boulders() {
+void place_border_boulders(generated_map_t *map_data) {
 
   int i;
 
   // Boulders go along the edges
   for(i = 0; i < HORIZONTAL; i++) {
-    map_data.generate_map[i][0] = boulder;
+    map_data -> generate_map[i][0] = boulder;
   }
   
   for(i = 0; i < HORIZONTAL; i++) {
-  map_data.generate_map[i][VERTICAL - 1] = boulder;
+  map_data -> generate_map[i][VERTICAL - 1] = boulder;
   }
   
   for(i = 0; i < VERTICAL; i++) {
-  map_data.generate_map[0][i] = boulder;
+  map_data -> generate_map[0][i] = boulder;
   }
  
   for(i = 0; i < VERTICAL; i++) {
-  map_data.generate_map[HORIZONTAL - 1][i] = boulder;
+  map_data -> generate_map[HORIZONTAL - 1][i] = boulder;
   }
   
 }
 
-void place_clearings() {
+void place_clearings(generated_map_t *map_data) {
   
   int j;
   int k;
@@ -121,7 +132,7 @@ void place_clearings() {
     // Check and see if we are overlapping
     for(j = y_pos - height; j < y_pos + height; j++) {
       for(k = x_pos - length; k < x_pos + height; k++) {
-	if(map_data.generate_map[k][j] == clearing) {
+	if(map_data -> generate_map[k][j] == clearing) {
 	  overlap = 1;
 	}
       }
@@ -132,8 +143,8 @@ void place_clearings() {
       for(j = y_pos - height; j < y_pos + height; j++) {
 	for(k = x_pos - length; k < x_pos + height; k++) {
 	  if((j > 0) && (j < 21) && (k > 0) && (k < 80)
-	     && map_data.generate_map[k+1][j] != clearing) {
-	    map_data.generate_map[k][j] = clearing;
+	     && map_data -> generate_map[k+1][j] != clearing) {
+	    map_data -> generate_map[k][j] = clearing;
 	  }
 	}
       }
@@ -149,7 +160,7 @@ void place_clearings() {
 }
     
 
-void place_tall_grass() {
+void place_tall_grass(generated_map_t *map_data) {
     
   int j;
   int k;
@@ -176,7 +187,7 @@ void place_tall_grass() {
     // Check and see if we are overlapping (one big tall grass region)
     for(j = y_pos - height; j < y_pos + height; j++) {
       for(k = x_pos - length; k < x_pos + height; k++) {
-	if(map_data.generate_map[k][j] == tall_grass) {
+	if(map_data -> generate_map[k][j] == tall_grass) {
 	  overlap = 1;
 	}
       }
@@ -187,8 +198,8 @@ void place_tall_grass() {
       for(j = y_pos - height; j < y_pos + height; j++) {
 	for(k = x_pos - length; k < x_pos + height; k++) {
 	  if((j > 0) && (j < 21) && (k > 0) && (k < 80)
-	     && map_data.generate_map[k+1][j] != tall_grass) {
-	    map_data.generate_map[k][j] = tall_grass;
+	     && map_data -> generate_map[k+1][j] != tall_grass) {
+	    map_data -> generate_map[k][j] = tall_grass;
 	  }
 	}
       }
@@ -203,32 +214,32 @@ void place_tall_grass() {
   }
 }
 
-void place_buildings() {
+void place_buildings(generated_map_t *map_data) {
 
   int selected_row = (rand() % (18 - 3 + 1)) + 3;
   int selected_column = (rand() % (77 - 3 + 1)) + 3;
 
   // We don't want to place a building on the literal exit row/column
-  while(selected_row == map_data.exit_right
-	|| selected_row == map_data.exit_left) {
+  while(selected_row == map_data -> exit_right
+	|| selected_row == map_data -> exit_left) {
     selected_row = (rand() % (18 - 3 + 1)) + 3;
   }
 
   // We don't want to place a building on the literal exit row/column
   // We also don't want the mart and the center to overlap
-  while(selected_column == map_data.exit_top
-	|| selected_column == map_data.exit_bottom
+  while(selected_column == map_data -> exit_top
+	|| selected_column == map_data -> exit_bottom
 	|| ((selected_column - selected_row < 3)
 	    && (selected_column - selected_row > -3))) {
     selected_column = (rand() % (77 - 3 + 1)) + 3;
   }
 
-  place_pokemart(selected_row);
-  place_pokecenter(selected_column);
+  place_pokemart(selected_row, map_data);
+  place_pokecenter(selected_column, map_data);
 
 }
 
-void place_pokemart(int selected_row) {
+void place_pokemart(int selected_row, generated_map_t *map_data) {
   
   int j = 0;
 
@@ -236,37 +247,37 @@ void place_pokemart(int selected_row) {
     while(j < HORIZONTAL) {
 
       // If we find a path
-      if(map_data.generate_map[j][selected_row] == path) {
+      if(map_data -> generate_map[j][selected_row] == path) {
 	
 	// We don't need to check bounds, as roads cannot be less
 	// Than 2 units away from the edges
 	// Also, we are going to the first instance of a road, so
 	// we can just place the building behind us and avoid checking anything
-	map_data.generate_map[j-2][selected_row] = pokemon_mart;
-	map_data.generate_map[j-1][selected_row] = pokemon_mart;
-	map_data.generate_map[j-1][selected_row - 1] = pokemon_mart;
-	map_data.generate_map[j-2][selected_row - 1] = pokemon_mart;
+	map_data -> generate_map[j-2][selected_row] = pokemon_mart;
+	map_data -> generate_map[j-1][selected_row] = pokemon_mart;
+	map_data -> generate_map[j-1][selected_row - 1] = pokemon_mart;
+	map_data -> generate_map[j-2][selected_row - 1] = pokemon_mart;
 	break;
       }
       j++;
     }
 }
 
-void place_pokecenter(int selected_column) {
+void place_pokecenter(int selected_column, generated_map_t * map_data) {
   
   int j = 0;
   
     while(j < VERTICAL) {
-      if(map_data.generate_map[selected_column][j] == path) {
+      if(map_data -> generate_map[selected_column][j] == path) {
 	
 	// We don't need to check bounds, as roads cannot be less
 	// Than 2 units away from the edges
 	// Also, we are going to the first instance of a road, so
 	// we can just place the building behind us and avoid checking anything
-	map_data.generate_map[selected_column][j-2] = pokemon_center;
-	map_data.generate_map[selected_column][j-1] = pokemon_center;
-	map_data.generate_map[selected_column - 1][j-1] = pokemon_center;
-	map_data.generate_map[selected_column - 1][j-2] = pokemon_center;
+	map_data -> generate_map[selected_column][j-2] = pokemon_center;
+	map_data -> generate_map[selected_column][j-1] = pokemon_center;
+	map_data -> generate_map[selected_column - 1][j-1] = pokemon_center;
+	map_data -> generate_map[selected_column - 1][j-2] = pokemon_center;
 	break;
 	}  
       j++;
@@ -274,23 +285,23 @@ void place_pokecenter(int selected_column) {
   
 }
 
-void place_exits() {
+void place_exits(generated_map_t *map_data) {
 
   // Place all exits within the range 3 - 17 or 3 - 76
   // (leave space for buildings to be on either side of path
-  map_data.exit_right = (rand() % (17 - 3 + 1)) + 3;
-  map_data.exit_bottom = (rand() % (76 -32 + 1)) + 3;
-  map_data.exit_left = (rand() % (17 - 3 + 1)) + 3;
-  map_data.exit_top = (rand() % (76 - 3 + 1)) + 3;
+  map_data -> exit_right = (rand() % (17 - 3 + 1)) + 3;
+  map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
+  map_data -> exit_left = (rand() % (17 - 3 + 1)) + 3;
+  map_data -> exit_top = (rand() % (76 - 3 + 1)) + 3;
 
-  map_data.generate_map[HORIZONTAL - 1][map_data.exit_right] = border_exit;
-  map_data.generate_map[map_data.exit_bottom][VERTICAL - 1] = border_exit;
-  map_data.generate_map[0][map_data.exit_left] = border_exit;
-  map_data.generate_map[map_data.exit_top][0] = border_exit;
+  map_data -> generate_map[HORIZONTAL - 1][map_data -> exit_right] = border_exit;
+  map_data -> generate_map[map_data -> exit_bottom][VERTICAL - 1] = border_exit;
+  map_data -> generate_map[0][map_data -> exit_left] = border_exit;
+  map_data -> generate_map[map_data -> exit_top][0] = border_exit;
 
 }
 
-void place_paths() {
+void place_paths(generated_map_t *map_data) {
 
   // Choose random spot to connect top and bottom paths
   int connect_top_bottom = (rand() % (17 - 3 + 1)) + 3;
@@ -301,7 +312,7 @@ void place_paths() {
 
   // Build top path down
   while (connect_top_bottom_counter < connect_top_bottom) {
-    map_data.generate_map[map_data.exit_top][connect_top_bottom_counter] = path;
+    map_data -> generate_map[map_data -> exit_top][connect_top_bottom_counter] = path;
     connect_top_bottom_counter++;
   }
 
@@ -309,30 +320,30 @@ void place_paths() {
 
   // Build bottom path up
   while(connect_top_bottom_counter > connect_top_bottom - 1) {
-    map_data.generate_map[map_data.exit_bottom][connect_top_bottom_counter] = path;
+    map_data -> generate_map[map_data -> exit_bottom][connect_top_bottom_counter] = path;
     connect_top_bottom_counter--;
   }
 
   // If the top exit is farther right, add a connecting road to the bottom path
-  if(map_data.exit_top > map_data.exit_bottom) {
-    connect_paths = map_data.exit_bottom;
-    while(connect_paths < map_data.exit_top + 1) {
-      map_data.generate_map[connect_paths][connect_top_bottom_counter] = path;
+  if(map_data -> exit_top > map_data -> exit_bottom) {
+    connect_paths = map_data -> exit_bottom;
+    while(connect_paths < map_data -> exit_top + 1) {
+      map_data -> generate_map[connect_paths][connect_top_bottom_counter] = path;
       connect_paths++;
     }
   }
   // Else, add a connecting road to the top path
   else {
-      connect_paths = map_data.exit_top;
-      while(connect_paths < map_data.exit_bottom + 1) {
-	map_data.generate_map[connect_paths][connect_top_bottom_counter] = path;
+      connect_paths = map_data -> exit_top;
+      while(connect_paths < map_data -> exit_bottom + 1) {
+	map_data -> generate_map[connect_paths][connect_top_bottom_counter] = path;
 	connect_paths++;
       }
   }
 
   // Build out a road from the left path
   while (connect_right_left_counter < connect_right_left) {
-    map_data.generate_map[connect_right_left_counter][map_data.exit_left] = path;
+    map_data -> generate_map[connect_right_left_counter][map_data -> exit_left] = path;
     connect_right_left_counter++;
   }
 
@@ -340,25 +351,25 @@ void place_paths() {
 
   // Build out a road from the right path
   while(connect_right_left_counter > connect_right_left - 1) {
-    map_data.generate_map[connect_right_left_counter][map_data.exit_right] = path;
+    map_data -> generate_map[connect_right_left_counter][map_data -> exit_right] = path;
     connect_right_left_counter--;
   }
 
   // If the right exit is above the left exit
-  if(map_data.exit_right < map_data.exit_left) {
-    connect_paths = map_data.exit_right;
+  if(map_data -> exit_right < map_data -> exit_left) {
+    connect_paths = map_data -> exit_right;
 
     // Build the connecting path down from the left exit
-    while(connect_paths < map_data.exit_left + 1) {
-      map_data.generate_map[connect_right_left_counter][connect_paths] = path;
+    while(connect_paths < map_data -> exit_left + 1) {
+      map_data -> generate_map[connect_right_left_counter][connect_paths] = path;
       connect_paths++;
     }
   }
   // Otherwise, build the connecting path down from the right exit
     else {
-      connect_paths = map_data.exit_left;
-      while(connect_paths < map_data.exit_right + 1) {
-	map_data.generate_map[connect_right_left_counter][connect_paths] = path;
+      connect_paths = map_data -> exit_left;
+      while(connect_paths < map_data -> exit_right + 1) {
+	map_data -> generate_map[connect_right_left_counter][connect_paths] = path;
 	connect_paths++;
       }
     }
@@ -366,7 +377,7 @@ void place_paths() {
 
 }
 
-void fill_blank_space() {
+void fill_blank_space(generated_map_t *map_data) {
 
   int i;
   int j;
@@ -377,23 +388,23 @@ void fill_blank_space() {
     for (j = 0; j < HORIZONTAL; j++) {
 
       // If we find unassigned area
-      if(map_data.generate_map[j][i] == nothing) {
+      if(map_data -> generate_map[j][i] == nothing) {
 
 	random_number = rand() % 100;
 
 	// 90% of time, we will just get nothing back
 	if(random_number < 90) {
-	  map_data.generate_map[j][i] = nothing;
+	  map_data -> generate_map[j][i] = nothing;
 	}
 
 	// 7% of time, we wil get a tree
 	else if(random_number < 97) {
-	  map_data.generate_map[j][i] = tree;
+	  map_data -> generate_map[j][i] = tree;
 	}
 
 	// 3% of time, we will get a boulder
 	else {
-	  map_data.generate_map[j][i] = boulder;
+	  map_data -> generate_map[j][i] = boulder;
 	}
       }
 

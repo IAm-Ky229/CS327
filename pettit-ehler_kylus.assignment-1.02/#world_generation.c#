@@ -57,12 +57,12 @@ while(1) {
     scanf("%d", &x_explore_position);
     scanf("%d", &y_explore_position);
     printf("flying to (%d, %d)\n", x_explore_position, y_explore_position);
-	      if (map_exploration[y_explore_position][x_explore_position] != NULL) {
-		print_
-    }
-	      else {
-		generate_new_map(&map_exploration);
+	  if (map_exploration[y_explore_position][x_explore_position] != NULL) {
+	    print_map();
 	      }
+	  else {
+	    generate_new_map(&map_exploration);
+	  }
     break;
   case 'q':
     printf("quitting game\n");
