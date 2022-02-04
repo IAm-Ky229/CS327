@@ -3,6 +3,10 @@
 #include <time.h>
 #include "terrain_generation.h"
 
+// Struct to store individual maps
+generated_map_t map_data;
+
+/*
 int main(int argc, char *argv[]) {
 
   // Random seed 
@@ -20,6 +24,7 @@ int main(int argc, char *argv[]) {
   print_map();
   return 0;
 }
+*/
 
 void print_map() {
 

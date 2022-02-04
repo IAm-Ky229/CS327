@@ -76,6 +76,3 @@ int exit_bottom;
   
 } generated_map_t;
 
-// Struct to store individual maps
-generated_map_t map_data;
-
