@@ -1,1 +1,3 @@
 Feb 3: Got started, refactored my old map generation code so that everything is stored in a struct. Got simple character scanning working in a while loop.
+
+Feb 4: Refactored code so that my functions are updating a struct. Have some basic map generation working for each direction. Still need to add bounds checking, connecting exits properly, and building spawn rate changes.

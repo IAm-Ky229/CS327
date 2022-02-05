@@ -3,7 +3,7 @@
 #include <time.h>
 #include "terrain_generation.h"
 
-
+/*
 int main(int argc, char *argv[]) {
 
   // Random seed 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   print_map(&map_data);
   return 0;
 }
-
+*/
 
 void print_map(generated_map_t *map_data) {
 
