@@ -53,6 +53,13 @@ int main(int argc, char * argv[]) {
  while(1) {
    scanf(" %c", &scanned);
 
+   // In general:
+   // Check for an existing map. If no map, generate one
+   // Update movement
+   // Allocate space for map
+   // Check for exits that need to connect to the map we will make
+   // Generate the new map using the found exits and building spawn rate
+
    switch(scanned) {
    case 'n':
      printf("going north\n");
@@ -160,6 +167,7 @@ int main(int argc, char * argv[]) {
      scanf("%d", &y_explore_position);
      printf("flying to (%d, %d)\n", x_explore_position, y_explore_position);
 
+     // Set correct manhattan position
      manhattan_x = x_explore_position - 199;
      manhattan_y = y_explore_position - 199;
      
@@ -216,9 +224,10 @@ void generate_new_map(generated_map_t *map_data,
   }
 
 
-  // I don't divide by 100
+  // Calculate manhattan distance
   int manhattan_distance = abs(manhattan_x) + abs(manhattan_y);
 
+  // Do the actual spawn rate conversion (I don't divide by 100)
   int building_spawn_rate = (((-45 * manhattan_distance) / 200) + 50);
   
   // Function calls need to happen in this order

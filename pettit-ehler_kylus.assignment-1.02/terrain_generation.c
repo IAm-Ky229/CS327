@@ -200,17 +200,19 @@ void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
     selected_column = (rand() % (77 - 3 + 1)) + 3;
   }
 
-  printf("spawn rate: %d\n", building_spawn_rate);
-
+  // Random building spawning chance
   int place_building = rand() % 100;
 
-  if(place_building > building_spawn_rate) {
+  // Building spawns decrease the farther out you get
+  if(place_building < building_spawn_rate) {
     place_pokemart(selected_row, map_data);
   }
 
+  // Random building spawning chance
   place_building = rand() % 100;
 
-  if(place_building > building_spawn_rate) {
+  // Building spawns decrease the farther out you get
+  if(place_building < building_spawn_rate) {
     place_pokecenter(selected_column, map_data);
   }
 
@@ -270,6 +272,9 @@ void place_exits(generated_map_t *map_data,
 
   // Place all exits within the range 3 - 17 or 3 - 76
   // (leave space for buildings to be on either side of path
+  // In addition, check to see if each exit should be random.
+  // If the exit value is -1, that means there is
+  // Not a bordering map for this exit to connect to
 
   if(exit_bottom == -1) {
       map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
