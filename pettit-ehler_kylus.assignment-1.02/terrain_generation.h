@@ -55,7 +55,7 @@ void place_clearings(generated_map_t *map_data);
 void place_tall_grass(generated_map_t *map_data);
 
 // Place the pokemart and pokecenter within the 2-D array
-void place_buildings(generated_map_t *map_data);
+void place_buildings(generated_map_t *map_data, int building_spawn_rate);
 
 // Place the 4 exits on the edges of the 2-D array
 void place_exits(generated_map_t *map_data,

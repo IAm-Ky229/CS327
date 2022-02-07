@@ -8,7 +8,9 @@ void generate_new_map(generated_map_t *map_data,
 		      int exit_bottom,
 		      int exit_right,
 		      int exit_left,
-		      int exit_top);
+		      int exit_top,
+		      int manhattan_x,
+		      int manhattan_y);
 
 void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH],
 		 int x_explore_position,

@@ -13,10 +13,15 @@ int main(int argc, char * argv[]) {
 
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
 
+  // Keep track of exits
   int exit_bottom = -1;
   int exit_right = -1;
   int exit_left = -1;
   int exit_top = -1;
+
+  // Track x and y distance away from center
+  int manhattan_x = 0;
+  int manhattan_y = 0;
 
   // Be sure that the world is initialized to be completely null
   int i;
@@ -40,7 +45,9 @@ int main(int argc, char * argv[]) {
 		  exit_bottom,
 		  exit_right,
 		  exit_left,
-		  exit_top);
+		  exit_top,
+		  manhattan_x,
+		  manhattan_y);
  
  // Continually get buffered input till we quit
  while(1) {
@@ -51,6 +58,7 @@ int main(int argc, char * argv[]) {
      printf("going north\n");
      if (map_exploration[y_explore_position - 1][x_explore_position] == NULL) {
        y_explore_position--;
+       manhattan_y--;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
        check_exits(map_exploration,
 		   x_explore_position,
@@ -60,10 +68,13 @@ int main(int argc, char * argv[]) {
 			exit_bottom,
 			exit_right,
 			exit_left,
-			exit_top);
+			exit_top,
+			manhattan_x,
+			manhattan_y);
      }
      else {
        y_explore_position--;
+       manhattan_y--;
        print_map(map_exploration[y_explore_position][x_explore_position]);
      }
      break;
@@ -72,6 +83,7 @@ int main(int argc, char * argv[]) {
      printf("going south\n");
      if (map_exploration[y_explore_position + 1][x_explore_position] == NULL) {
        y_explore_position++;
+       manhattan_y++;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
        check_exits(map_exploration,
 		   x_explore_position,
@@ -81,10 +93,13 @@ int main(int argc, char * argv[]) {
 			exit_bottom,
 			exit_right,
 			exit_left,
-			exit_top);
+			exit_top,
+			manhattan_x,
+			manhattan_y);
      }
      else {
        y_explore_position++;
+       manhattan_y++;
        print_map(map_exploration[y_explore_position][x_explore_position]);
      }
      break;
@@ -93,6 +108,7 @@ int main(int argc, char * argv[]) {
      printf("going east\n");
      if (map_exploration[y_explore_position][x_explore_position + 1] == NULL) {
        x_explore_position++;
+       manhattan_x++;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
        check_exits(map_exploration,
 		   x_explore_position,
@@ -102,10 +118,13 @@ int main(int argc, char * argv[]) {
 			exit_bottom,
 			exit_right,
 			exit_left,
-			exit_top);
+			exit_top,
+			manhattan_x,
+			manhattan_y);
      }
      else {
        x_explore_position++;
+       manhattan_x++;
        print_map(map_exploration[y_explore_position][x_explore_position]);
      }
      break;
@@ -114,6 +133,7 @@ int main(int argc, char * argv[]) {
      printf("going west\n");
      if (map_exploration[y_explore_position][x_explore_position - 1] == NULL) {
        x_explore_position--;
+       manhattan_x--;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
        check_exits(map_exploration,
 		   x_explore_position,
@@ -123,10 +143,13 @@ int main(int argc, char * argv[]) {
 			exit_bottom,
 			exit_right,
 			exit_left,
-			exit_top);
+			exit_top,
+			manhattan_x,
+			manhattan_y);
      }
      else {
        x_explore_position--;
+       manhattan_x--;
        print_map(map_exploration[y_explore_position][x_explore_position]);
      }
      break;
@@ -136,6 +159,9 @@ int main(int argc, char * argv[]) {
      scanf("%d", &x_explore_position);
      scanf("%d", &y_explore_position);
      printf("flying to (%d, %d)\n", x_explore_position, y_explore_position);
+
+     manhattan_x = x_explore_position - 199;
+     manhattan_y = y_explore_position - 199;
      
      if (map_exploration[y_explore_position][x_explore_position] == NULL) {
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
@@ -147,7 +173,9 @@ int main(int argc, char * argv[]) {
 			exit_bottom,
 		        exit_right,
 			exit_left,
-		        exit_top);
+		        exit_top,
+			manhattan_x,
+			manhattan_y);
      }
      else {
        print_map(map_exploration[y_explore_position][x_explore_position]);
@@ -172,7 +200,9 @@ void generate_new_map(generated_map_t *map_data,
 		      int exit_bottom,
 		      int exit_right,
 		      int exit_left,
-		      int exit_top) {
+		      int exit_top,
+		      int manhattan_x,
+		      int manhattan_y) {
   
   // I was getting some weird memory problems without initializing
   // everything to nothing
@@ -184,6 +214,12 @@ void generate_new_map(generated_map_t *map_data,
       map_data -> generate_map[j][i] = nothing;
     }
   }
+
+
+  // I don't divide by 100
+  int manhattan_distance = abs(manhattan_x) + abs(manhattan_y);
+
+  int building_spawn_rate = (((-45 * manhattan_distance) / 200) + 50);
   
   // Function calls need to happen in this order
   place_clearings(map_data);
@@ -191,7 +227,7 @@ void generate_new_map(generated_map_t *map_data,
   place_border_boulders(map_data);
   place_exits(map_data, exit_bottom, exit_right, exit_left, exit_top);
   place_paths(map_data);
-  place_buildings(map_data);
+  place_buildings(map_data, building_spawn_rate);
   fill_blank_space(map_data);
   
   print_map(map_data);

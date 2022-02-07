@@ -180,7 +180,7 @@ void place_tall_grass(generated_map_t *map_data) {
   }
 }
 
-void place_buildings(generated_map_t *map_data) {
+void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
 
   int selected_row = (rand() % (18 - 3 + 1)) + 3;
   int selected_column = (rand() % (77 - 3 + 1)) + 3;
@@ -200,8 +200,19 @@ void place_buildings(generated_map_t *map_data) {
     selected_column = (rand() % (77 - 3 + 1)) + 3;
   }
 
-  place_pokemart(selected_row, map_data);
-  place_pokecenter(selected_column, map_data);
+  printf("spawn rate: %d\n", building_spawn_rate);
+
+  int place_building = rand() % 100;
+
+  if(place_building > building_spawn_rate) {
+    place_pokemart(selected_row, map_data);
+  }
+
+  place_building = rand() % 100;
+
+  if(place_building > building_spawn_rate) {
+    place_pokecenter(selected_column, map_data);
+  }
 
 }
 
