@@ -3,40 +3,6 @@
 #include <time.h>
 #include "terrain_generation.h"
 
-/*
-int main(int argc, char *argv[]) {
-
-  // Random seed 
-  srand(time(NULL));
-
-  // Struct to store individual maps
-  generated_map_t map_data;
-
-  // I was getting some weird memory problems without initializing
-  // everything to nothing
-  int i;
-  int j;
-
-  for(i = 0; i < VERTICAL; i++) {
-    for(j = 0; j < HORIZONTAL; j++) {
-      map_data.generate_map[j][i] = nothing;
-    }
-  }
-
-  // Function calls need to happen in this order
-  place_clearings(&map_data);
-  place_tall_grass(&map_data);
-  place_border_boulders(&map_data);
-  place_exits(&map_data);
-  place_paths(&map_data);
-  place_buildings(&map_data);
-  fill_blank_space(&map_data);
-
-  print_map(&map_data);
-  return 0;
-}
-*/
-
 void print_map(generated_map_t *map_data) {
 
   int i;
@@ -285,14 +251,43 @@ void place_pokecenter(int selected_column, generated_map_t * map_data) {
   
 }
 
-void place_exits(generated_map_t *map_data) {
+void place_exits(generated_map_t *map_data,
+		 int exit_bottom,
+		 int exit_right,
+		 int exit_left,
+		 int exit_top) {
 
   // Place all exits within the range 3 - 17 or 3 - 76
   // (leave space for buildings to be on either side of path
-  map_data -> exit_right = (rand() % (17 - 3 + 1)) + 3;
-  map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
-  map_data -> exit_left = (rand() % (17 - 3 + 1)) + 3;
-  map_data -> exit_top = (rand() % (76 - 3 + 1)) + 3;
+
+  if(exit_bottom == -1) {
+      map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
+  }
+  else {
+    map_data -> exit_bottom = exit_bottom;
+  }
+    
+  if(exit_right == -1) {
+      map_data -> exit_right = (rand() % (17 - 3 + 1)) + 3;
+  }
+  else {
+    map_data -> exit_right = exit_right;
+  }
+  
+  if(exit_left == -1) {
+      map_data -> exit_left = (rand() % (17 - 3 + 1)) + 3;
+  }
+    else {
+    map_data -> exit_left = exit_left;
+  }
+  
+  if(exit_top == -1) {
+      map_data -> exit_top = (rand() % (76 - 3 + 1)) + 3;
+  }
+    else {
+    map_data -> exit_top = exit_top;
+  }
+  
 
   map_data -> generate_map[HORIZONTAL - 1][map_data -> exit_right] = border_exit;
   map_data -> generate_map[map_data -> exit_bottom][VERTICAL - 1] = border_exit;

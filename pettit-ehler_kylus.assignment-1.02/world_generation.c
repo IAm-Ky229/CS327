@@ -13,6 +13,11 @@ int main(int argc, char * argv[]) {
 
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
 
+  int exit_bottom = -1;
+  int exit_right = -1;
+  int exit_left = -1;
+  int exit_top = -1;
+
   // Be sure that the world is initialized to be completely null
   int i;
   int j;
@@ -31,7 +36,11 @@ int main(int argc, char * argv[]) {
  y_explore_position = WORLD_Y_START;
 
  map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
- generate_new_map(map_exploration[y_explore_position][x_explore_position]);
+ generate_new_map(map_exploration[y_explore_position][x_explore_position],
+		  exit_bottom,
+		  exit_right,
+		  exit_left,
+		  exit_top);
  
  // Continually get buffered input till we quit
  while(1) {
@@ -43,7 +52,15 @@ int main(int argc, char * argv[]) {
      if (map_exploration[y_explore_position - 1][x_explore_position] == NULL) {
        y_explore_position--;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-       generate_new_map(map_exploration[y_explore_position][x_explore_position]);
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top);
      }
      else {
        y_explore_position--;
@@ -56,7 +73,15 @@ int main(int argc, char * argv[]) {
      if (map_exploration[y_explore_position + 1][x_explore_position] == NULL) {
        y_explore_position++;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-       generate_new_map(map_exploration[y_explore_position][x_explore_position]);
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top);
      }
      else {
        y_explore_position++;
@@ -69,7 +94,15 @@ int main(int argc, char * argv[]) {
      if (map_exploration[y_explore_position][x_explore_position + 1] == NULL) {
        x_explore_position++;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-       generate_new_map(map_exploration[y_explore_position][x_explore_position]);
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top);
      }
      else {
        x_explore_position++;
@@ -82,7 +115,15 @@ int main(int argc, char * argv[]) {
      if (map_exploration[y_explore_position][x_explore_position - 1] == NULL) {
        x_explore_position--;
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-       generate_new_map(map_exploration[y_explore_position][x_explore_position]);
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top);
      }
      else {
        x_explore_position--;
@@ -98,7 +139,15 @@ int main(int argc, char * argv[]) {
      
      if (map_exploration[y_explore_position][x_explore_position] == NULL) {
        map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-       generate_new_map(map_exploration[y_explore_position][x_explore_position]);
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			exit_bottom,
+		        exit_right,
+			exit_left,
+		        exit_top);
      }
      else {
        print_map(map_exploration[y_explore_position][x_explore_position]);
@@ -119,7 +168,11 @@ int main(int argc, char * argv[]) {
  return 0;
 }
 
-void generate_new_map(generated_map_t *map_data) {
+void generate_new_map(generated_map_t *map_data,
+		      int exit_bottom,
+		      int exit_right,
+		      int exit_left,
+		      int exit_top) {
   
   // I was getting some weird memory problems without initializing
   // everything to nothing
@@ -136,11 +189,37 @@ void generate_new_map(generated_map_t *map_data) {
   place_clearings(map_data);
   place_tall_grass(map_data);
   place_border_boulders(map_data);
-  place_exits(map_data);
+  place_exits(map_data, exit_bottom, exit_right, exit_left, exit_top);
   place_paths(map_data);
   place_buildings(map_data);
   fill_blank_space(map_data);
   
   print_map(map_data);
+  
+}
+
+void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH],
+		 int x_explore,
+		 int y_explore,
+		 int *exit_bottom,
+		 int *exit_right,
+		 int *exit_left,
+		 int *exit_top) {
+
+  if(map_exploration[y_explore + 1][x_explore] != NULL) {
+    *exit_bottom = map_exploration[y_explore + 1][x_explore] -> exit_top;
+  }
+
+  if(map_exploration[y_explore][x_explore + 1] != NULL) {
+    *exit_right = map_exploration[y_explore][x_explore + 1] -> exit_left;
+  }
+
+  if(map_exploration[y_explore - 1][x_explore] != NULL) {
+    *exit_top = map_exploration[y_explore - 1][x_explore] -> exit_bottom;
+  }
+  
+  if(map_exploration[y_explore][x_explore - 1] != NULL) {
+    *exit_left = map_exploration[y_explore][x_explore - 1] -> exit_right;
+  }
   
 }
