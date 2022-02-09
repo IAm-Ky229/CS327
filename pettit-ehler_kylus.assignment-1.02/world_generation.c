@@ -64,36 +64,6 @@ int main(int argc, char * argv[]) {
    switch(scanned) {
    case 'n':
      printf("going north\n");
-     if ((y_explore_position - 1) > -1) {
-       if (map_exploration[y_explore_position - 1][x_explore_position] == NULL) {
-	 y_explore_position--;
-	 manhattan_y--;
-	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-	 check_exits(map_exploration,
-		     x_explore_position,
-		     y_explore_position,
-		     &exit_bottom, &exit_right, &exit_left, &exit_top);
-	 generate_new_map(map_exploration[y_explore_position][x_explore_position],
-			  exit_bottom,
-			  exit_right,
-			  exit_left,
-			  exit_top,
-			  manhattan_x,
-			  manhattan_y);
-       }
-       else {
-	 y_explore_position--;
-	 manhattan_y--;
-	 print_map(map_exploration[y_explore_position][x_explore_position]);
-       }
-     }
-     else {
-       printf("that is not a valid move\n");
-     }
-     break;
-     
-   case 's':
-     printf("going south\n");
      if ((y_explore_position + 1) < 400) {
        if (map_exploration[y_explore_position + 1][x_explore_position] == NULL) {
 	 y_explore_position++;
@@ -114,6 +84,36 @@ int main(int argc, char * argv[]) {
        else {
 	 y_explore_position++;
 	 manhattan_y++;
+	 print_map(map_exploration[y_explore_position][x_explore_position]);
+       }
+     }
+     else {
+       printf("that is not a valid move\n");
+     }
+     break;
+     
+   case 's':
+     printf("going south\n");
+     if ((y_explore_position - 1) > -1) {
+       if (map_exploration[y_explore_position - 1][x_explore_position] == NULL) {
+	 y_explore_position--;
+	 manhattan_y--;
+	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+	 check_exits(map_exploration,
+		     x_explore_position,
+		     y_explore_position,
+		     &exit_bottom, &exit_right, &exit_left, &exit_top);
+	 generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			  exit_bottom,
+			  exit_right,
+			  exit_left,
+			  exit_top,
+			  manhattan_x,
+			  manhattan_y);
+       }
+       else {
+	 y_explore_position--;
+	 manhattan_y--;
 	 print_map(map_exploration[y_explore_position][x_explore_position]);
        }
      }
@@ -197,6 +197,11 @@ int main(int argc, char * argv[]) {
        
        if (map_exploration[y_explore_position][x_explore_position] == NULL) {
 	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+	 // Assume we don't have any neighbors
+	 exit_bottom = -1;
+	 exit_right = -1;
+	 exit_top = -1;
+	 exit_left = -1;
 	 check_exits(map_exploration,
 		     x_explore_position,
 		     y_explore_position,
@@ -311,20 +316,32 @@ void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH
 		 int *exit_left,
 		 int *exit_top) {
 
-  if(map_exploration[y_explore + 1][x_explore] != NULL) {
-    *exit_bottom = map_exploration[y_explore + 1][x_explore] -> exit_top;
+  if(y_explore + 1 < 400) {
+    if(map_exploration[y_explore + 1][x_explore] != NULL) {
+      printf("connecting top to bottom\n");
+      *exit_top = map_exploration[y_explore + 1][x_explore] -> exit_bottom;
+    }
   }
 
-  if(map_exploration[y_explore][x_explore + 1] != NULL) {
-    *exit_right = map_exploration[y_explore][x_explore + 1] -> exit_left;
+  if(x_explore + 1 < 400) {
+    if(map_exploration[y_explore][x_explore + 1] != NULL) {
+      printf("connecting right to left\n");
+      *exit_right = map_exploration[y_explore][x_explore + 1] -> exit_left;
+    }
   }
 
-  if(map_exploration[y_explore - 1][x_explore] != NULL) {
-    *exit_top = map_exploration[y_explore - 1][x_explore] -> exit_bottom;
+  if(y_explore - 1 > -1) {
+    if(map_exploration[y_explore - 1][x_explore] != NULL) {
+      printf("connecting bottom to top\n");
+      *exit_bottom = map_exploration[y_explore - 1][x_explore] -> exit_top;
+    }
   }
-  
-  if(map_exploration[y_explore][x_explore - 1] != NULL) {
-    *exit_left = map_exploration[y_explore][x_explore - 1] -> exit_right;
+
+  if(x_explore - 1 > -1) {
+    if(map_exploration[y_explore][x_explore - 1] != NULL) {
+      printf("connecting left to right\n");
+      *exit_left = map_exploration[y_explore][x_explore - 1] -> exit_right;
+    }
   }
   
 }
