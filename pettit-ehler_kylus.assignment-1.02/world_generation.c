@@ -313,6 +313,10 @@ void generate_new_map(generated_map_t *map_data,
 
   // Do the actual spawn rate conversion (I don't divide by 100)
   int building_spawn_rate = (((-45 * manhattan_distance) / 200) + 50);
+
+  if (building_spawn_rate < 5) {
+    building_spawn_rate = 5;
+  }
   
   // Function calls need to happen in this order
   place_clearings(map_data);

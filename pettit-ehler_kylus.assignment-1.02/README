@@ -1,0 +1,30 @@
+main: Main creates the pointer to the world 2-D array. It also creates the variables to store the locations of exits within neighboring maps. These variables are initially -1. Other variables such as x and y trackers are also initialized here. The whole 2-D array pointer is initialized to null.
+
+The first map is then allocated, and created.
+
+We then enter a while loop. In general, we reset the neighbors to -1 (assume no neighbors), then check for input. Moving north adds 1 to y, moving south subtracts 1 from y. Moving east adds 1 to x, moving west subtracts 1 from x. I think I screwed up the east and west specifications, but in my mind it makes more sense to think east is rightwards and vice versa.
+
+Upon receiving input, we check to see if that move is valid. If it is, we check to see if the spot we are moving to is null. If it is, allocate approprate memory, check any neighboring exits, and generate a new map passing the map to generate, the bottom exit, the right, exit, the left exit, and the top exit. Also pass the manhattan distance so that we can correctly spawn buildings. If we find there's already a world, just print it.
+
+Fly operates by first checking if the fly is valid. If it is, move to the given space. If there is not a world there, generate a new one similar to a single move. If there is one, just print it.
+
+This is all continued until a q is received.
+
+
+check_edge_cases: This exists just to print out a row of boulders if we hit the edge of the world, so we can't walk off the edge. If either x or y exploration is equal to 0 or 399, we will print boulders accordingly. Notably I just pass the manhattan x and y plus 199 into this function to avoid having to pass in my x and y explore variables too.
+
+
+generate_new_map: Takes in a map pointer, a bottom exit, a right exit, a left exit, a top exit, a manhattan x, and a manhattan y. We first initialize the map to be all nothing. Then, calculate our building spawn rate. Then, generate the world by passing the pointer to each generation function. Place clearings, place tall grass, place border boulders, place paths, and fill blank space all operate the same as last assignment.
+
+Place exits and place buildings have been modified. Also added is check edge cases right before we print, so that we don't place an exit that shouldn't exist. Lastly, print the map.
+
+check_exits: Just checks to see if all 4 surrounding neighbors in the n, e, w, and s directions are null. If there is not a null neighbor, we need to update the corresponding exit (a right to a left, a bottom to a top, etc). This will allow the map we generate to be connected pathwise.
+
+
+place_exits: This is modified to see if there is a position of an exit we should use. If an exit is passed into place_exits as -1, this means that we just want to randomly genrate the exit. If it isn't -1, this means we found a neighboring exit, and should use that exit instead.
+
+place_buildings: This is modified to accomodate a spawn rate. It spans from 50% to 5%, per the specification of the assignment. A random number is generated for each building placement attempt.
+
+One big thing is I had to refactor my terrain generation functions to take a pointer. Making everything global really seemed like a bad idea. I also indexed my world array by y first then x as Jeremy showed us in class. I might go back and re-factor my terrain generation array sometime just to make everything consistent. I got a 10/10 on the last assignment, so I'm definitely not doing it now.
+
+I'm pretty sure there are a lot of inefficiencies in this code, but I don't really care because it works. I couldn't find any big bugs with it, hopefully I didn't miss anything.

@@ -202,6 +202,8 @@ void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
 
   // Random building spawning chance
   int place_building = rand() % 100;
+  printf("Generated number: %d\n", place_building);
+  printf("Spawn rate: %d\n", building_spawn_rate);
 
   // Building spawns decrease the farther out you get
   if(place_building < building_spawn_rate) {
@@ -210,6 +212,9 @@ void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
 
   // Random building spawning chance
   place_building = rand() % 100;
+
+    printf("Generated number: %d\n", place_building);
+  printf("Spawn rate: %d\n", building_spawn_rate);
 
   // Building spawns decrease the farther out you get
   if(place_building < building_spawn_rate) {
