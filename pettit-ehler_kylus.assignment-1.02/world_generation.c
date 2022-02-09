@@ -62,8 +62,6 @@ int main(int argc, char * argv[]) {
    exit_right = -1;
    exit_top = -1;
    exit_left = -1;
-
-   printf("Explore x: %d, Explore Y: %d\n", x_explore_position, y_explore_position);
    
    scanf(" %c", &scanned);
 
@@ -208,11 +206,11 @@ int main(int argc, char * argv[]) {
      scanf("%d", &x_explore_new);
      scanf("%d", &y_explore_new);
      printf("flying to (%d, %d)\n", x_explore_new, y_explore_new);
-
+     
      // Check for in bounds fly
      if(x_explore_new < WORLD_X_LENGTH && x_explore_new > -1
 	&& y_explore_new < WORLD_Y_LENGTH && y_explore_new > -1) {
-
+       
        x_explore_position = x_explore_new;
        y_explore_position = y_explore_new;
        
@@ -343,28 +341,24 @@ void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH
 
   if(y_explore + 1 < 400) {
     if(map_exploration[y_explore + 1][x_explore] != NULL) {
-      printf("connecting top to bottom\n");
       *exit_top = map_exploration[y_explore + 1][x_explore] -> exit_bottom;
     }
   }
 
   if(x_explore + 1 < 400) {
     if(map_exploration[y_explore][x_explore + 1] != NULL) {
-      printf("connecting right to left\n");
       *exit_right = map_exploration[y_explore][x_explore + 1] -> exit_left;
     }
   }
 
   if(y_explore - 1 > -1) {
     if(map_exploration[y_explore - 1][x_explore] != NULL) {
-      printf("connecting bottom to top\n");
       *exit_bottom = map_exploration[y_explore - 1][x_explore] -> exit_top;
     }
   }
 
   if(x_explore - 1 > -1) {
     if(map_exploration[y_explore][x_explore - 1] != NULL) {
-      printf("connecting left to right\n");
       *exit_left = map_exploration[y_explore][x_explore - 1] -> exit_right;
     }
   }

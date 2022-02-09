@@ -60,15 +60,15 @@ void place_border_boulders(generated_map_t *map_data) {
   }
   
   for(i = 0; i < HORIZONTAL; i++) {
-  map_data -> generate_map[i][VERTICAL - 1] = boulder;
+    map_data -> generate_map[i][VERTICAL - 1] = boulder;
   }
   
   for(i = 0; i < VERTICAL; i++) {
-  map_data -> generate_map[0][i] = boulder;
+    map_data -> generate_map[0][i] = boulder;
   }
- 
+  
   for(i = 0; i < VERTICAL; i++) {
-  map_data -> generate_map[HORIZONTAL - 1][i] = boulder;
+    map_data -> generate_map[HORIZONTAL - 1][i] = boulder;
   }
   
 }
@@ -190,7 +190,7 @@ void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
 	|| selected_row == map_data -> exit_left) {
     selected_row = (rand() % (18 - 3 + 1)) + 3;
   }
-
+  
   // We don't want to place a building on the literal exit row/column
   // We also don't want the mart and the center to overlap
   while(selected_column == map_data -> exit_top
@@ -199,12 +199,10 @@ void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
 	    && (selected_column - selected_row > -3))) {
     selected_column = (rand() % (77 - 3 + 1)) + 3;
   }
-
+  
   // Random building spawning chance
   int place_building = rand() % 100;
-  printf("Generated number: %d\n", place_building);
-  printf("Spawn rate: %d\n", building_spawn_rate);
-
+  
   // Building spawns decrease the farther out you get
   if(place_building < building_spawn_rate) {
     place_pokemart(selected_row, map_data);
@@ -213,14 +211,11 @@ void place_buildings(generated_map_t *map_data, int building_spawn_rate) {
   // Random building spawning chance
   place_building = rand() % 100;
 
-    printf("Generated number: %d\n", place_building);
-  printf("Spawn rate: %d\n", building_spawn_rate);
-
   // Building spawns decrease the farther out you get
   if(place_building < building_spawn_rate) {
     place_pokecenter(selected_column, map_data);
   }
-
+  
 }
 
 void place_pokemart(int selected_row, generated_map_t *map_data) {
@@ -282,43 +277,43 @@ void place_exits(generated_map_t *map_data,
   // Not a bordering map for this exit to connect to
 
   if(exit_bottom == -1) {
-      map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
+    map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
   }
   else {
     map_data -> exit_bottom = exit_bottom;
   }
-    
+  
   if(exit_right == -1) {
-      map_data -> exit_right = (rand() % (17 - 3 + 1)) + 3;
+    map_data -> exit_right = (rand() % (17 - 3 + 1)) + 3;
   }
   else {
     map_data -> exit_right = exit_right;
   }
   
   if(exit_left == -1) {
-      map_data -> exit_left = (rand() % (17 - 3 + 1)) + 3;
+    map_data -> exit_left = (rand() % (17 - 3 + 1)) + 3;
   }
-    else {
+  else {
     map_data -> exit_left = exit_left;
   }
   
   if(exit_top == -1) {
-      map_data -> exit_top = (rand() % (76 - 3 + 1)) + 3;
+    map_data -> exit_top = (rand() % (76 - 3 + 1)) + 3;
   }
-    else {
+  else {
     map_data -> exit_top = exit_top;
   }
   
-
+  
   map_data -> generate_map[HORIZONTAL - 1][map_data -> exit_right] = border_exit;
   map_data -> generate_map[map_data -> exit_bottom][VERTICAL - 1] = border_exit;
   map_data -> generate_map[0][map_data -> exit_left] = border_exit;
   map_data -> generate_map[map_data -> exit_top][0] = border_exit;
-
+  
 }
 
 void place_paths(generated_map_t *map_data) {
-
+  
   // Choose random spot to connect top and bottom paths
   int connect_top_bottom = (rand() % (17 - 3 + 1)) + 3;
   int connect_right_left = (rand() % (76 - 3 + 1)) + 3;
@@ -339,7 +334,7 @@ void place_paths(generated_map_t *map_data) {
     map_data -> generate_map[map_data -> exit_bottom][connect_top_bottom_counter] = path;
     connect_top_bottom_counter--;
   }
-
+  
   // If the top exit is farther right, add a connecting road to the bottom path
   if(map_data -> exit_top > map_data -> exit_bottom) {
     connect_paths = map_data -> exit_bottom;
@@ -362,7 +357,7 @@ void place_paths(generated_map_t *map_data) {
     map_data -> generate_map[connect_right_left_counter][map_data -> exit_left] = path;
     connect_right_left_counter++;
   }
-
+  
   connect_right_left_counter = HORIZONTAL - 1;
 
   // Build out a road from the right path
@@ -374,7 +369,7 @@ void place_paths(generated_map_t *map_data) {
   // If the right exit is above the left exit
   if(map_data -> exit_right < map_data -> exit_left) {
     connect_paths = map_data -> exit_right;
-
+    
     // Build the connecting path down from the left exit
     while(connect_paths < map_data -> exit_left + 1) {
       map_data -> generate_map[connect_right_left_counter][connect_paths] = path;
@@ -402,7 +397,7 @@ void fill_blank_space(generated_map_t *map_data) {
   // Iterate over entire 2-D array
   for(i = 0; i < VERTICAL; i++) {
     for (j = 0; j < HORIZONTAL; j++) {
-
+      
       // If we find unassigned area
       if(map_data -> generate_map[j][i] == nothing) {
 
@@ -412,18 +407,18 @@ void fill_blank_space(generated_map_t *map_data) {
 	if(random_number < 90) {
 	  map_data -> generate_map[j][i] = nothing;
 	}
-
+	
 	// 7% of time, we wil get a tree
 	else if(random_number < 97) {
 	  map_data -> generate_map[j][i] = tree;
 	}
-
+	
 	// 3% of time, we will get a boulder
 	else {
 	  map_data -> generate_map[j][i] = boulder;
 	}
       }
-
+      
     }
   }
 }
