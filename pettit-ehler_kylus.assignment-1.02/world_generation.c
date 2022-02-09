@@ -6,11 +6,14 @@
 
 int main(int argc, char * argv[]) {
 
+  // Keep track of place in world
   int x_explore_position;
   int y_explore_position;
 
+  // The scanned input character
   char scanned;
 
+  // Map we are going to traverse
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
 
   // Keep track of exits
@@ -20,6 +23,7 @@ int main(int argc, char * argv[]) {
   int exit_top = -1;
 
   // Track x and y distance away from center
+  // I honestly didn't need to include these, but I did just for clarity
   int manhattan_x = 0;
   int manhattan_y = 0;
 
@@ -27,6 +31,7 @@ int main(int argc, char * argv[]) {
   int i;
   int j;
 
+  // Initialize map
   for(i = 0; i < WORLD_Y_LENGTH; i++) {
     for(j = 0; j < WORLD_X_LENGTH; j++) {
       map_exploration[i][j] = NULL;
@@ -40,6 +45,7 @@ int main(int argc, char * argv[]) {
  x_explore_position = WORLD_X_START;
  y_explore_position = WORLD_Y_START;
 
+ // Make first map
  map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
  generate_new_map(map_exploration[y_explore_position][x_explore_position],
 		  exit_bottom,
@@ -51,7 +57,14 @@ int main(int argc, char * argv[]) {
  
  // Continually get buffered input till we quit
  while(1) {
-   printf("X explore: %d Y explore: %d\n", x_explore_position, y_explore_position);
+   // Assume we don't have any neighbors
+   exit_bottom = -1;
+   exit_right = -1;
+   exit_top = -1;
+   exit_left = -1;
+
+   printf("Explore x: %d, Explore Y: %d\n", x_explore_position, y_explore_position);
+   
    scanf(" %c", &scanned);
 
    // In general:
@@ -62,13 +75,15 @@ int main(int argc, char * argv[]) {
    // Generate the new map using the found exits and building spawn rate
 
    switch(scanned) {
+     
    case 'n':
      printf("going north\n");
-     if ((y_explore_position + 1) < 400) {
+     if ((y_explore_position + 1) < WORLD_Y_LENGTH) {
        if (map_exploration[y_explore_position + 1][x_explore_position] == NULL) {
 	 y_explore_position++;
 	 manhattan_y++;
 	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+	 
 	 check_exits(map_exploration,
 		     x_explore_position,
 		     y_explore_position,
@@ -99,6 +114,7 @@ int main(int argc, char * argv[]) {
 	 y_explore_position--;
 	 manhattan_y--;
 	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+	 
 	 check_exits(map_exploration,
 		     x_explore_position,
 		     y_explore_position,
@@ -124,11 +140,12 @@ int main(int argc, char * argv[]) {
      
    case 'e':
      printf("going east\n");
-     if ((x_explore_position + 1) < 400) {
+     if ((x_explore_position + 1) < WORLD_X_LENGTH) {
        if (map_exploration[y_explore_position][x_explore_position + 1] == NULL) {
 	 x_explore_position++;
 	 manhattan_x++;
 	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+	 
 	 check_exits(map_exploration,
 		     x_explore_position,
 		     y_explore_position,
@@ -159,6 +176,7 @@ int main(int argc, char * argv[]) {
 	 x_explore_position--;
 	 manhattan_x--;
 	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+	 
 	 check_exits(map_exploration,
 		     x_explore_position,
 		     y_explore_position,
@@ -184,12 +202,19 @@ int main(int argc, char * argv[]) {
      
    case 'f':
      printf("enter an X and a Y to fly to:\n");
-     scanf("%d", &x_explore_position);
-     scanf("%d", &y_explore_position);
-     printf("flying to (%d, %d)\n", x_explore_position, y_explore_position);
+     int x_explore_new;
+     int y_explore_new;
+     
+     scanf("%d", &x_explore_new);
+     scanf("%d", &y_explore_new);
+     printf("flying to (%d, %d)\n", x_explore_new, y_explore_new);
 
-     if(x_explore_position < 400 && x_explore_position > -1
-	&& y_explore_position < 400 && y_explore_position > -1) {
+     // Check for in bounds fly
+     if(x_explore_new < WORLD_X_LENGTH && x_explore_new > -1
+	&& y_explore_new < WORLD_Y_LENGTH && y_explore_new > -1) {
+
+       x_explore_position = x_explore_new;
+       y_explore_position = y_explore_new;
        
        // Set correct manhattan position
        manhattan_x = x_explore_position - 199;
@@ -197,15 +222,11 @@ int main(int argc, char * argv[]) {
        
        if (map_exploration[y_explore_position][x_explore_position] == NULL) {
 	 map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
-	 // Assume we don't have any neighbors
-	 exit_bottom = -1;
-	 exit_right = -1;
-	 exit_top = -1;
-	 exit_left = -1;
 	 check_exits(map_exploration,
 		     x_explore_position,
 		     y_explore_position,
 		     &exit_bottom, &exit_right, &exit_left, &exit_top);
+	 
 	 generate_new_map(map_exploration[y_explore_position][x_explore_position],
 			  exit_bottom,
 			  exit_right,
@@ -231,7 +252,7 @@ int main(int argc, char * argv[]) {
      printf("that is not a valid command\n");
      break;
    }
-   
+
  }
  
  return 0;
@@ -243,13 +264,13 @@ void check_edge_cases(generated_map_t *map_data, int y_explore_position, int x_e
 
   if(y_explore_position == 0) {
     for(i = 0; i < HORIZONTAL; i++) {
-      map_data -> generate_map[i][0] = boulder;
+      map_data -> generate_map[i][VERTICAL - 1] = boulder;
     }
   }
 
   if(y_explore_position == 399) {
     for(i = 0; i < HORIZONTAL; i++) {
-      map_data -> generate_map[i][VERTICAL - 1] = boulder;
+      map_data -> generate_map[i][0] = boulder;
     }
   }
 

@@ -1,5 +1,5 @@
-#define WORLD_X_LENGTH 399
-#define WORLD_Y_LENGTH 399
+#define WORLD_X_LENGTH 400
+#define WORLD_Y_LENGTH 400
 #define WORLD_X_START 199
 #define WORLD_Y_START 199
 
