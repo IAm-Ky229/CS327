@@ -354,12 +354,13 @@ char *print_int(const void *v)
   return out;
 }
 
+/*
 int main(int argc, char *argv[])
 {
   heap_t h;
   int **keys;
   heap_node_t **a;
-  /*  int *p;*/
+  //  int *p;
   int i, j;
   int n;
 
@@ -389,9 +390,9 @@ int main(int argc, char *argv[])
   a[0] = heap_insert(&h, keys[0]);
   for (i = 0; i < 100 * n; i++) {
     j = rand() % n;
-    /*    assert((p = malloc (sizeof (*p))));*/
+    // assert((p = malloc (sizeof (*p))));
     (*(int *) a[j]->datum)--;
-    /*    (*p)--;*/
+//    (*p)--;
     heap_decrease_key_no_replace(&h, a[j]);
     print_heap(&h, print_int);
     printf("------------------------------------\n");
@@ -401,5 +402,6 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+*/
 
 #endif

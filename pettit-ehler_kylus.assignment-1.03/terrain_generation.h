@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 // Max length of the GUI
 #define HORIZONTAL 80
 
@@ -17,7 +19,7 @@
 #define MINLENGTH 3
 
 // Enumerations that will populate our 2-D array
-enum terrain {
+typedef enum __attribute__ ((__packed__)) terrain {
 	      nothing,
 	      pokemon_center,
 	      path,
@@ -27,21 +29,24 @@ enum terrain {
 	      boulder,
 	      tree,
 	      border_exit
-};
+} terrain_type_t;
 
 typedef struct generated_map {
 
-// 2-D array that will be used to construct the GUI
-enum terrain generate_map[HORIZONTAL][VERTICAL];
+  // 2-D array that will be used to construct the GUI
+  enum terrain generate_map[HORIZONTAL][VERTICAL];
 
-// Remember where the left exit is
-int exit_left;
-// Remember when the top exit is
-int exit_top;
-// Remember where the right exit is
-int exit_right;
-// Remember where the bottom exit is
-int exit_bottom;
+  // Used to calculate Dijkstra distances
+  uint8_t height[VERTICAL][HORIZONTAL];
+
+  // Remember where the left exit is
+  int exit_left;
+  // Remember when the top exit is
+  int exit_top;
+  // Remember where the right exit is
+  int exit_right;
+  // Remember where the bottom exit is
+  int exit_bottom;
   
 } generated_map_t;
 
