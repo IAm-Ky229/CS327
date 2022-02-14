@@ -23,3 +23,6 @@ void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH
 
 // Check to see if we should make any of the edges all boulders
 void check_edge_cases(generated_map_t *map_data, int y_explore_position, int x_explore_position);
+
+// Choose random spot on the road for dijkstra computation
+void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int *chosen_spot_y);
