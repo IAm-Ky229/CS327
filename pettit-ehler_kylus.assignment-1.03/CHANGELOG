@@ -1,1 +1,5 @@
 Feb 11: Got started. Looked at existing heap code and Dijkstra code. Started to try and implement the dijkstra code. Fixed a bunch of compilation errors I got from putting Jeremy's heap into my project. I think I kind of get how it works now?
+
+Feb 13: Got some output from my program but it's not really what I wanted. Jeremy's code is doing something completely different and I'm gonna have to figure out how he wants us to alter it.
+
+Feb 14: Stared at my screen some more today. I think I'm finally understanding how he wants us to change it. A lot of the stuff in his implementation doesn't neven need to be there.

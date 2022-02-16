@@ -3,6 +3,16 @@
 #define WORLD_X_START 199
 #define WORLD_Y_START 199
 
+#include "heap.h"
+
+typedef struct costs {
+  heap_node_t *hn;
+  int cost;
+  int x_pos;
+  int y_pos;
+  int visited;
+} cost_t;
+
 // Given the parameters, generate a new map for our world
 void generate_new_map(generated_map_t *map_data,
 		      int exit_bottom,
@@ -26,3 +36,7 @@ void check_edge_cases(generated_map_t *map_data, int y_explore_position, int x_e
 
 // Choose random spot on the road for dijkstra computation
 void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int *chosen_spot_y);
+
+int determine_cost(generated_map_t *map_data, int x_dim, int y_dim);
+
+void add_nodes(cost_t *dijkstra[HORIZONTAL][VERTICAL], heap_t *h, cost_t *p);
