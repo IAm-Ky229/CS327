@@ -155,10 +155,13 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
 
     //for(y = 0; y < VERTICAL; y++) {
     //for(x = 0; x < HORIZONTAL; x++) {
-    //printf("%d ", dijkstra[x][y].visited);
+    // printf("%d ", dijkstra[x][y].visited);
     //}
+    // printf("\n");
+    //}
+
+    //usleep(5000);
     //printf("\n");
-    //}
 
     //printf("got to first add\n");
     
@@ -209,11 +212,16 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
 
   //printf("Got out");
   
-   for (y = 1; y < VERTICAL - 1; y++) {
-  for (x = 1; x < HORIZONTAL - 1; x++) {
-    printf("%d ", dijkstra[x][y].cost); 
-  }
- printf("\n");
+  for (y = 1; y < VERTICAL - 1; y++) {
+    for (x = 1; x < HORIZONTAL - 1; x++) {
+      if(dijkstra[x][y].cost < -1) {
+	printf("  XX");
+      }
+      else {
+      printf("%4d", dijkstra[x][y].cost);
+      }
+    }
+    printf("\n");
   }
   
   
@@ -620,6 +628,8 @@ int determine_cost(generated_map_t *map_data, int x_dim, int y_dim) {
   case tall_grass:
     return 20;
   case clearing:
+    return 10;
+  case nothing:
     return 10;
   case pokemon_center:
     return 10;
