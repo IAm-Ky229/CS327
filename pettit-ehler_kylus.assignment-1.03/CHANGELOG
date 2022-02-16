@@ -3,3 +3,7 @@ Feb 11: Got started. Looked at existing heap code and Dijkstra code. Started to 
 Feb 13: Got some output from my program but it's not really what I wanted. Jeremy's code is doing something completely different and I'm gonna have to figure out how he wants us to alter it.
 
 Feb 14: Stared at my screen some more today. I think I'm finally understanding how he wants us to change it. A lot of the stuff in his implementation doesn't neven need to be there.
+
+Feb 15: I'm actually getting some output. I don't think it's right but it's better than the seg faults I've been getting for the past couple days. It's 2 AM and I couldn't care less.
+
+Feb 16: On further inspection, my output might actually be correct. I honestly don't know. but it looks like I'm generating a distance map for a random spot on the road every time. I'm going to stop here for now, and re-visit this before I submit.
