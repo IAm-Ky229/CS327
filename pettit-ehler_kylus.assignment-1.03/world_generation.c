@@ -7,225 +7,10 @@
 #include "terrain_generation.h"
 #include "world_generation.h"
 
-typedef struct path {
-  heap_node_t *hn;
-  uint8_t pos[2];
-  uint8_t from[2];
-  int32_t cost;
-} path_t;
-
-typedef enum dim {
-  dim_x,
-  dim_y,
-  num_dims
-} dim_t;
-
-typedef uint8_t pair_t[num_dims];
-#define mappair(pair) (m->generate_map[pair[dim_x]][pair[dim_y]])
-#define mapxy(x, y) (m->generate_map[x][y])
-#define heightxy(x, y) (m->height[x][y])
 
 static int32_t path_cmp(const void *key, const void *with) {
   //printf("comparing %d to %d\n", ((cost_t *) key)->cost, ((cost_t *) with)->cost);
   return ((cost_t *) key)->cost - ((cost_t *) with)->cost;
-}
-
-
-static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
-{
-  //static path_t path[VERTICAL][HORIZONTAL], *p;
-
-  cost_t dijkstra[HORIZONTAL][VERTICAL], *p;
-  
-  //static uint32_t initialized = 0;
-  heap_t h;
-  uint32_t x, y;
-
-  //if (!initialized) {
-    //for (y = 0; y < VERTICAL; y++) {
-      //for (x = 0; x < HORIZONTAL; x++) {
-        //path[y][x].pos[dim_y] = y;
-        //path[y][x].pos[dim_x] = x;
-	//}
-      //}
-    //initialized = 1;
-    //}
-  
-  // for (y = 0; y < VERTICAL; y++) {
-    //for (x = 0; x < HORIZONTAL; x++) {
-      //path[y][x].cost = INT_MAX;
-      //}
-    // }
-
-  for(y = 0; y < VERTICAL; y++) {
-    for(x = 0; x < HORIZONTAL; x++) {
-      dijkstra[x][y].x_pos = x;
-      dijkstra[x][y].y_pos = y;
-      dijkstra[x][y].visited = 0;
-    }
-  }
-
-  
-  for (y = 0; y < VERTICAL; y++) {
-    for (x = 0; x < HORIZONTAL; x++) {
-      dijkstra[x][y].cost = INT_MAX;
-    }
-  }
-
-  dijkstra[from_x][from_y].cost = 0;
-
-  // path[from[dim_y]][from[dim_x]].cost = 0;
-  
-  heap_init(&h, path_cmp, NULL);
-
-  //for (y = 1; y < VERTICAL - 1; y++) {
-    //for (x = 1; x < HORIZONTAL - 1; x++) {
-      //path[y][x].hn = heap_insert(&h, &path[y][x]);
-      //}
-    //}
-
-    //for (y = 1; y < VERTICAL - 1; y++) {
-    //for (x = 1; x < HORIZONTAL - 1; x++) {
-      dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
-      //}
-      //}
-      
-  while ((p = heap_remove_min(&h))) {
-    p->hn = NULL;
-    
-    //printf("dim y: %d, dim x: %d\n", p->y_pos, p->x_pos);
-
-    if(p-> x_pos - 1 > 0) {
-      if (
-        (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
-         (p-> cost + determine_cost(m, p-> x_pos - 1, p -> y_pos)
-	  )) {
-      dijkstra[p->x_pos - 1][p->y_pos    ].cost =
-        ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos)));
-      //heap_decrease_key_no_replace(&h, dijkstra[p->x_pos - 1]
-      // [p->y_pos    ].hn);
-    }
-    }
-
-    //printf("got to 2nd dijkstra\n");
-
-    if(p-> x_pos + 1 < HORIZONTAL) {
-      //printf("got into conditional\n");
-    if (
-        (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
-         (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos)
-	  )) {
-      //printf("before cost assign\n");
-      dijkstra[p->x_pos + 1][p->y_pos    ].cost =
-        ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos)));
-      //printf("before heap decrease\n");
-      // heap_decrease_key_no_replace(&h, dijkstra[p->x_pos + 1]
-      // [p->y_pos    ].hn);
-      // printf("got past heap decrease\n");
-    }
-    }
-
-    // printf("got to 3rd dijkstra\n");
-
-    if(p->y_pos - 1 > 0) {
-    if (
-        (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
-         (p->cost + determine_cost(m, p-> x_pos, p -> y_pos - 1)
-	  )) {
-      dijkstra[p->x_pos][p->y_pos - 1    ].cost =
-        ((p->cost + determine_cost(m, p-> x_pos, p -> y_pos - 1)));
-      //heap_decrease_key_no_replace(&h, dijkstra[p->x_pos]
-      //[p->y_pos - 1    ].hn);
-    }
-    }
-
-    //printf("got to 4th dijkstra\n");
-
-    if(p-> y_pos + 1 < VERTICAL) {
-    if (
-        (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
-         (p->cost + determine_cost(m, p-> x_pos, p -> y_pos + 1)
-	  )) {
-      dijkstra[p->x_pos][p->y_pos + 1    ].cost =
-        ((p->cost + determine_cost(m, p-> x_pos, p -> y_pos + 1)));
-      //heap_decrease_key_no_replace(&h, dijkstra[p->x_pos]
-      // [p->y_pos + 1    ].hn);
-    }
-    }
-
-    //for(y = 0; y < VERTICAL; y++) {
-    //for(x = 0; x < HORIZONTAL; x++) {
-    // printf("%d ", dijkstra[x][y].visited);
-    //}
-    // printf("\n");
-    //}
-
-    //usleep(5000);
-    //printf("\n");
-
-    //printf("got to first add\n");
-    
-    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
-      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && determine_cost(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
-	//printf("visited right: %d\n", dijkstra[p->x_pos + 1][p->y_pos].visited);
-	//printf("adding right\n");
-	     dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
-	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
-      }
-    }
-
-    // printf("got to second add\n");
-    
-    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
-      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && determine_cost(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
-	//printf("adding left\n");
-	     dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
-	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
-      }
-    }
-    
-    //printf("got to third add\n");
-    
-    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
-      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && determine_cost(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
-	//printf("adding up\n");
-	     dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
-	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
-      }
-    }
-
-    //printf("got to fourth add\n");
-    
-    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
-      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && determine_cost(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
-	//printf("adding down\n");
-	     dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
-	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
-      }
-    }
-
-    //printf("size: %d\n", h.size);
-    
-  }
-  
-  //heap_delete(&h);
-
-  //printf("Got out");
-  
-  for (y = 1; y < VERTICAL - 1; y++) {
-    for (x = 1; x < HORIZONTAL - 1; x++) {
-      if(dijkstra[x][y].cost < -1) {
-	printf("  XX");
-      }
-      else {
-      printf("%4d", dijkstra[x][y].cost);
-      }
-    }
-    printf("\n");
-  }
-  
-  
-    
 }
 
 int main(int argc, char * argv[]) {
@@ -485,7 +270,7 @@ int main(int argc, char * argv[]) {
        printf("Y: %d\n", road_spot_y);
        dijkstra_path(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
 
-       printf("Got out of dijkstra's\n");
+ 
 
  }
  
@@ -616,7 +401,6 @@ void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int 
       }
     }
   }
-  
 }
 
 int determine_cost(generated_map_t *map_data, int x_dim, int y_dim) {
@@ -641,5 +425,173 @@ int determine_cost(generated_map_t *map_data, int x_dim, int y_dim) {
     return INT_MAX;
   default:
     return 0;
+  }
+}
+
+static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
+{
+
+  // We'll use this to store and compute costs
+  cost_t dijkstra[HORIZONTAL][VERTICAL], *p;
+  
+  heap_t h;
+  uint32_t x, y;
+  
+  // Initialize all the positions
+  for(y = 0; y < VERTICAL; y++) {
+    for(x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].x_pos = x;
+      dijkstra[x][y].y_pos = y;
+      dijkstra[x][y].visited = 0;
+    }
+  }
+  
+  // Set all costs to be MAX at first
+  for (y = 0; y < VERTICAL; y++) {
+    for (x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].cost = INT_MAX;
+    }
+  }
+  
+  dijkstra[from_x][from_y].cost = 0;
+  
+  heap_init(&h, path_cmp, NULL);
+  
+  // Insert the first node
+  dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
+  
+  
+  while ((p = heap_remove_min(&h))) {
+    p->hn = NULL;
+    
+    
+    if(p-> x_pos - 1 > 0) {
+      
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
+	  (p-> cost + determine_cost(m, p-> x_pos - 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos)));
+      }
+    }
+    
+    
+    if(p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos)));
+      }
+    }
+    
+    if(p->y_pos - 1 > 0) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos, p -> y_pos - 1)));
+      }
+    }
+    
+    
+    if(p-> y_pos + 1 < VERTICAL) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos, p -> y_pos + 1)));
+      }
+    }
+
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos + 1)));
+      }
+    }
+
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos + 1)));
+      }
+    }
+
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos - 1)));
+      }
+    }
+
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
+	  (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
+	  ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos - 1)));
+      }
+    }
+    
+    
+    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
+      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && determine_cost(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
+      }
+    }
+    
+    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
+      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && determine_cost(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
+      }
+    }
+    
+    
+    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
+      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && determine_cost(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
+      }
+    }
+    
+    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
+      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && determine_cost(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
+      }
+    }
+    
+  }
+  
+  heap_delete(&h);
+  
+  
+  for (y = 1; y < VERTICAL - 1; y++) {
+    for (x = 1; x < HORIZONTAL - 1; x++) {
+      if(dijkstra[x][y].cost < -1) {
+	printf("  XX");
+      }
+      else {
+	printf("%4d", dijkstra[x][y].cost);
+      }
+    }
+    printf("\n");
   }
 }

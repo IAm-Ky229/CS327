@@ -37,6 +37,8 @@ void check_edge_cases(generated_map_t *map_data, int y_explore_position, int x_e
 // Choose random spot on the road for dijkstra computation
 void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int *chosen_spot_y);
 
+// Determine the cost we should assign, based on the terrain type
 int determine_cost(generated_map_t *map_data, int x_dim, int y_dim);
 
-void add_nodes(cost_t *dijkstra[HORIZONTAL][VERTICAL], heap_t *h, cost_t *p);
+// Actually navigate through the map
+static void dijkstra_path(generated_map_t *m, int from_x, int from_y);
