@@ -26,3 +26,5 @@ I've got some boundary checks implemented where they need to be in order to avoi
 Heap implementation: Pretty much just used Jeremy's implementation. I only initialize the heap, insert into the heap, and remove min in my code. I also delete the heap once I'm done with it.
 
 Known bugs: Sometimes, inexplicably, dijkstra's just doesn't work. Like all the nodes are still MAX_INT. I never found out why it does this.
+
+Just as a disclaimer, I couldn't figure out why part of Jeremy's code kept giving me seg faults. So, I just used Jeremy's heap as I needed and implemented the whole dijkstra cost 2-D matrix myself.

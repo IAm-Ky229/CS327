@@ -268,7 +268,8 @@ int main(int argc, char * argv[]) {
 
        printf("Random road spot X: %d\n", road_spot_x);
        printf("Random road spot Y: %d\n", road_spot_y);
-       dijkstra_path(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+       dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+       dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
 
  
 
@@ -403,7 +404,7 @@ void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int 
   }
 }
 
-int determine_cost(generated_map_t *map_data, int x_dim, int y_dim) {
+int determine_cost_rival(generated_map_t *map_data, int x_dim, int y_dim) {
 
   switch(map_data -> generate_map[x_dim][y_dim]) {
 
@@ -416,9 +417,9 @@ int determine_cost(generated_map_t *map_data, int x_dim, int y_dim) {
   case nothing:
     return 10;
   case pokemon_center:
-    return 10;
+    return INT_MAX;
   case pokemon_mart:
-    return 10;
+    return INT_MAX;
   case boulder:
     return INT_MAX;
   case tree:
@@ -428,7 +429,32 @@ int determine_cost(generated_map_t *map_data, int x_dim, int y_dim) {
   }
 }
 
-static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
+int determine_cost_hiker(generated_map_t *map_data, int x_dim, int y_dim) {
+
+  switch(map_data -> generate_map[x_dim][y_dim]) {
+
+  case path:
+    return 10;
+  case tall_grass:
+    return 15;
+  case clearing:
+    return 10;
+  case nothing:
+    return 10;
+  case pokemon_center:
+    return INT_MAX;
+  case pokemon_mart:
+    return INT_MAX;
+  case boulder:
+    return INT_MAX;
+  case tree:
+    return INT_MAX;
+  default:
+    return 0;
+  }
+}
+
+static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 {
 
   // We'll use this to store and compute costs
@@ -469,10 +495,10 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
       
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
-	  (p-> cost + determine_cost(m, p-> x_pos - 1, p -> y_pos)
+	  (p-> cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)));
       }
     }
     
@@ -480,20 +506,20 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
     if(p-> x_pos + 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos)
+	  (p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)));
       }
     }
     
     if(p->y_pos - 1 > 0) {
       if (
 	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos, p -> y_pos - 1)
+	  (p->cost + determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)
 	   )) {
 	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos, p -> y_pos - 1)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)));
       }
     }
     
@@ -501,63 +527,63 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
     if(p-> y_pos + 1 < VERTICAL) {
       if (
 	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos, p -> y_pos + 1)
+	  (p->cost + determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)
 	   )) {
 	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos, p -> y_pos + 1)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)));
       }
     }
 
     if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos + 1)
+	  (p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos + 1)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)));
       }
     }
 
     if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos + 1)
+	  (p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos + 1)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)));
       }
     }
 
     if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos - 1)
+	  (p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos - 1, p -> y_pos - 1)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)));
       }
     }
 
     if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
-	  (p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos - 1)
+	  (p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
-	  ((p->cost + determine_cost(m, p-> x_pos + 1, p -> y_pos - 1)));
+	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)));
       }
     }
     
     
     if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
-      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && determine_cost(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
+      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && determine_cost_rival(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
 	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
 	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
       }
     }
     
     if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
-      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && determine_cost(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
+      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && determine_cost_rival(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
 	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
 	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
       }
@@ -565,14 +591,184 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
     
     
     if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
-      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && determine_cost(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
+      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && determine_cost_rival(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
       }
     }
     
     if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
-      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && determine_cost(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
+      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && determine_cost_rival(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
+      }
+    }
+    
+  }
+  
+  heap_delete(&h);
+  
+
+  printf("\n");
+  for (y = 1; y < VERTICAL - 1; y++) {
+    for (x = 1; x < HORIZONTAL - 1; x++) {
+      if(dijkstra[x][y].cost < -1) {
+	printf("  XX");
+      }
+      else {
+	printf("%4d", dijkstra[x][y].cost);
+      }
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y)
+{
+
+  // We'll use this to store and compute costs
+  cost_t dijkstra[HORIZONTAL][VERTICAL], *p;
+  
+  heap_t h;
+  uint32_t x, y;
+  
+  // Initialize all the positions
+  for(y = 0; y < VERTICAL; y++) {
+    for(x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].x_pos = x;
+      dijkstra[x][y].y_pos = y;
+      dijkstra[x][y].visited = 0;
+    }
+  }
+  
+  // Set all costs to be MAX at first
+  for (y = 0; y < VERTICAL; y++) {
+    for (x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].cost = INT_MAX;
+    }
+  }
+  
+  dijkstra[from_x][from_y].cost = 0;
+  
+  heap_init(&h, path_cmp, NULL);
+  
+  // Insert the first node
+  dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
+  
+  
+  while ((p = heap_remove_min(&h))) {
+    p->hn = NULL;
+    
+    
+    if(p-> x_pos - 1 > 0) {
+      
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
+	  (p-> cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)));
+      }
+    }
+    
+    
+    if(p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)));
+      }
+    }
+    
+    if(p->y_pos - 1 > 0) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)));
+      }
+    }
+    
+    
+    if(p-> y_pos + 1 < VERTICAL) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)));
+      }
+    }
+
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)));
+      }
+    }
+
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)));
+      }
+    }
+
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)));
+      }
+    }
+
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
+	  (p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
+	  ((p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)));
+      }
+    }
+    
+    
+    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
+      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
+      }
+    }
+    
+    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
+      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
+      }
+    }
+    
+    
+    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
+      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
+      }
+    }
+    
+    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
+      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
       }

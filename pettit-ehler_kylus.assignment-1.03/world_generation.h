@@ -38,7 +38,13 @@ void check_edge_cases(generated_map_t *map_data, int y_explore_position, int x_e
 void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int *chosen_spot_y);
 
 // Determine the cost we should assign, based on the terrain type
-int determine_cost(generated_map_t *map_data, int x_dim, int y_dim);
+int determine_cost_rival(generated_map_t *map_data, int x_dim, int y_dim);
+
+// Determine the cost we should assign, based on the terrain type
+int determine_cost_hiker(generated_map_t *map_data, int x_dim, int y_dim);
 
 // Actually navigate through the map
-static void dijkstra_path(generated_map_t *m, int from_x, int from_y);
+static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y);
+
+// Actually navigate through the map
+static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y);
