@@ -7,3 +7,7 @@ Feb 14: Stared at my screen some more today. I think I'm finally understanding h
 Feb 15: I'm actually getting some output. I don't think it's right but it's better than the seg faults I've been getting for the past couple days. It's 2 AM and I couldn't care less.
 
 Feb 16: On further inspection, my output might actually be correct. I honestly don't know. but it looks like I'm generating a distance map for a random spot on the road every time. I'm going to stop here for now, and re-visit this before I submit.
+
+Feb 18: Add diagonal pathing to dijkstra's algorithm. Polish up code.
+
+Feb 19: Readme and submit.

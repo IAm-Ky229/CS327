@@ -266,8 +266,8 @@ int main(int argc, char * argv[]) {
 
    choose_random_road_spot(map_exploration[y_explore_position][x_explore_position], &road_spot_x, &road_spot_y);
 
-       printf("X: %d\n", road_spot_x);
-       printf("Y: %d\n", road_spot_y);
+       printf("Random road spot X: %d\n", road_spot_x);
+       printf("Random road spot Y: %d\n", road_spot_y);
        dijkstra_path(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
 
  
@@ -582,7 +582,8 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
   
   heap_delete(&h);
   
-  
+
+  printf("\n");
   for (y = 1; y < VERTICAL - 1; y++) {
     for (x = 1; x < HORIZONTAL - 1; x++) {
       if(dijkstra[x][y].cost < -1) {
@@ -594,4 +595,5 @@ static void dijkstra_path(generated_map_t *m, int from_x, int from_y)
     }
     printf("\n");
   }
+  printf("\n");
 }

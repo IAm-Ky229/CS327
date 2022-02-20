@@ -1,0 +1,28 @@
+A lot of the changes I made are in world_generation.c. Honestly, I don't even know what the output is supposed to look like. I just demonstrated that I could compute all dijkstra distances from a random point on a path. And this 2-D matrix of distances should then be usable for NPCs and stuff.
+
+path_cmp: Used by the heap to compare two values and extract. Primarily used to extract the minimum from the heap. This is useful in determining the next dijkstra neighbor.
+
+main: Still doing a lot of the same stuff from assignment 1.02. Main difference, after every map is printed, we run dijkstras from a random spot on a path somewhere. And print out the resulting distance calculations to every node.
+
+choose_random_road_spot: Brute force, move diagonally across the map until we encounter a road. Return this node for our dijkstra calculation.
+
+determine_cost: Determine the cost of the current node. Pretty much just a switch statement to check the type of terrain we are on.
+
+dijkstra_path:
+This is a lot of what I worked on. This started out as Jeremy's dijkstra algorithm. I modified it so that it's actually performing a dijkstra distance calculation to each node. We use a 2-D cost_t variable to store a position, cost, and visited marker for each.
+
+The 2-D cost_t array is used to map a location in the terrain 2-D array to the 2-D cost array. Each location in the terrain array is mapped to a visited value and a cost value in the cost array. The visited value is 0 for all nodes by default, only turning to 1 once it is added to the heap. The cost value is by default INT_MAX, and will be updated once dijkstra's finds a better route.
+
+Unless the node is meant to be not traversable, we will always add it to the heap. Any node that should have a distance of INT_MAX (tree, rock) will not be added to the heap. That would break stuff.
+
+After initializing each position, visited, and cost values, we make the starting node cost 0 and insert it into the heap. We then extract the node with the minimum key, and check to see if we should update any distances (new cost is less than the cost we calculated previously). We check in the up, down, right, left, and all valid diagonal combos (8 directions total).
+
+Finally, we check to see if we should add any neighbors. If we find a neighbor in either the up, down, right, or left direcitons that has NOT been marked as visited, mark it as visited and add it to the heap.
+
+Once all is said and done, delete the heap, and print out the resulting distance array. If we find that we are to print a value of MAX_INT, just print out a " XX."
+
+I've got some boundary checks implemented where they need to be in order to avoid stack overflows.
+
+Heap implementation: Pretty much just used Jeremy's implementation. I only initialize the heap, insert into the heap, and remove min in my code. I also delete the heap once I'm done with it.
+
+Known bugs: Sometimes, inexplicably, dijkstra's just doesn't work. Like all the nodes are still MAX_INT. I never found out why it does this.
