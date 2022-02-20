@@ -6,9 +6,11 @@ main: Still doing a lot of the same stuff from assignment 1.02. Main difference,
 
 choose_random_road_spot: Brute force, move diagonally across the map until we encounter a road. Return this node for our dijkstra calculation.
 
-determine_cost: Determine the cost of the current node. Pretty much just a switch statement to check the type of terrain we are on.
+determine_cost_rival: Determine the cost of the current node. Pretty much just a switch statement to check the type of terrain we are on.
 
-dijkstra_path:
+determine_cost_hiker: Determine the cost of the current node. Pretty much just a switch statement to check the type of terrain we are on. Hikers can traverse grass with a movespeed of 15 is the main difference.
+
+dijkstra_path_rival:
 This is a lot of what I worked on. This started out as Jeremy's dijkstra algorithm. I modified it so that it's actually performing a dijkstra distance calculation to each node. We use a 2-D cost_t variable to store a position, cost, and visited marker for each.
 
 The 2-D cost_t array is used to map a location in the terrain 2-D array to the 2-D cost array. Each location in the terrain array is mapped to a visited value and a cost value in the cost array. The visited value is 0 for all nodes by default, only turning to 1 once it is added to the heap. The cost value is by default INT_MAX, and will be updated once dijkstra's finds a better route.
@@ -23,8 +25,12 @@ Once all is said and done, delete the heap, and print out the resulting distance
 
 I've got some boundary checks implemented where they need to be in order to avoid stack overflows.
 
+dijkstra_path_hiker: I'm not going to explain it all again, because it's basically the same process, just that it's calling check_distance_hiker instead of check_distance_rival.
+
 Heap implementation: Pretty much just used Jeremy's implementation. I only initialize the heap, insert into the heap, and remove min in my code. I also delete the heap once I'm done with it.
 
-Known bugs: Sometimes, inexplicably, dijkstra's just doesn't work. Like all the nodes are still MAX_INT. I never found out why it does this.
+Known bugs: Sometimes, inexplicably, dijkstra's just doesn't work. Like all the nodes are still MAX_INT. I dunno why it does this.
 
-Just as a disclaimer, I couldn't figure out why part of Jeremy's code kept giving me seg faults. So, I just used Jeremy's heap as I needed and implemented the whole dijkstra cost 2-D matrix myself.
+Just as a disclaimer, I couldn't figure out why part of Jeremy's code kept giving me seg faults. So, I just used Jeremy's heap as I needed and implemented the whole dijkstra cost 2-D matrix myself. Also, there was probably a more elegant way to generate both distance maps rather than just have two completely different functions. But that's the simplest way, so that's what I did.
+
+Also, I didn't mod the distances I found by 10, because I think it's easier to see that dijkstras is actually working if I just print the costs as they are in the 2-D cost array. It's also much easier to discern the starting spot. Main downside being it's much wider. I just made the terminal really wide and dragged it.

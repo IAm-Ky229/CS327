@@ -9,7 +9,6 @@
 
 
 static int32_t path_cmp(const void *key, const void *with) {
-  //printf("comparing %d to %d\n", ((cost_t *) key)->cost, ((cost_t *) with)->cost);
   return ((cost_t *) key)->cost - ((cost_t *) with)->cost;
 }
 
@@ -67,6 +66,13 @@ int main(int argc, char * argv[]) {
 		  exit_top,
 		  manhattan_x,
 		  manhattan_y);
+
+ choose_random_road_spot(map_exploration[y_explore_position][x_explore_position], &road_spot_x, &road_spot_y);
+
+ printf("Random road spot X: %d\n", road_spot_x);
+ printf("Random road spot Y: %d\n", road_spot_y);
+ dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+ dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
  
  // Continually get buffered input till we quit
  while(1) {
@@ -264,12 +270,13 @@ int main(int argc, char * argv[]) {
      break;
    }
 
+   // Do dijkstra's on the map we generated / found in memory
    choose_random_road_spot(map_exploration[y_explore_position][x_explore_position], &road_spot_x, &road_spot_y);
-
-       printf("Random road spot X: %d\n", road_spot_x);
-       printf("Random road spot Y: %d\n", road_spot_y);
-       dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
-       dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+   
+   printf("Random road spot X: %d\n", road_spot_x);
+   printf("Random road spot Y: %d\n", road_spot_y);
+   dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+   dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
 
  
 
@@ -459,7 +466,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 
   // We'll use this to store and compute costs
   cost_t dijkstra[HORIZONTAL][VERTICAL], *p;
-  
+
+  // Heap and initialization variables
   heap_t h;
   uint32_t x, y;
   
@@ -478,7 +486,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       dijkstra[x][y].cost = INT_MAX;
     }
   }
-  
+
+  // Set starting node distance 0
   dijkstra[from_x][from_y].cost = 0;
   
   heap_init(&h, path_cmp, NULL);
@@ -486,11 +495,17 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
   // Insert the first node
   dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
   
-  
+
+  // Extract the best (cheapest) node in the heap
   while ((p = heap_remove_min(&h))) {
     p->hn = NULL;
+
+    // In general: check bounds
+    // check if the cost to go a certain direction is less than what is already there
+    // If it is less, update the cost
+    // Else do nothing
     
-    
+    // Try to go left
     if(p-> x_pos - 1 > 0) {
       
       if (
@@ -502,7 +517,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
     
-    
+    // Try to go right
     if(p-> x_pos + 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
@@ -512,7 +527,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)));
       }
     }
-    
+
+    // Try to go down
     if(p->y_pos - 1 > 0) {
       if (
 	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
@@ -523,7 +539,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
     
-    
+    // Try to go up
     if(p-> y_pos + 1 < VERTICAL) {
       if (
 	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
@@ -534,6 +550,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
 
+    // Try to go up right
     if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
@@ -544,6 +561,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
 
+    // Try to go down right
     if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
@@ -554,6 +572,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
 
+    // Try to go down left
     if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
@@ -564,6 +583,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
 
+    // Try to go up left
     if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
       if (
 	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
@@ -574,14 +594,20 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
     
-    
+    // Check for valid right neighbor
     if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
       if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && determine_cost_rival(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
 	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
 	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
       }
     }
+
+    // In general:
+    // Check to see if neighbor in bounds
+    // If neigbor has NOT been marked as visited, add to the heap
+    // Otherwise do nothing
     
+    // Check for valid left neighbor
     if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
       if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && determine_cost_rival(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
 	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
@@ -589,14 +615,15 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
       }
     }
     
-    
+    // Check for valid up neighbor
     if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
       if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && determine_cost_rival(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
       }
     }
-    
+
+    // Check for valid down neighbor
     if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
       if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && determine_cost_rival(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
@@ -605,15 +632,19 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
     }
     
   }
-  
+
+  // We're done with the heap, delete it
   heap_delete(&h);
   
 
+  // Print out the dijkstra cost computations
+  printf("\n");
+  printf("RIVAL GRAPH: \n");
   printf("\n");
   for (y = 1; y < VERTICAL - 1; y++) {
     for (x = 1; x < HORIZONTAL - 1; x++) {
       if(dijkstra[x][y].cost < -1) {
-	printf("  XX");
+	printf("    ");
       }
       else {
 	printf("%4d", dijkstra[x][y].cost);
@@ -624,6 +655,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
   printf("\n");
 }
 
+// This is the same as dijkstra_path_rival, we're just calling a different cost computation function
 static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y)
 {
 
@@ -780,10 +812,12 @@ static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y)
   
 
   printf("\n");
+  printf("HIKER GRAPH: \n");
+  printf("\n");
   for (y = 1; y < VERTICAL - 1; y++) {
     for (x = 1; x < HORIZONTAL - 1; x++) {
       if(dijkstra[x][y].cost < -1) {
-	printf("  XX");
+	printf("    ");
       }
       else {
 	printf("%4d", dijkstra[x][y].cost);
