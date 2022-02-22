@@ -21,7 +21,7 @@ After initializing each position, visited, and cost values, we make the starting
 
 Finally, we check to see if we should add any neighbors. If we find a neighbor in either the up, down, right, or left direcitons that has NOT been marked as visited, mark it as visited and add it to the heap.
 
-Once all is said and done, delete the heap, and print out the resulting distance array. If we find that we are to print a value of MAX_INT, just print out a " XX."
+Once all is said and done, delete the heap, and print out the resulting distance array. If we find that we are to print a value of MAX_INT, just print out a "   ".
 
 I've got some boundary checks implemented where they need to be in order to avoid stack overflows.
 
