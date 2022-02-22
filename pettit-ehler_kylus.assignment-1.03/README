@@ -32,5 +32,3 @@ Heap implementation: Pretty much just used Jeremy's implementation. I only initi
 Known bugs: Sometimes, inexplicably, dijkstra's just doesn't work. Like all the nodes are still MAX_INT. I dunno why it does this.
 
 Just as a disclaimer, I couldn't figure out why part of Jeremy's code kept giving me seg faults. So, I just used Jeremy's heap as I needed and implemented the whole dijkstra cost 2-D matrix myself. Also, there was probably a more elegant way to generate both distance maps rather than just have two completely different functions. But that's the simplest way, so that's what I did.
-
-Also, I didn't mod the distances I found by 10, because I think it's easier to see that dijkstras is actually working if I just print the costs as they are in the 2-D cost array. It's also much easier to discern the starting spot. Main downside being it's much wider. I just made the terminal really wide and dragged it.

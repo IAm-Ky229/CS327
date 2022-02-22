@@ -644,10 +644,10 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
   for (y = 1; y < VERTICAL - 1; y++) {
     for (x = 1; x < HORIZONTAL - 1; x++) {
       if(dijkstra[x][y].cost < -1) {
-	printf("    ");
+	printf("   ");
       }
       else {
-	printf("%4d", dijkstra[x][y].cost);
+	printf("%02d ", dijkstra[x][y].cost % 100);
       }
     }
     printf("\n");
@@ -817,10 +817,10 @@ static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y)
   for (y = 1; y < VERTICAL - 1; y++) {
     for (x = 1; x < HORIZONTAL - 1; x++) {
       if(dijkstra[x][y].cost < -1) {
-	printf("    ");
+	printf("   ");
       }
       else {
-	printf("%4d", dijkstra[x][y].cost);
+	printf("%02d ", dijkstra[x][y].cost % 100);
       }
     }
     printf("\n");

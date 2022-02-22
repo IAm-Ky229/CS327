@@ -13,3 +13,5 @@ Feb 18: Add diagonal pathing to dijkstra's algorithm. Polish up code.
 Feb 19: Readme and comments.
 
 Feb 20: Readme and comments, submit.
+
+Feb 22: After asking Jeremy, changed distances to be printed as a zero padded 2 digit number mod 100. Submit.
