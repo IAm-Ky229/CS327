@@ -12,6 +12,32 @@ void print_map(generated_map_t *map_data) {
     for(j = 0; j < HORIZONTAL; j++) {
 
       // Switch statement for every enumeration
+      if(map_data -> character_positions[j][i] != NULL) {
+	  switch ( map_data -> character_positions[j][i] -> player_type) {
+	  case hiker:
+	    printf("H");
+	    break;
+	  case rival:
+	    printf("R");
+	    break;
+	  case pacer:
+	    printf("P");
+	    break;
+	  case wanderer:
+	    printf("W");
+	    break;
+	  case stationary:
+	    printf("S");
+	    break;
+	  case random_walker:
+	    printf("R");
+	    break;
+	  case PC:
+	    printf("@");
+	break;
+	  }
+	}
+      else {
       switch(map_data -> generate_map[j][i]) {
       case boulder :
 	printf("%%");
@@ -43,8 +69,9 @@ void print_map(generated_map_t *map_data) {
       default :
 	printf(" ");
 	break;
+	}
       }
-    }
+      }
     printf("\n");
   }
 

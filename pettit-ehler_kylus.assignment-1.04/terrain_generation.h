@@ -35,9 +35,9 @@ typedef enum char_type {
 			hiker,
 			rival,
 			pacer,
-			wanderers,
-			stationaires,
-			random_walkers,
+			wanderer,
+			stationary,
+			random_walker,
 			PC
 } char_type_t;
 

@@ -28,9 +28,6 @@ int main(int argc, char * argv[]) {
   // Map we are going to traverse
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
 
-  // Map to store characters
-  character_t *player_positions[WORLD_X_LENGTH][WORLD_Y_LENGTH];
-
   // Keep track of exits
   int exit_bottom = -1;
   int exit_right = -1;
@@ -70,12 +67,12 @@ int main(int argc, char * argv[]) {
 		  manhattan_x,
 		  manhattan_y);
 
- choose_random_road_spot(map_exploration[y_explore_position][x_explore_position], &road_spot_x, &road_spot_y);
+ //choose_random_road_spot(map_exploration[y_explore_position][x_explore_position], &road_spot_x, &road_spot_y);
 
- printf("Random road spot X: %d\n", road_spot_x);
- printf("Random road spot Y: %d\n", road_spot_y);
- dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
- dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+ //printf("Random road spot X: %d\n", road_spot_x);
+ //printf("Random road spot Y: %d\n", road_spot_y);
+ //dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
+ //dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
  
  // Continually get buffered input till we quit
  while(1) {
@@ -280,7 +277,6 @@ int main(int argc, char * argv[]) {
    //printf("Random road spot Y: %d\n", road_spot_y);
    //dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
    //dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
-
    
 
  }
@@ -331,6 +327,8 @@ void generate_new_map(generated_map_t *map_data,
   // everything to nothing
   int i;
   int j;
+  int random_path_x;
+  int random_path_y;
   
   for(i = 0; i < VERTICAL; i++) {
     for(j = 0; j < HORIZONTAL; j++) {
@@ -363,12 +361,17 @@ void generate_new_map(generated_map_t *map_data,
   place_paths(map_data);
   place_buildings(map_data, building_spawn_rate);
   fill_blank_space(map_data);
-  place_characters(map_data);
 
   // To avoid passing in y and x explore, I just add 199 to the manhattan counters
   check_edge_cases(map_data, manhattan_y + 199, manhattan_x + 199);
-  print_map(map_data);
+
+  choose_random_road_spot(map_data, &random_path_x, &random_path_y);
+  map_data -> character_positions[random_path_x][random_path_y] = malloc(sizeof(character_t));
+  map_data -> character_positions[random_path_x][random_path_y] -> player_type = PC;
   
+  place_characters(map_data);
+  
+  print_map(map_data);
 }
 
 void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH],
@@ -840,14 +843,59 @@ static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y)
 
 void place_characters(generated_map_t *m) {
 
-// Generate random positions for all the characters
+  int placed_characters = 0;
+  int rand_x;
+  int rand_y;
 
-// place them in the 2 - D array
+  int i;
+  enum char_type characters_to_place[10];
 
-// Once we make the map, go over the character array and print out all the characters
+  int choose_character;
 
-// I still am not really sure how to do the movement lol
+  for (i = 0; i < 10; i++) {
 
-m -> character_positions[1][1] = malloc(sizeof(character_t));
+    choose_character = rand() % 6;
+
+    character_t new_character;
+
+    switch (choose_character) {
+    case 0:
+      characters_to_place[i] = hiker;
+      break;
+    case 1:
+      characters_to_place[i] = rival;
+      break;
+    case 2:
+      characters_to_place[i] = pacer;
+      break;
+    case 3:
+      characters_to_place[i] = wanderer;
+      break;
+    case 4:
+      characters_to_place[i] = stationary;
+      break;
+    case 5:
+      characters_to_place[i] = random_walker;
+      break;
+    }
+    
+  }
+
+  i = 0;
+  while (placed_characters < 10) {
+    rand_x = (rand() % (78 - 2 + 1)) + 2;
+    rand_y = (rand() % (19 - 2 + 1)) + 2;
+
+    if(m -> generate_map[rand_x][rand_y] != boulder &&
+	m -> generate_map[rand_x][rand_y] != tree &&
+	m -> generate_map[rand_x][rand_y] != pokemon_mart &&
+	m -> generate_map[rand_x][rand_y] != pokemon_center &&
+	m -> character_positions[rand_x][rand_y] == NULL) {
+      
+      m -> character_positions[rand_x][rand_y] = malloc(sizeof(character_t));
+      m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
+      placed_characters++;
+    }
+  }
 
 }
