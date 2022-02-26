@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "terrain_generation.h"
 #include "world_generation.h"
@@ -10,6 +11,10 @@
 
 static int32_t path_cmp(const void *key, const void *with) {
   return ((cost_t *) key)->cost - ((cost_t *) with)->cost;
+}
+
+static int32_t move_cost_cmp(const void *key, const void *with) {
+  return ((character_t *) key)-> cost_to_move - ((character_t *) with)-> cost_to_move;
 }
 
 int main(int argc, char * argv[]) {
@@ -28,6 +33,12 @@ int main(int argc, char * argv[]) {
   // Map we are going to traverse
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
 
+  // Distance map for hiker
+  cost_t distance_hiker[HORIZONTAL][VERTICAL];
+  
+  // Distance map for rival
+  cost_t distance_rival[HORIZONTAL][VERTICAL];
+
   // Keep track of exits
   int exit_bottom = -1;
   int exit_right = -1;
@@ -43,6 +54,8 @@ int main(int argc, char * argv[]) {
   int i;
   int j;
 
+  heap_t characters_to_move;
+
   // Initialize map
   for(i = 0; i < WORLD_Y_LENGTH; i++) {
     for(j = 0; j < WORLD_X_LENGTH; j++) {
@@ -57,9 +70,12 @@ int main(int argc, char * argv[]) {
  x_explore_position = WORLD_X_START;
  y_explore_position = WORLD_Y_START;
 
+ heap_init(&characters_to_move, move_cost_cmp, NULL);
+
  // Make first map
  map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
  generate_new_map(map_exploration[y_explore_position][x_explore_position],
+		  &characters_to_move,
 		  exit_bottom,
 		  exit_right,
 		  exit_left,
@@ -67,13 +83,36 @@ int main(int argc, char * argv[]) {
 		  manhattan_x,
 		  manhattan_y);
 
+ int game_time = 0;
+
+ // Calculate everyone's first move
+
+ 
+
+ // Movement is implemented here
+ while(1) {
+
+   // Do dijkstra's for hiker and rival
+
+   // Peek the queue's minimum, and see if there is a move that needs to be processed
+
+   // If yes, remove the minimum, move, and re-add the character's new weight
+
+   // Else, just loop again
+   
+   usleep(250000);
+   printf("frames\n");
+   game_time++;
+ }
+
  //choose_random_road_spot(map_exploration[y_explore_position][x_explore_position], &road_spot_x, &road_spot_y);
 
  //printf("Random road spot X: %d\n", road_spot_x);
  //printf("Random road spot Y: %d\n", road_spot_y);
  //dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
  //dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], road_spot_x, road_spot_y);
- 
+
+ /*
  // Continually get buffered input till we quit
  while(1) {
    // Assume we don't have any neighbors
@@ -280,6 +319,7 @@ int main(int argc, char * argv[]) {
    
 
  }
+ */
  
  return 0;
 }
@@ -315,7 +355,8 @@ void check_edge_cases(generated_map_t *map_data, int y_explore_position, int x_e
   
 }
 
-void generate_new_map(generated_map_t *map_data, 
+void generate_new_map(generated_map_t *map_data,
+		      heap_t *h,
 		      int exit_bottom,
 		      int exit_right,
 		      int exit_left,
@@ -368,8 +409,9 @@ void generate_new_map(generated_map_t *map_data,
   choose_random_road_spot(map_data, &random_path_x, &random_path_y);
   map_data -> character_positions[random_path_x][random_path_y] = malloc(sizeof(character_t));
   map_data -> character_positions[random_path_x][random_path_y] -> player_type = PC;
+  heap_insert(h, map_data -> character_positions[random_path_x][random_path_y]);
   
-  place_characters(map_data);
+  place_characters(map_data, h);
   
   print_map(map_data);
 }
@@ -841,7 +883,7 @@ static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y)
   printf("\n");
 }
 
-void place_characters(generated_map_t *m) {
+void place_characters(generated_map_t *m, heap_t *h) {
 
   int placed_characters = 0;
   int rand_x;
@@ -850,13 +892,14 @@ void place_characters(generated_map_t *m) {
   int i;
   enum char_type characters_to_place[10];
 
+  characters_to_place[0] = hiker;
+  characters_to_place[1] = rival;
+  
   int choose_character;
 
-  for (i = 0; i < 10; i++) {
+  for (i = 2; i < 8; i++) {
 
     choose_character = rand() % 6;
-
-    character_t new_character;
 
     switch (choose_character) {
     case 0:
@@ -894,8 +937,43 @@ void place_characters(generated_map_t *m) {
       
       m -> character_positions[rand_x][rand_y] = malloc(sizeof(character_t));
       m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
+      m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
+
+      switch(m -> character_positions[rand_x][rand_y] -> player_type) {
+      case stationary:
+	// do nothing
+	break;
+      case pacer:
+	if(m -> generate_map[rand_x][rand_y + 1] != INT_MAX) {
+	  m -> character_positions[rand_x][rand_y] -> pacer_direction = down;
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x, rand_y + 1);
+	}
+	else if(m -> generate_map[rand_x][rand_y - 1] != INT_MAX) {
+	  	  m -> character_positions[rand_x][rand_y] -> pacer_direction = up;
+	  m -> character_positions[rand_x][rand_y - 1] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x, rand_y - 1);
+	}
+	else if(m -> generate_map[rand_x + 1][rand_y] != INT_MAX) {
+	  	  m -> character_positions[rand_x][rand_y] -> pacer_direction = right;
+	  m -> character_positions[rand_x + 1][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x + 1, rand_y);
+	}
+	else if(m -> generate_map[rand_x - 1][rand_y] != INT_MAX) {
+	  	  m -> character_positions[rand_x][rand_y] -> pacer_direction = left;
+	  m -> character_positions[rand_x - 1][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x - 1, rand_y);
+	}
+	break;
+      }
+      heap_insert(h, m -> character_positions[rand_x][rand_y]);
       placed_characters++;
     }
   }
 
+}
+
+void move_pacer(generated_map_t *m) {
+  // Check which direction we're moving
+  // Try to move that direction, turn around if we aren't able to move that direction
 }

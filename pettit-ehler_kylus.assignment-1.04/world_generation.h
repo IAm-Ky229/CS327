@@ -15,6 +15,7 @@ typedef struct costs {
 
 // Given the parameters, generate a new map for our world
 void generate_new_map(generated_map_t *map_data,
+		      heap_t * h,
 		      int exit_bottom,
 		      int exit_right,
 		      int exit_left,
@@ -50,4 +51,7 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y);
 static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y);
 
 // Place characters into the map
-void place_characters(generated_map_t *m);
+void place_characters(generated_map_t *m, heap_t *h);
+
+// Function for moving a pacer character
+void move_pacer(generated_map_t *m);

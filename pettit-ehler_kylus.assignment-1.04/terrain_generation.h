@@ -41,8 +41,18 @@ typedef enum char_type {
 			PC
 } char_type_t;
 
+typedef enum direction {
+			up,
+			down,
+			right,
+			left
+} direction_t;
+
 typedef struct character {
   char_type_t player_type;
+  direction_t pacer_direction;
+  int cost_to_move;
+  
 } character_t;
 
 typedef struct generated_map {
