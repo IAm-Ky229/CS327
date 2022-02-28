@@ -52,7 +52,8 @@ typedef struct character {
   char_type_t player_type;
   direction_t pacer_direction;
   int cost_to_move;
-  
+  int x_pos;
+  int y_pos;
 } character_t;
 
 typedef struct generated_map {

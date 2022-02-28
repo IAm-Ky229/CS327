@@ -26,6 +26,10 @@ int main(int argc, char * argv[]) {
   // Used to select some road spot
   int road_spot_x;
   int road_spot_y;
+  
+  // Choose random road spot for PC
+  int random_road_x;
+  int random_road_y;
 
   // The scanned input character
   char scanned;
@@ -81,7 +85,9 @@ int main(int argc, char * argv[]) {
 		  exit_left,
 		  exit_top,
 		  manhattan_x,
-		  manhattan_y);
+		  manhattan_y,
+		  &random_road_x,
+		  &random_road_y);
 
  int game_time = 0;
 
@@ -94,14 +100,29 @@ int main(int argc, char * argv[]) {
 
    // Do dijkstra's for hiker and rival
 
-   // Peek the queue's minimum, and see if there is a move that needs to be processed
-
-   // If yes, remove the minimum, move, and re-add the character's new weight
-
-   // Else, just loop again
+   character_t *to_move;
    
+   to_move = heap_peek_min(&characters_to_move);
+   printf("peeked %d \n", to_move -> cost_to_move);
+   while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
+     to_move = heap_remove_min(&characters_to_move);
+     printf("removed\n");
+     switch (to_move -> player_type) {
+       
+     case pacer:
+       printf("before updating: %d\n", to_move -> cost_to_move);
+       printf("size: %d\n", characters_to_move.size);
+       move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
+       break;
+       
+     }
+     
+     to_move = heap_peek_min(&characters_to_move);
+     
+   }
+
+   //print_map(map_exploration[y_explore_position][x_explore_position]);
    usleep(250000);
-   printf("frames\n");
    game_time++;
  }
 
@@ -362,14 +383,14 @@ void generate_new_map(generated_map_t *map_data,
 		      int exit_left,
 		      int exit_top,
 		      int manhattan_x,
-		      int manhattan_y) {
+		      int manhattan_y,
+		      int *random_path_x,
+		      int *random_path_y) {
   
   // I was getting some weird memory problems without initializing
   // everything to nothing
   int i;
   int j;
-  int random_path_x;
-  int random_path_y;
   
   for(i = 0; i < VERTICAL; i++) {
     for(j = 0; j < HORIZONTAL; j++) {
@@ -406,10 +427,11 @@ void generate_new_map(generated_map_t *map_data,
   // To avoid passing in y and x explore, I just add 199 to the manhattan counters
   check_edge_cases(map_data, manhattan_y + 199, manhattan_x + 199);
 
-  choose_random_road_spot(map_data, &random_path_x, &random_path_y);
-  map_data -> character_positions[random_path_x][random_path_y] = malloc(sizeof(character_t));
-  map_data -> character_positions[random_path_x][random_path_y] -> player_type = PC;
-  heap_insert(h, map_data -> character_positions[random_path_x][random_path_y]);
+  // Insert the PC
+  choose_random_road_spot(map_data, random_path_x, random_path_y);
+  map_data -> character_positions[*random_path_x][*random_path_y] = malloc(sizeof(character_t));
+  map_data -> character_positions[*random_path_x][*random_path_y] -> player_type = PC;
+  heap_insert(h, map_data -> character_positions[*random_path_x][*random_path_y]);
   
   place_characters(map_data, h);
   
@@ -569,6 +591,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)));
+	  dijkstra[p->x_pos - 1][p->y_pos    ].next_x = p -> x_pos;
+	  dijkstra[p->x_pos - 1][p->y_pos    ].next_y = p -> y_pos;
       }
     }
     
@@ -580,6 +604,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)));
+	  dijkstra[p->x_pos + 1][p->y_pos    ].next_x = p -> x_pos;
+	  dijkstra[p->x_pos + 1][p->y_pos    ].next_y = p -> y_pos;
       }
     }
 
@@ -591,6 +617,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)));
+	  dijkstra[p->x_pos][p->y_pos - 1].next_x = p -> x_pos;
+	  dijkstra[p->x_pos][p->y_pos - 1].next_y = p -> y_pos;
       }
     }
     
@@ -602,6 +630,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)));
+	  dijkstra[p->x_pos][p->y_pos + 1].next_x = p -> x_pos;
+	  dijkstra[p->x_pos][p->y_pos + 1].next_y = p -> y_pos;
       }
     }
 
@@ -613,6 +643,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)));
+	  dijkstra[p->x_pos + 1][p->y_pos + 1].next_x = p -> x_pos;
+	  dijkstra[p->x_pos + 1][p->y_pos + 1].next_y = p -> y_pos;
       }
     }
 
@@ -624,6 +656,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)));
+	  dijkstra[p->x_pos - 1][p->y_pos + 1].next_x = p -> x_pos;
+	  dijkstra[p->x_pos - 1][p->y_pos + 1].next_y = p -> y_pos;
       }
     }
 
@@ -635,6 +669,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)));
+	  dijkstra[p->x_pos - 1][p->y_pos - 1].next_x = p -> x_pos;
+	  dijkstra[p->x_pos - 1][p->y_pos - 1].next_y = p -> y_pos;
       }
     }
 
@@ -646,6 +682,8 @@ static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y)
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
 	  ((p->cost + determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)));
+	  dijkstra[p->x_pos + 1][p->y_pos - 1].next_x = p -> x_pos;
+	  dijkstra[p->x_pos + 1][p->y_pos - 1].next_y = p -> y_pos;
       }
     }
     
@@ -891,13 +929,10 @@ void place_characters(generated_map_t *m, heap_t *h) {
 
   int i;
   enum char_type characters_to_place[10];
-
-  characters_to_place[0] = hiker;
-  characters_to_place[1] = rival;
   
   int choose_character;
 
-  for (i = 2; i < 8; i++) {
+  for (i = 0; i < 8; i++) {
 
     choose_character = rand() % 6;
 
@@ -925,7 +960,7 @@ void place_characters(generated_map_t *m, heap_t *h) {
   }
 
   i = 0;
-  while (placed_characters < 10) {
+  while (placed_characters < 8) {
     rand_x = (rand() % (78 - 2 + 1)) + 2;
     rand_y = (rand() % (19 - 2 + 1)) + 2;
 
@@ -935,6 +970,8 @@ void place_characters(generated_map_t *m, heap_t *h) {
 	m -> generate_map[rand_x][rand_y] != pokemon_center &&
 	m -> character_positions[rand_x][rand_y] == NULL) {
       
+      
+      printf("assigning character: x %d and y %d\n", rand_x, rand_y);
       m -> character_positions[rand_x][rand_y] = malloc(sizeof(character_t));
       m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
       m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
@@ -944,25 +981,37 @@ void place_characters(generated_map_t *m, heap_t *h) {
 	// do nothing
 	break;
       case pacer:
-	if(m -> generate_map[rand_x][rand_y + 1] != INT_MAX) {
+	if(m -> generate_map[rand_x][rand_y + 1] != tree ||
+	   m -> generate_map[rand_x][rand_y + 1] != boulder) {
 	  m -> character_positions[rand_x][rand_y] -> pacer_direction = down;
 	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x, rand_y + 1);
+	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
 	}
-	else if(m -> generate_map[rand_x][rand_y - 1] != INT_MAX) {
+	else if(m -> generate_map[rand_x][rand_y - 1] != tree ||
+	   m -> generate_map[rand_x][rand_y - 1] != boulder) {
 	  	  m -> character_positions[rand_x][rand_y] -> pacer_direction = up;
-	  m -> character_positions[rand_x][rand_y - 1] -> cost_to_move +=
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x, rand_y - 1);
+	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
 	}
-	else if(m -> generate_map[rand_x + 1][rand_y] != INT_MAX) {
+	else if(m -> generate_map[rand_x + 1][rand_y] != tree ||
+	   m -> generate_map[rand_x + 1][rand_y] != boulder) {
 	  	  m -> character_positions[rand_x][rand_y] -> pacer_direction = right;
-	  m -> character_positions[rand_x + 1][rand_y] -> cost_to_move +=
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x + 1, rand_y);
+	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
 	}
-	else if(m -> generate_map[rand_x - 1][rand_y] != INT_MAX) {
+	else if(m -> generate_map[rand_x - 1][rand_y] != tree ||
+	   m -> generate_map[rand_x - 1][rand_y] != boulder) {
 	  	  m -> character_positions[rand_x][rand_y] -> pacer_direction = left;
-	  m -> character_positions[rand_x - 1][rand_y] -> cost_to_move +=
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x - 1, rand_y);
+	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
 	}
 	break;
       }
@@ -973,7 +1022,186 @@ void place_characters(generated_map_t *m, heap_t *h) {
 
 }
 
-void move_pacer(generated_map_t *m) {
-  // Check which direction we're moving
-  // Try to move that direction, turn around if we aren't able to move that direction
+void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
+  usleep(250000);
+ 
+  // Gonna be honest, there were more edge cases in this than I thought. So, this is probabably gonna
+  // look really sloppy.
+  //printf("in move pacer\n");
+  //printf("pacer to move x: %d pacer to move y: %d\n", pacer_to_move -> x_pos, pacer_to_move -> y_pos);
+  
+  switch(pacer_to_move -> pacer_direction) {
+  case down:
+    if( (pacer_to_move -> y_pos + 1 < 21) &&
+	(m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] != tree) &&
+	(m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] != boulder) &&
+	(m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] == NULL)) {
+      
+      //printf("got here\n");
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] = malloc(sizeof(character_t));
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> player_type = pacer;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> cost_to_move = pacer_to_move -> cost_to_move;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> x_pos = pacer_to_move -> x_pos;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> y_pos = pacer_to_move -> y_pos + 1;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> pacer_direction = down;
+      pacer_to_move -> y_pos++;
+      
+      //printf("got here\n");
+      printf("X: %d Y: %d\n", pacer_to_move -> x_pos, pacer_to_move -> y_pos);
+      printf("In 2-D X: %d Y: %d\n", m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> x_pos,
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> y_pos);
+      if (m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] == NULL &&
+	  m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] != tree &&
+	  m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] != boulder) {
+	
+	//printf("got into add cost\n");
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move = 
+	  m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +
+	  determine_cost_rival(m, pacer_to_move -> x_pos, pacer_to_move -> y_pos + 1);
+	
+	//pacer_to_move -> cost_to_move = m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move;
+	
+	
+	printf("cost assigned: %d\n", m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move);
+	}
+      else {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] -> cost_to_move;
+      }
+      
+      //printf("got here\n");
+      heap_insert(h, m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos]);
+      free(m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1]);
+      break;
+    }
+    else {
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> pacer_direction = up;
+    }
+    
+  case up:
+    if( pacer_to_move -> y_pos - 1 > 0 &&
+	m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] != tree &&
+	m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] != boulder &&
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] == NULL) {
+      
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] = malloc(sizeof(character_t));
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] -> player_type = pacer;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] -> x_pos = pacer_to_move -> x_pos;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] -> y_pos = pacer_to_move -> y_pos - 1;
+      
+      if (m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] == NULL &&
+	  m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] != tree &&
+	  m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] != boulder) {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] -> cost_to_move;
+      }
+      else {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> cost_to_move;
+      }
+      
+      free(m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1]);
+      break;
+    }
+    else {
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> pacer_direction = down;
+      
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] = malloc(sizeof(character_t));
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> player_type = pacer;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> x_pos = pacer_to_move -> x_pos;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> y_pos = pacer_to_move -> y_pos + 1;
+      
+      if (m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] == NULL &&
+	  m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] != tree &&
+	  m -> generate_map[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] != boulder) {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos + 1] -> cost_to_move;
+      }
+      else {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1] -> cost_to_move;
+      }
+      
+      free(m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos - 1]);
+      break;
+    }
+    
+  case right:
+    if( pacer_to_move -> x_pos + 1 < 80 &&
+	m -> generate_map[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] != tree &&
+	m -> generate_map[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] != boulder &&
+	m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] == NULL) {
+      
+      m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] = malloc(sizeof(character_t));
+      m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> player_type = pacer;
+      m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> x_pos = pacer_to_move -> x_pos + 1;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> y_pos = pacer_to_move -> y_pos;
+      
+      if (m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] == NULL &&
+	  m -> generate_map[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] != tree &&
+	  m -> generate_map[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] != boulder) {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> cost_to_move;
+      }
+      else {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] -> cost_to_move;
+      }
+      
+      free(m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos]);
+      break;
+    }
+    else {
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> pacer_direction = left;
+    }
+    
+  case left:
+    if( pacer_to_move -> x_pos - 1 > 0 &&
+	m -> generate_map[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] != tree &&
+	m -> generate_map[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] != boulder &&
+	m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] == NULL) {
+      
+      m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] = malloc(sizeof(character_t));
+      m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] -> player_type = pacer;
+      m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] -> x_pos = pacer_to_move -> x_pos - 1;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> y_pos = pacer_to_move -> y_pos;
+      
+      if (m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] == NULL &&
+	  m -> generate_map[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] != tree &&
+	  m -> generate_map[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] != boulder) {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] -> cost_to_move;
+      }
+      else {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> cost_to_move;
+      }
+      
+      free(m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos]);
+      break;
+    }
+    else {
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> pacer_direction = right;
+      
+      m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] = malloc(sizeof(character_t));
+      m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> player_type = pacer;
+      m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> x_pos = pacer_to_move -> x_pos + 1;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> y_pos = pacer_to_move -> y_pos;
+      
+      if (m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] == NULL &&
+	  m -> generate_map[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] != tree &&
+	  m -> generate_map[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] != boulder) {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos + 1][pacer_to_move -> y_pos] -> cost_to_move;
+      }
+      else {
+	m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> cost_to_move +=
+	  m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos] -> cost_to_move;
+      }
+      
+      free(m -> character_positions[pacer_to_move -> x_pos - 1][pacer_to_move -> y_pos]);
+      break;
+    }
+    
+  }
 }

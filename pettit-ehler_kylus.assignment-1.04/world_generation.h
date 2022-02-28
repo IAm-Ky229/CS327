@@ -11,6 +11,8 @@ typedef struct costs {
   int x_pos;
   int y_pos;
   int visited;
+  int next_x;
+  int next_y;
 } cost_t;
 
 // Given the parameters, generate a new map for our world
@@ -21,7 +23,9 @@ void generate_new_map(generated_map_t *map_data,
 		      int exit_left,
 		      int exit_top,
 		      int manhattan_x,
-		      int manhattan_y);
+		      int manhattan_y,
+		      int *random_path_x,
+		      int *random_path_y);
 
 // Check and see if our exits should be random, or they already exist
 void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH],
@@ -54,4 +58,4 @@ static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y);
 void place_characters(generated_map_t *m, heap_t *h);
 
 // Function for moving a pacer character
-void move_pacer(generated_map_t *m);
+void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h);
