@@ -3,3 +3,7 @@ Feb 23: Tried to put distance calculation stuff into its own c and h file but I 
 Feb 24: Got started with printing out all characters. Am able to place 10 characters within each map I generate, now to start moving them.
 
 Feb 25: Characters all printed. Getting started on movement with Pacers, and implementing the actual game time cycle
+
+Feb 27: Getting pacers to move a bit, but getting a lot of seg faults
+
+Feb 28: Pacers can move up and down now! It shouldn't be too hard to implement walkers now, so I'll focus on hikers / rivals. I can't get them to move right now

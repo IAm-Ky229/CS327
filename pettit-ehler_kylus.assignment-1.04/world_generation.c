@@ -87,7 +87,9 @@ int main(int argc, char * argv[]) {
 		  manhattan_x,
 		  manhattan_y,
 		  &random_road_x,
-		  &random_road_y);
+		  &random_road_y,
+		  distance_hiker,
+		  distance_rival);
 
  int game_time = 0;
 
@@ -390,7 +392,9 @@ void generate_new_map(generated_map_t *map_data,
 		      int manhattan_x,
 		      int manhattan_y,
 		      int *random_path_x,
-		      int *random_path_y) {
+		      int *random_path_y,
+		      cost_t distance_hiker[HORIZONTAL][VERTICAL],
+		      cost_t distance_rival[HORIZONTAL][VERTICAL]) {
   
   // I was getting some weird memory problems without initializing
   // everything to nothing
@@ -437,8 +441,11 @@ void generate_new_map(generated_map_t *map_data,
   map_data -> character_positions[*random_path_x][*random_path_y] = malloc(sizeof(character_t));
   map_data -> character_positions[*random_path_x][*random_path_y] -> player_type = PC;
   heap_insert(h, map_data -> character_positions[*random_path_x][*random_path_y]);
+
+  dijkstra_path_rival(map_data, distance_rival, *random_path_x, *random_path_y);
+  dijkstra_path_hiker(map_data, distance_hiker, *random_path_x, *random_path_y);
   
-  place_characters(map_data, h);
+  place_characters(map_data, h, distance_hiker, distance_rival);
   
   print_map(map_data);
 }
@@ -736,6 +743,7 @@ static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   
 
   // Print out the dijkstra cost computations
+  /*
   printf("\n");
   printf("RIVAL GRAPH: \n");
   printf("\n");
@@ -751,6 +759,7 @@ static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
     printf("\n");
   }
   printf("\n");
+  */
 }
 
 // This is the same as dijkstra_path_rival, we're just calling a different cost computation function
@@ -799,6 +808,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)));
+	dijkstra[p->x_pos - 1][p->y_pos].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos].next_y = p -> y_pos;
       }
     }
     
@@ -810,6 +821,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)));
+	dijkstra[p->x_pos + 1][p->y_pos].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos].next_y = p -> y_pos;
       }
     }
     
@@ -820,6 +833,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)));
+	dijkstra[p->x_pos][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos][p->y_pos - 1].next_y = p -> y_pos;
       }
     }
     
@@ -831,6 +846,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)));
+	dijkstra[p->x_pos][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos][p->y_pos + 1].next_y = p -> y_pos;
       }
     }
 
@@ -841,6 +858,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)));
+	dijkstra[p->x_pos + 1][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos + 1].next_y = p -> y_pos;
       }
     }
 
@@ -851,6 +870,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)));
+	dijkstra[p->x_pos - 1][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos + 1].next_y = p -> y_pos;
       }
     }
 
@@ -861,6 +882,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)));
+	dijkstra[p->x_pos - 1][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos - 1].next_y = p -> y_pos;
       }
     }
 
@@ -871,6 +894,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 	   )) {
 	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
 	  ((p->cost + determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)));
+	dijkstra[p->x_pos + 1][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos - 1].next_y = p -> y_pos;
       }
     }
     
@@ -908,7 +933,7 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   
   heap_delete(&h);
   
-
+  /*
   printf("\n");
   printf("HIKER GRAPH: \n");
   printf("\n");
@@ -924,9 +949,10 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
     printf("\n");
   }
   printf("\n");
+  */
 }
 
-void place_characters(generated_map_t *m, heap_t *h) {
+void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL]) {
 
   int placed_characters = 0;
   int rand_x;
@@ -1019,6 +1045,19 @@ void place_characters(generated_map_t *m, heap_t *h) {
 	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
 	}
 	break;
+      case rival:
+	m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	  determine_cost_rival(m, distance_rival[rand_x][rand_y].next_x, distance_rival[rand_x][rand_y].next_y);
+	m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	break;
+
+      case hiker:
+	m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	  determine_cost_rival(m, distance_rival[rand_x][rand_y].next_x, distance_rival[rand_x][rand_y].next_y);
+	m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	break; 
       }
       heap_insert(h, m -> character_positions[rand_x][rand_y]);
       placed_characters++;
@@ -1140,19 +1179,80 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
 
 void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERTICAL], character_t *character_to_move, heap_t *h) {
 
+  int min_x_next;
+  int min_y_next;
   int character_x_coord = character_to_move -> x_pos;
   int character_y_coord = character_to_move -> y_pos;
+  int cost_to_move = INT_MAX;
   
-  int next_hop_x = dijkstra[character_x_coord][character_y_coord] -> next_x;
-  int next_hop_y = dijkstra[character_x_coord][character_y_coord] -> next_y;
+  if( dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos + 1;
+    min_y_next = character_to_move -> y_pos;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost;
+  }
+  
+  if( dijkstra[character_to_move -> x_pos][character_to_move -> y_pos + 1].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos;
+    min_y_next = character_to_move -> y_pos + 1;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost;
+  }
+  
+  if( dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos - 1;
+    min_y_next = character_to_move -> y_pos;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost;
+  }
+  
+  if( dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos;
+    min_y_next = character_to_move -> y_pos - 1;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost;
+  }
+  
+  if( dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos + 1].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos + 1;
+    min_y_next = character_to_move -> y_pos + 1;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos + 1].cost;
+  }
+  
+  
+  if( dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos - 1].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos + 1;
+    min_y_next = character_to_move -> y_pos - 1;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos - 1].cost;
+  }
+  
+  
+  if( dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos - 1;
+    min_y_next = character_to_move -> y_pos + 1;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost;
+  }
+  
+  
+  if( dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost < cost_to_move) {
+    min_x_next = character_to_move -> x_pos - 1;
+    min_y_next = character_to_move -> y_pos - 1;
+    
+    cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost;
+  }
 
-  if(m -> character_positions[next_hop_x][next_hop_y] == NULL) {
-    m -> character_positions[next_hop_x][next_hop_y] = malloc(sizeof(character_t));
-    m -> character_positions[next_hop_x][next_hop_y] -> player_type = character_to_move -> player_type;
-    m -> character_positions[next_hop_x][next_hop_y] -> x_pos = next_hop_x;
-    m -> character_positions[next_hop_x][next_hop_y] -> y_pos = next_hop_y;
+  printf("before assignment in hiker / rival\n");
+  if(m -> character_positions[min_x_next][min_y_next] == NULL) {
+    m -> character_positions[min_x_next][min_y_next] = malloc(sizeof(character_t));
+    m -> character_positions[min_x_next][min_y_next] -> player_type = character_to_move -> player_type;
+    m -> character_positions[min_x_next][min_y_next] += cost_to_move;
+    m -> character_positions[min_x_next][min_y_next] -> x_pos = min_x_next;
+    m -> character_positions[min_x_next][min_y_next] -> y_pos = min_y_next;
 
-    heap_insert(h, m -> character_positions[next_hop_x][next_hop_y]);
+    heap_insert(h, m -> character_positions[min_x_next][min_y_next]);
 
     m -> character_positions[character_x_coord][character_y_coord] = NULL;
     free(m -> character_positions[character_x_coord][character_y_coord]);
@@ -1160,5 +1260,7 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
   else {
     heap_insert(h, m -> character_positions[character_x_coord][character_y_coord]);
   }
+
+  printf("after assignment in hiker / rival\n");
   
 }
