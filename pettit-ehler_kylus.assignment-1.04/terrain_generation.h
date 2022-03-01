@@ -54,6 +54,8 @@ typedef struct character {
   int cost_to_move;
   int x_pos;
   int y_pos;
+  int next_x;
+  int next_y;
 } character_t;
 
 typedef struct generated_map {
