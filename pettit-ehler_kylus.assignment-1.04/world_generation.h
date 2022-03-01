@@ -49,13 +49,16 @@ int determine_cost_rival(generated_map_t *map_data, int x_dim, int y_dim);
 int determine_cost_hiker(generated_map_t *map_data, int x_dim, int y_dim);
 
 // Actually navigate through the map
-static void dijkstra_path_rival(generated_map_t *m, int from_x, int from_y);
+static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y);
 
 // Actually navigate through the map
-static void dijkstra_path_hiker(generated_map_t *m, int from_x, int from_y);
+static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERTICAL],  int from_x, int from_y);
 
 // Place characters into the map
 void place_characters(generated_map_t *m, heap_t *h);
 
 // Function for moving a pacer character
 void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h);
+
+// Function for moving a character via a gradient
+void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERTICAL], character_t *character_to_move, heap_t * h);
