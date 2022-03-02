@@ -112,8 +112,8 @@ int main(int argc, char * argv[]) {
        break;
 
      case hiker:
-       dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, random_road_x, random_road_y);
-       move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &characters_to_move);
+       //dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, random_road_x, random_road_y);
+       //move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &characters_to_move);
        break;
 
      case rival:
@@ -1009,7 +1009,11 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
       m -> character_positions[rand_x][rand_y] = malloc(sizeof(character_t));
       m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
       m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
+      m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+      m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
 
+      printf("player_type: %d\n", m -> character_positions[rand_x][rand_y] -> player_type);
+      
       switch(m -> character_positions[rand_x][rand_y] -> player_type) {
       case stationary:
 	// do nothing
@@ -1050,67 +1054,94 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	break;
 	
       case rival:
+	printf("placing rival\n");
 
-  if( distance_rival[rand_x + 1][rand_y].cost < cost_to_move) {
+	cost_to_move = 9999;
+	min_x_next = 0;
+	min_y_next = 0;
+
+	  int y;
+  int x;
+  
+  printf("\n");
+  printf("RIVAL GRAPH: \n");
+  printf("\n");
+  for (y = 1; y < VERTICAL - 1; y++) {
+    for (x = 1; x < HORIZONTAL - 1; x++) {
+      if(distance_rival[x][y].cost < -1) {
+	printf("   ");
+      }
+      else {
+	printf("%02d ", distance_rival[x][y].cost % 100);
+      }
+    }
+    printf("\n");
+  }
+  printf("\n");
+
+  if(abs(distance_rival[rand_x + 1][rand_y].cost) < cost_to_move) {
     min_x_next = rand_x + 1;
     min_y_next = rand_y;
     
     cost_to_move = distance_rival[rand_x + 1][rand_y].cost;
   }
 
-  if( distance_rival[rand_x][rand_y + 1].cost < cost_to_move) {
+  if( abs(distance_rival[rand_x][rand_y + 1].cost) < cost_to_move) {
     min_x_next = rand_x;
     min_y_next = rand_y + 1;
     
     cost_to_move = distance_rival[rand_x][rand_y + 1].cost;
   }
 
-  if( distance_rival[rand_x - 1][rand_y].cost < cost_to_move) {
+  if( abs(distance_rival[rand_x - 1][rand_y].cost) < cost_to_move) {
     min_x_next = rand_x - 1;
     min_y_next = rand_y;
     
     cost_to_move = distance_rival[rand_x - 1][rand_y].cost;
   }
 
-  if( distance_rival[rand_x][rand_y - 1].cost < cost_to_move) {
+  if( abs(distance_rival[rand_x][rand_y - 1].cost) < cost_to_move) {
     min_x_next = rand_x;
     min_y_next = rand_y - 1;
     
     cost_to_move = distance_rival[rand_x][rand_y - 1].cost;
   }
 
-  if( distance_rival[rand_x + 1][rand_y + 1].cost < cost_to_move) {
+  if( abs(distance_rival[rand_x + 1][rand_y + 1].cost) < cost_to_move) {
     min_x_next = rand_x + 1;
     min_y_next = rand_y + 1;
     
     cost_to_move = distance_rival[rand_x + 1][rand_y + 1].cost;
   }
 
-  if( distance_rival[rand_x + 1][rand_y - 1].cost < cost_to_move) {
+  if( abs(distance_rival[rand_x + 1][rand_y - 1].cost) < cost_to_move) {
     min_x_next = rand_x + 1;
     min_y_next = rand_y - 1;
     
     cost_to_move = distance_rival[rand_x + 1][rand_y - 1].cost;
   }
 
-  if( distance_rival[rand_x - 1][rand_y + 1].cost < cost_to_move) {
+  if(abs(distance_rival[rand_x - 1][rand_y + 1].cost) < cost_to_move) {
     min_x_next = rand_x - 1;
     min_y_next = rand_y + 1;
     
     cost_to_move = distance_rival[rand_x - 1][rand_y + 1].cost;
   }
 
-  if( distance_rival[rand_x - 1][rand_y - 1].cost < cost_to_move) {
+  if( abs(distance_rival[rand_x - 1][rand_y - 1].cost) < cost_to_move) {
     min_x_next = rand_x - 1;
     min_y_next = rand_y - 1;
     
     cost_to_move = distance_rival[rand_x - 1][rand_y - 1].cost;
   }
+
+  printf("cost assigned: %d\n", cost_to_move);
+  printf("min_x_next: %d\n", min_x_next);
+  printf("min_y_next: %d\n", min_y_next);
   
-  
-  m -> character_positions[rand_x][rand_y] += cost_to_move;
-  m -> character_positions[rand_x][rand_y] -> x_pos = min_x_next;
-  m -> character_positions[rand_x][rand_y] -> y_pos = min_y_next;
+  m -> character_positions[rand_x][rand_y] -> cost_to_move = distance_rival[rand_x][rand_y].cost - cost_to_move;
+  m -> character_positions[rand_x][rand_y] -> next_x = min_x_next;
+  m -> character_positions[rand_x][rand_y] -> next_y = min_y_next;
 	
 	break;
 
@@ -1118,6 +1149,8 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 
 	break; 
       }
+
+      printf("inserting cost: %d\n", m -> character_positions[rand_x][rand_y] -> cost_to_move);
       heap_insert(h, m -> character_positions[rand_x][rand_y]);
       placed_characters++;
     }
@@ -1240,46 +1273,46 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
 
   int min_x_next;
   int min_y_next;
-  int character_x_coord = character_to_move -> x_pos;
-  int character_y_coord = character_to_move -> y_pos;
   int cost_to_move = INT_MAX;
+
+  printf("next x: %d next y: %d\n", character_to_move -> next_x, character_to_move -> next_y);
 
    if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] == NULL) {
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = malloc(sizeof(character_t));
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type = character_to_move -> player_type;
-
+    
     character_to_move -> x_pos = character_to_move -> next_x;
-    character_to_move -> y_pos = character_to_move -> next_y; 
+    character_to_move -> y_pos = character_to_move -> next_y;
   
-  if( dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos + 1;
     min_y_next = character_to_move -> y_pos;
     
     cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost;
   }
   
-  if( dijkstra[character_to_move -> x_pos][character_to_move -> y_pos + 1].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos][character_to_move -> y_pos + 1].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos;
     min_y_next = character_to_move -> y_pos + 1;
     
     cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost;
   }
   
-  if( dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos - 1;
     min_y_next = character_to_move -> y_pos;
     
     cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost;
   }
   
-  if( dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos;
     min_y_next = character_to_move -> y_pos - 1;
     
     cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost;
   }
   
-  if( dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos + 1].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos + 1].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos + 1;
     min_y_next = character_to_move -> y_pos + 1;
     
@@ -1287,7 +1320,7 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
   }
   
   
-  if( dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos - 1].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos - 1].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos + 1;
     min_y_next = character_to_move -> y_pos - 1;
     
@@ -1295,7 +1328,7 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
   }
   
   
-  if( dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos - 1;
     min_y_next = character_to_move -> y_pos + 1;
     
@@ -1303,21 +1336,21 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
   }
   
   
-  if( dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost < cost_to_move) {
+    if( abs(dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost) < cost_to_move) {
     min_x_next = character_to_move -> x_pos - 1;
     min_y_next = character_to_move -> y_pos - 1;
     
     cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost;
   }
   
-  m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move += cost_to_move;
-  m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x = min_x_next;
-  m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y = min_y_next;
-  
-  heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
-  
-  m -> character_positions[character_x_coord][character_y_coord] = NULL;
-  free(m -> character_positions[character_x_coord][character_y_coord]);
+    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move;;
+    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x = min_x_next;
+    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y = min_y_next;
+
+    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
+    free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
+    heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
+    
    }
    else{
      heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
