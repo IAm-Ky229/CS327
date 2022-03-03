@@ -128,7 +128,7 @@ int main(int argc, char * argv[]) {
    }
 
    print_map(map_exploration[y_explore_position][x_explore_position]);
-   usleep(100000);
+   usleep(250000);
    game_time++;
  }
 
@@ -1280,79 +1280,105 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
    if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] == NULL) {
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = malloc(sizeof(character_t));
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type = character_to_move -> player_type;
-    
-    character_to_move -> x_pos = character_to_move -> next_x;
-    character_to_move -> y_pos = character_to_move -> next_y;
-  
-    if( abs(dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos + 1;
-    min_y_next = character_to_move -> y_pos;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos].cost;
-  }
-  
-    if( abs(dijkstra[character_to_move -> x_pos][character_to_move -> y_pos + 1].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos;
-    min_y_next = character_to_move -> y_pos + 1;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost;
-  }
-  
-    if( abs(dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos - 1;
-    min_y_next = character_to_move -> y_pos;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost;
-  }
-  
-    if( abs(dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos;
-    min_y_next = character_to_move -> y_pos - 1;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos - 1].cost;
-  }
-  
-    if( abs(dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos + 1].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos + 1;
-    min_y_next = character_to_move -> y_pos + 1;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos + 1].cost;
-  }
-  
-  
-    if( abs(dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos - 1].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos + 1;
-    min_y_next = character_to_move -> y_pos - 1;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos + 1][character_to_move -> y_pos - 1].cost;
-  }
-  
-  
-    if( abs(dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos - 1;
-    min_y_next = character_to_move -> y_pos + 1;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos + 1].cost;
-  }
-  
-  
-    if( abs(dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost) < cost_to_move) {
-    min_x_next = character_to_move -> x_pos - 1;
-    min_y_next = character_to_move -> y_pos - 1;
-    
-    cost_to_move = dijkstra[character_to_move -> x_pos - 1][character_to_move -> y_pos - 1].cost;
-  }
-  
-    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move = dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move;;
-    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x = min_x_next;
-    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y = min_y_next;
 
+    printf("assigning cost: %d\n", m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move);
+    
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move;
+
+    printf("got past malloc\n");
+  
+    if( abs(dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x + 1;
+    min_y_next = character_to_move -> next_y;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost;
+  }
+  
+    if( abs(dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x;
+    min_y_next = character_to_move -> next_y + 1;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost;
+  }
+  
+    if( abs(dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x - 1;
+    min_y_next = character_to_move -> next_y;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost;
+  }
+  
+    if( abs(dijkstra[character_to_move -> next_x][character_to_move -> y_pos - 1].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x;
+    min_y_next = character_to_move -> next_y - 1;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x][character_to_move -> next_y - 1].cost;
+  }
+  
+    if( abs(dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x + 1;
+    min_y_next = character_to_move -> next_y + 1;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost;
+  }
+  
+  
+    if( abs(dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x + 1;
+    min_y_next = character_to_move -> next_y - 1;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost;
+  }
+  
+  
+    if( abs(dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x - 1;
+    min_y_next = character_to_move -> next_y + 1;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost;
+  }
+  
+  
+    if( abs(dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost) < cost_to_move) {
+    min_x_next = character_to_move -> next_x - 1;
+    min_y_next = character_to_move -> next_y - 1;
+    
+    cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost;
+  }
+
+    //printf("got past all checks\n");
+
+    printf("incrementing: %d\n", dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move);
+    
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move - 10;
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
+
+    int x_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x;
+    int y_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y;
+
+    int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
+    int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
+
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
+
+    // printf("right before free\n");
+    //printf("freeing x: %d y: %d\n", prev_x, prev_y);
     m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
     free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
-    heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
+    //printf("freed OK\n");
+    printf("inserting min x: %d\n", m -> character_positions[x_position][y_position] -> next_x);
+    printf("inserting min y: %d\n", m -> character_positions[x_position][y_position] -> next_y);
+    
+    printf("inserting cost: %d\n", m -> character_positions[x_position][y_position] -> cost_to_move);
+    heap_insert(h, m -> character_positions[x_position][y_position]);
+    // printf("after free \n");
     
    }
    else{
+     m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move +=
+       determine_cost_rival(m, character_to_move -> x_pos, character_to_move -> y_pos);
      heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
    }
 }
