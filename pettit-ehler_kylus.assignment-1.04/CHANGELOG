@@ -7,3 +7,7 @@ Feb 25: Characters all printed. Getting started on movement with Pacers, and imp
 Feb 27: Getting pacers to move a bit, but getting a lot of seg faults
 
 Feb 28: Pacers can move up and down now! It shouldn't be too hard to implement walkers now, so I'll focus on hikers / rivals. I can't get them to move right now
+
+Mar 1: Finally got some movement for rivals. Gonna work more on it tomorrow, as they're seg faulting
+
+Mar 2: Rivals and hikers now pathfind to the PC. Also figured out the pacer problems I was having. So the rest shouldn't be too bad (famous last words)
