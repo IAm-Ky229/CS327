@@ -79,3 +79,30 @@ void move_left(generated_map_t *m, heap_t *h, character_t *character_to_move, in
 
 // Move wanderer
 void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h);
+
+// Move the specified character up
+void move_up_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character up
+void move_down_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character up
+void move_right_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character up
+void move_left_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move random walker
+void move_random_walker(generated_map_t *m, character_t *wanderer_to_move, heap_t *h);
+
+// Move the specified character up
+void move_up_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character up
+void move_down_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character up
+void move_right_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character up
+void move_left_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);

@@ -13,3 +13,5 @@ Mar 1: Finally got some movement for rivals. Gonna work more on it tomorrow, as 
 Mar 2: Rivals and hikers now pathfind to the PC. Also figured out the pacer problems I was having. So the rest shouldn't be too bad (famous last words)
 
 Mar 5: Pacers can go right and left if need be. Getting started on moving random walkers, and wanderers, the last two. I just need to correctly turn them randomly. Then try to fix a few other bugs that popped up
+
+Mar 6: Everybody moves but I'm still getting some strange bugs with the hiker/rival and the wanderers/walkers. I also have a lot of similar code, but I think a lot of it needs to be that way because the subtle character movement differences are not easy to fit into one method. I'll begin looking at the bugs either later today or tomorrow.

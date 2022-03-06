@@ -97,13 +97,18 @@ int main(int argc, char * argv[]) {
  while(1) {
    
    character_t *to_move;
-   
+
    to_move = heap_peek_min(&characters_to_move);
    printf("peeked %d \n", to_move -> cost_to_move);
    while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
      to_move = heap_remove_min(&characters_to_move);
      switch (to_move -> player_type) {
-       
+       case random_walker:
+	 move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move); 
+       break;
+     case wanderer:
+       move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
+       break;
      case pacer:
        //printf("before updating: %d\n", to_move -> cost_to_move);
        //printf("size: %d\n", characters_to_move.size);
@@ -849,7 +854,46 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	}
 	break;
       case random_walker:
-
+	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
+	   m -> generate_map[rand_x][rand_y + 1] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = down;
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x, rand_y + 1);
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
+	}
+	else if(m -> generate_map[rand_x][rand_y - 1] != tree &&
+		m -> generate_map[rand_x][rand_y - 1] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = up;
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x, rand_y - 1);
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
+	}
+	else if(m -> generate_map[rand_x + 1][rand_y] != tree &&
+		m -> generate_map[rand_x + 1][rand_y] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = right;
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x + 1, rand_y);
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
+	}
+	else if(m -> generate_map[rand_x - 1][rand_y] != tree &&
+		m -> generate_map[rand_x - 1][rand_y] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = left;
+	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+	    determine_cost_rival(m, rand_x - 1, rand_y);
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
+	}
 	break;
       case stationary:
 	break;
@@ -859,40 +903,40 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	  m -> character_positions[rand_x][rand_y] -> direction = down;
 	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x, rand_y + 1);
-	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	    m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	    m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
 	}
 	else if(m -> generate_map[rand_x][rand_y - 1] != tree &&
-	   m -> generate_map[rand_x][rand_y - 1] != boulder) {
-	  	  m -> character_positions[rand_x][rand_y] -> direction = up;
+		m -> generate_map[rand_x][rand_y - 1] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = up;
 	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x, rand_y - 1);
-	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	    m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	    m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
 	}
 	else if(m -> generate_map[rand_x + 1][rand_y] != tree &&
-	   m -> generate_map[rand_x + 1][rand_y] != boulder) {
-	  	  m -> character_positions[rand_x][rand_y] -> direction = right;
+		m -> generate_map[rand_x + 1][rand_y] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = right;
 	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x + 1, rand_y);
-	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	    m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
-	    m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
 	}
 	else if(m -> generate_map[rand_x - 1][rand_y] != tree &&
-	   m -> generate_map[rand_x - 1][rand_y] != boulder) {
-	  	  m -> character_positions[rand_x][rand_y] -> direction = left;
+		m -> generate_map[rand_x - 1][rand_y] != boulder) {
+	  m -> character_positions[rand_x][rand_y] -> direction = left;
 	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
 	    determine_cost_rival(m, rand_x - 1, rand_y);
-	    m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	    m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	    m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
-	    m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
+	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
 	}
 	break;
 	
@@ -1316,22 +1360,27 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> player_type = wanderer;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> cost_to_move = wanderer_to_move -> cost_to_move;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> direction = wanderer_to_move -> direction;
+    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> terrain_type = wanderer_to_move -> terrain_type;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> x_pos = current_x;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> y_pos = current_y;
-
+    printf("got past assignments\n");
+    
+    printf("moving: %d\n", wanderer_to_move -> direction);
+    printf("stay on type %d\n", wanderer_to_move -> terrain_type);
+    printf("moving x: %d y: %d\n", last_x, last_y);
+    
     switch(wanderer_to_move -> direction) {
-      
     case down:
-      move_down(m, h, wanderer_to_move, current_x, current_y);
+      move_down_random(m, h, wanderer_to_move, current_x, current_y);
       break;
     case up:
-      move_up(m, h, wanderer_to_move, current_x, current_y);
+      move_up_random(m, h, wanderer_to_move, current_x, current_y);
       break;
     case right:
-      move_right(m, h, wanderer_to_move, current_x, current_y);
+      move_right_random(m, h, wanderer_to_move, current_x, current_y);
       break;
     case left:
-      move_left(m, h, wanderer_to_move, current_x, current_y);     
+      move_left_random(m, h, wanderer_to_move, current_x, current_y);     
       break;
     }
     
@@ -1340,3 +1389,639 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
     
   }
 }
+
+void move_up_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> y_pos - 1 > 0 ) {
+	if(
+	   (m -> generate_map[current_x][current_y - 1] != tree) &&
+	   (m -> generate_map[current_x][current_y - 1] != boulder) &&
+	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
+	   (m -> character_positions[current_x][current_y - 1] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid up: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
+		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
+		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+		m -> character_positions[current_x][current_y] -> direction = down;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
+		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
+		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = right;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
+		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
+		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = left;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_down_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> y_pos - 1 > 0 ) {
+	if(
+	   (m -> generate_map[current_x][current_y + 1] != tree) &&
+	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
+	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
+	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+
+	    printf("valid down: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
+		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
+		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+		m -> character_positions[current_x][current_y] -> direction = up;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
+		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
+		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = right;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
+		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
+		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = left;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_right_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> x_pos + 1 < 80 ) {
+	if(
+	   (m -> generate_map[current_x + 1][current_y] != tree) &&
+	   (m -> generate_map[current_x + 1][current_y] != boulder) &&
+	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
+	   (m -> character_positions[current_x + 1][current_y] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid right: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
+		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
+		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+		m -> character_positions[current_x][current_y] -> direction = down;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
+		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
+		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+		m -> character_positions[current_x][current_y] -> direction = up;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
+		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
+		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = left;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_left_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> x_pos - 1 > 0 ) {
+	if(
+	   (m -> generate_map[current_x - 1][current_y] != tree) &&
+	   (m -> generate_map[current_x - 1][current_y] != boulder) &&
+	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
+	   (m -> character_positions[current_x - 1][current_y] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid left: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
+		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
+		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+		m -> character_positions[current_x][current_y] -> direction = down;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
+		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
+		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = right;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
+		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
+		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+		m -> character_positions[current_x][current_y] -> direction = up;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t *h) {
+
+  int current_x;
+  int current_y;
+
+  int last_x;
+  int last_y;
+  
+  if((m -> generate_map[walker_to_move -> next_x][walker_to_move -> next_y] != tree) &&
+     (m -> generate_map[walker_to_move -> next_x][walker_to_move -> next_y] != boulder) &&
+     (m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] == NULL)) {
+
+    current_x = walker_to_move -> next_x;
+    current_y = walker_to_move -> next_y;
+
+    last_x = walker_to_move -> x_pos;
+    last_y = walker_to_move -> y_pos;
+    
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] = malloc(sizeof(character_t));
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> player_type = random_walker;
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> cost_to_move = walker_to_move -> cost_to_move;
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> direction = walker_to_move -> direction;
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> x_pos = current_x;
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> y_pos = current_y;
+    printf("got past assignments\n");
+    
+    printf("moving: %d\n", walker_to_move -> direction);
+    printf("moving x: %d y: %d\n", last_x, last_y);
+    
+    switch(walker_to_move -> direction) {
+    case down:
+      move_down_walker(m, h, walker_to_move, current_x, current_y);
+      break;
+    case up:
+      move_up_walker(m, h, walker_to_move, current_x, current_y);
+      break;
+    case right:
+      move_right_walker(m, h, walker_to_move, current_x, current_y);
+      break;
+    case left:
+      move_left_walker(m, h, walker_to_move, current_x, current_y);     
+      break;
+    }
+    
+    m -> character_positions[last_x][last_y] = NULL;
+    free(m -> character_positions[last_x][last_y]);
+    
+  }
+}
+
+void move_left_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> x_pos - 1 > 0 ) {
+	if(
+	   (m -> generate_map[current_x - 1][current_y] != tree) &&
+	   (m -> generate_map[current_x - 1][current_y] != boulder) &&
+	   (m -> character_positions[current_x - 1][current_y] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid left: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
+		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+		m -> character_positions[current_x][current_y] -> direction = down;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
+		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = right;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
+		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+		m -> character_positions[current_x][current_y] -> direction = up;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_right_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> x_pos + 1 < 80 ) {
+	if(
+	   (m -> generate_map[current_x + 1][current_y] != tree) &&
+	   (m -> generate_map[current_x + 1][current_y] != boulder) &&
+	   (m -> character_positions[current_x + 1][current_y] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid left: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
+		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+		m -> character_positions[current_x][current_y] -> direction = down;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
+		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = left;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
+		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+		m -> character_positions[current_x][current_y] -> direction = up;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_up_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> y_pos - 1 > 0 ) {
+	if(
+	   (m -> generate_map[current_x][current_y - 1] != tree) &&
+	   (m -> generate_map[current_x][current_y - 1] != boulder) &&
+	   (m -> character_positions[current_x][current_y - 1] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid left: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
+		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+		m -> character_positions[current_x][current_y] -> direction = down;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
+		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = right;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
+		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = left;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
+void move_down_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
+
+if( character_to_move -> y_pos + 1 < 21 ) {
+	if(
+	   (m -> generate_map[current_x][current_y + 1] != tree) &&
+	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
+	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
+	  
+	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
+	  m -> character_positions[current_x][current_y] -> next_x = current_x;
+	  m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+	else {
+	  
+	  direction_t direction_to_move;
+	  int valid = 0;
+
+	  while(!valid) {
+	    printf("valid left: %d\n", valid);
+
+	    direction_to_move = rand() % 3;
+	  
+	    switch (direction_to_move) {
+	      
+	    case 0:
+	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
+		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
+		m -> character_positions[current_x][current_y] -> next_x = current_x;
+		m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
+		m -> character_positions[current_x][current_y] -> direction = up;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 1:
+	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
+		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = right;
+		valid = 1;
+	      }
+	      break;
+	      
+	    case 2:
+	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
+		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
+		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
+		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
+		m -> character_positions[current_x][current_y] -> next_y = current_y;
+		m -> character_positions[current_x][current_y] -> direction = left;
+		valid = 1;
+	      }
+	      break;
+	    }
+	  }
+	  
+	  
+	  heap_insert(h, m -> character_positions[current_x][current_y]);
+	}
+      }
+  
+}
+
