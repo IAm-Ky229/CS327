@@ -64,3 +64,18 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h);
 
 // Function for moving a character via a gradient
 void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERTICAL], character_t *character_to_move, heap_t * h);
+
+// Move the specified character up
+void move_up(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character down
+void move_down(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character right
+void move_right(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move the specified character left
+void move_left(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Move wanderer
+void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h);

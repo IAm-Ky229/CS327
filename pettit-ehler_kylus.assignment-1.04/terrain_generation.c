@@ -30,7 +30,7 @@ void print_map(generated_map_t *map_data) {
 	    printf("S");
 	    break;
 	  case random_walker:
-	    printf("D");
+	    printf("N");
 	    break;
 	  case PC:
 	    printf("@");

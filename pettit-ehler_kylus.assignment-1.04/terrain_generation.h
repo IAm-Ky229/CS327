@@ -49,8 +49,9 @@ typedef enum direction {
 } direction_t;
 
 typedef struct character {
+  terrain_type_t terrain_type;
   char_type_t player_type;
-  direction_t pacer_direction;
+  direction_t direction;
   int cost_to_move;
   int x_pos;
   int y_pos;
