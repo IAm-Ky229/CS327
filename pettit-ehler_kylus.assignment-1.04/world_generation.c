@@ -1368,6 +1368,9 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
     printf("moving: %d\n", wanderer_to_move -> direction);
     printf("stay on type %d\n", wanderer_to_move -> terrain_type);
     printf("moving x: %d y: %d\n", last_x, last_y);
+
+    m -> character_positions[last_x][last_y] = NULL;
+    free(m -> character_positions[last_x][last_y]);
     
     switch(wanderer_to_move -> direction) {
     case down:
@@ -1383,9 +1386,6 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
       move_left_random(m, h, wanderer_to_move, current_x, current_y);     
       break;
     }
-    
-    m -> character_positions[last_x][last_y] = NULL;
-    free(m -> character_positions[last_x][last_y]);
     
   }
 }
@@ -1720,6 +1720,9 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
     printf("moving: %d\n", walker_to_move -> direction);
     printf("moving x: %d y: %d\n", last_x, last_y);
     
+    m -> character_positions[last_x][last_y] = NULL;
+    free(m -> character_positions[last_x][last_y]);
+    
     switch(walker_to_move -> direction) {
     case down:
       move_down_walker(m, h, walker_to_move, current_x, current_y);
@@ -1734,9 +1737,6 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
       move_left_walker(m, h, walker_to_move, current_x, current_y);     
       break;
     }
-    
-    m -> character_positions[last_x][last_y] = NULL;
-    free(m -> character_positions[last_x][last_y]);
     
   }
 }
@@ -1761,6 +1761,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	  int valid = 0;
 
 	  while(!valid) {
+	    usleep(500000);
+	    printf("x: %d y: %d\n", current_x, current_y);
 	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
@@ -1832,6 +1834,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	  int valid = 0;
 
 	  while(!valid) {
+	    usleep(500000);
+	    printf("x: %d y: %d\n", current_x, current_y);
 	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
@@ -1903,6 +1907,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	  int valid = 0;
 
 	  while(!valid) {
+	    usleep(500000);
+	    printf("x: %d y: %d\n", current_x, current_y);
 	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
@@ -1974,6 +1980,8 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	  int valid = 0;
 
 	  while(!valid) {
+	    usleep(500000);
+	    printf("x: %d y: %d\n", current_x, current_y);
 	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
