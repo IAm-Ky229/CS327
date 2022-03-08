@@ -104,12 +104,14 @@ int main(int argc, char *argv[]) {
  int game_time = 0;
 
  // Movement is implemented here
+ // It's based on peeking the minimum cost character move in the queue
+ // If we find one should be removed (equal to game time), do it
+ // And replace the same character with an updated cost / new move
  while(1) {
    
    character_t *to_move;
 
    to_move = heap_peek_min(&characters_to_move);
-   printf("peeked %d \n", to_move -> cost_to_move);
    while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
      to_move = heap_remove_min(&characters_to_move);
      switch (to_move -> player_type) {
@@ -142,6 +144,7 @@ int main(int argc, char *argv[]) {
    }
 
    print_map(map_exploration[y_explore_position][x_explore_position]);
+   printf("\n");
    usleep(250000);
    game_time++;
  }
@@ -235,6 +238,7 @@ void generate_new_map(generated_map_t *map_data,
   check_edge_cases(map_data, manhattan_y + 199, manhattan_x + 199);
 
   // Insert the PC
+  // Sometimes this just doesn't execute either, and the PC is placed at (0,0). I don't know why!
   choose_random_road_spot(map_data, random_path_x, random_path_y);
   map_data -> character_positions[*random_path_x][*random_path_y] = malloc(sizeof(character_t));
   map_data -> character_positions[*random_path_x][*random_path_y] -> player_type = PC;
@@ -539,8 +543,6 @@ static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   // We're done with the heap, delete it
   heap_delete(&h);
   
-
-  // Print out the dijkstra cost computations
 }
 
 // This is the same as dijkstra_path_rival, we're just calling a different cost computation function
@@ -757,6 +759,9 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
     
   }
 
+  // Place all the characters, and determine their first moves
+  // I brute forced a lot of this and there's some replicated code
+  // Sorry if this hurts to look at
   i = 0;
   while (placed_characters < numtrainers) {
     rand_x = (rand() % (78 - 2 + 1)) + 2;
@@ -768,16 +773,12 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	m -> generate_map[rand_x][rand_y] != pokemon_center &&
         m -> generate_map[rand_x][rand_y] != path &&
 	m -> character_positions[rand_x][rand_y] == NULL) {
-      
-      
-      printf("assigning character: x %d and y %d\n", rand_x, rand_y);
+     
       m -> character_positions[rand_x][rand_y] = malloc(sizeof(character_t));
       m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
       m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
       m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
       m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-
-      printf("player_type: %d\n", m -> character_positions[rand_x][rand_y] -> player_type);
       
       switch(m -> character_positions[rand_x][rand_y] -> player_type) {
       case wanderer:
@@ -1068,7 +1069,6 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	break; 
       }
       
-      printf("inserting cost: %d\n", m -> character_positions[rand_x][rand_y] -> cost_to_move);
       heap_insert(h, m -> character_positions[rand_x][rand_y]);
       placed_characters++;
     }
@@ -1083,7 +1083,8 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
 
   int last_x;
   int last_y;
-  
+
+  // Always move the pacer
   if((m -> generate_map[pacer_to_move -> next_x][pacer_to_move -> next_y] != tree) &&
      (m -> generate_map[pacer_to_move -> next_x][pacer_to_move -> next_y] != boulder) &&
      (m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] == NULL)) {
@@ -1104,7 +1105,8 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
     m -> character_positions[last_x][last_y] = NULL;
     free(m -> character_positions[last_x][last_y]);
   }
-  
+
+  // Always move so we don't get stuck
     switch(pacer_to_move -> direction) {
       
     case down:
@@ -1159,7 +1161,6 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	   (m -> generate_map[current_x][current_y + 1] != tree) &&
 	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
 	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	  printf("assigned new position down\n");
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
 	  m -> character_positions[current_x][current_y] -> next_x = current_x;
 	  m -> character_positions[current_x][current_y] -> next_y  = current_y + 1;
@@ -1167,7 +1168,6 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	  heap_insert(h, m -> character_positions[current_x][current_y]);
 	}
 	else {
-	  printf("going up now\n");
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
 	  m -> character_positions[current_x][current_y] -> next_x = current_x;
 	  m -> character_positions[current_x][current_y] -> next_y  = current_y - 1;
@@ -1235,8 +1235,11 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
 
   int min_x_next;
   int min_y_next;
+
+  // I really shouldn't have used INT_MAX because my comparisons are messed up but idk if I'm gonna change it
   int cost_to_move = INT_MAX;
-  
+
+  // Check to see if we are going to run into another character
   if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] == NULL) {
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = malloc(sizeof(character_t));
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type = character_to_move -> player_type;
@@ -1344,7 +1347,8 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
 
   int last_x;
   int last_y;
-  
+
+  // Check to see if the move is valid first
   if((m -> generate_map[wanderer_to_move -> next_x][wanderer_to_move -> next_y] != tree) &&
      (m -> generate_map[wanderer_to_move -> next_x][wanderer_to_move -> next_y] != boulder) &&
      (m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] == NULL)) {
@@ -1367,7 +1371,8 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
     free(m -> character_positions[last_x][last_y]);
 
   }
-    
+
+  // Always check for a new move or we will stop
     switch(wanderer_to_move -> direction) {
     case down:
       move_down_random(m, h, wanderer_to_move, current_x, current_y);
@@ -1707,7 +1712,6 @@ if( character_to_move -> x_pos - 1 >= 0 ) {
 	    }
 	  }
 	  
-	  
 	  heap_insert(h, m -> character_positions[current_x][current_y]);
 	}
       }
@@ -1721,7 +1725,8 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
 
   int last_x;
   int last_y;
-  
+
+  // We only want to move if it's valid
   if((m -> generate_map[walker_to_move -> next_x][walker_to_move -> next_y] != tree) &&
      (m -> generate_map[walker_to_move -> next_x][walker_to_move -> next_y] != boulder) &&
      (m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] == NULL)) {
@@ -1744,7 +1749,8 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
     free(m -> character_positions[last_x][last_y]);
 
   }
-  
+
+  // Always check for a new move or we will stop
     switch(walker_to_move -> direction) {
     case down:
       move_down_walker(m, h, walker_to_move, current_x, current_y);
@@ -1764,7 +1770,7 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
 
 void move_left_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> x_pos - 1 >= 0 ) {
+if( character_to_move -> x_pos - 1 > 0 ) {
 	if(
 	   (m -> generate_map[current_x - 1][current_y] != tree) &&
 	   (m -> generate_map[current_x - 1][current_y] != boulder) &&
@@ -1920,7 +1926,7 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 
 void move_up_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> y_pos - 1 >= 0 ) {
+if( character_to_move -> y_pos - 1 > 0 ) {
 	if(
 	   (m -> generate_map[current_x][current_y - 1] != tree) &&
 	   (m -> generate_map[current_x][current_y - 1] != boulder) &&

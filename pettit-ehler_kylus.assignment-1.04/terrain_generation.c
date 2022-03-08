@@ -297,14 +297,14 @@ void place_exits(generated_map_t *map_data,
 		 int exit_left,
 		 int exit_top) {
 
-  // Place all exits within the range 3 - 17 or 3 - 76
+  // Place all exits within the range 4 - 17 or 4 - 76
   // (leave space for buildings to be on either side of path
   // In addition, check to see if each exit should be random.
   // If the exit value is -1, that means there is
   // Not a bordering map for this exit to connect to
 
   if(exit_bottom == -1) {
-    map_data -> exit_bottom = (rand() % (76 -32 + 1)) + 3;
+    map_data -> exit_bottom = (rand() % (76 - 3 + 1)) + 3;
   }
   else {
     map_data -> exit_bottom = exit_bottom;
