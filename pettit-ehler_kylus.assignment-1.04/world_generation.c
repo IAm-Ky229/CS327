@@ -106,15 +106,15 @@ int main(int argc, char * argv[]) {
        case random_walker:
 	 move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move); 
        break;
+       
      case wanderer:
        move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
        break;
+       
      case pacer:
-       //printf("before updating: %d\n", to_move -> cost_to_move);
-       //printf("size: %d\n", characters_to_move.size);
        move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
        break;
-
+       
      case hiker:
        dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, random_road_x, random_road_y);
        move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &characters_to_move);
@@ -531,23 +531,6 @@ static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   
 
   // Print out the dijkstra cost computations
-  /*
-  printf("\n");
-  printf("RIVAL GRAPH: \n");
-  printf("\n");
-  for (y = 1; y < VERTICAL - 1; y++) {
-    for (x = 1; x < HORIZONTAL - 1; x++) {
-      if(dijkstra[x][y].cost < -1) {
-	printf("   ");
-      }
-      else {
-	printf("%02d ", dijkstra[x][y].cost % 100);
-      }
-    }
-    printf("\n");
-  }
-  printf("\n");
-  */
 }
 
 // This is the same as dijkstra_path_rival, we're just calling a different cost computation function
@@ -720,24 +703,6 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   }
   
   heap_delete(&h);
-  
-  /*
-  printf("\n");
-  printf("HIKER GRAPH: \n");
-  printf("\n");
-  for (y = 1; y < VERTICAL - 1; y++) {
-    for (x = 1; x < HORIZONTAL - 1; x++) {
-      if(dijkstra[x][y].cost < -1) {
-	printf("   ");
-      }
-      else {
-	printf("%02d ", dijkstra[x][y].cost % 100);
-      }
-    }
-    printf("\n");
-  }
-  printf("\n");
-  */
 }
 
 void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL]) {
@@ -946,56 +911,64 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	min_x_next = 0;
 	min_y_next = 0;
 	
-	if(abs(distance_rival[rand_x + 1][rand_y].cost) < cost_to_move) {
+	if(distance_rival[rand_x + 1][rand_y].cost < cost_to_move &&
+	   distance_rival[rand_x + 1][rand_y].cost >= 0) {
 	  min_x_next = rand_x + 1;
 	  min_y_next = rand_y;
 	  
 	  cost_to_move = distance_rival[rand_x + 1][rand_y].cost;
 	}
 	
-	if( abs(distance_rival[rand_x][rand_y + 1].cost) < cost_to_move) {
+	if(distance_rival[rand_x][rand_y + 1].cost < cost_to_move &&
+	   distance_rival[rand_x][rand_y + 1].cost >= 0) {
 	  min_x_next = rand_x;
 	  min_y_next = rand_y + 1;
 	  
 	  cost_to_move = distance_rival[rand_x][rand_y + 1].cost;
 	}
 	
-	if( abs(distance_rival[rand_x - 1][rand_y].cost) < cost_to_move) {
+	if(distance_rival[rand_x - 1][rand_y].cost < cost_to_move &&
+	   distance_rival[rand_x - 1][rand_y].cost >= 0) {
 	  min_x_next = rand_x - 1;
 	  min_y_next = rand_y;
 	  
 	  cost_to_move = distance_rival[rand_x - 1][rand_y].cost;
 	}
 	
-	if( abs(distance_rival[rand_x][rand_y - 1].cost) < cost_to_move) {
+	if(distance_rival[rand_x][rand_y - 1].cost < cost_to_move &&
+	   distance_rival[rand_x][rand_y - 1].cost >= 0) {
 	  min_x_next = rand_x;
 	  min_y_next = rand_y - 1;
 	  
 	  cost_to_move = distance_rival[rand_x][rand_y - 1].cost;
 	}
 	
-	if( abs(distance_rival[rand_x + 1][rand_y + 1].cost) < cost_to_move) {
+	if(distance_rival[rand_x + 1][rand_y + 1].cost < cost_to_move &&
+	   distance_rival[rand_x + 1][rand_y + 1].cost >= 0) {
 	  min_x_next = rand_x + 1;
 	  min_y_next = rand_y + 1;
 	  
 	  cost_to_move = distance_rival[rand_x + 1][rand_y + 1].cost;
 	}
 	
-	if( abs(distance_rival[rand_x + 1][rand_y - 1].cost) < cost_to_move) {
+	if(distance_rival[rand_x + 1][rand_y - 1].cost < cost_to_move &&
+	   distance_rival[rand_x + 1][rand_y - 1].cost >= 0) {
 	  min_x_next = rand_x + 1;
 	  min_y_next = rand_y - 1;
 	  
 	  cost_to_move = distance_rival[rand_x + 1][rand_y - 1].cost;
 	}
 	
-	if(abs(distance_rival[rand_x - 1][rand_y + 1].cost) < cost_to_move) {
+	if(distance_rival[rand_x - 1][rand_y + 1].cost < cost_to_move &&
+	   distance_rival[rand_x - 1][rand_y + 1].cost >= 0) {
 	  min_x_next = rand_x - 1;
 	  min_y_next = rand_y + 1;
 	  
 	  cost_to_move = distance_rival[rand_x - 1][rand_y + 1].cost;
 	}
 	
-	if( abs(distance_rival[rand_x - 1][rand_y - 1].cost) < cost_to_move) {
+	if(distance_rival[rand_x - 1][rand_y - 1].cost < cost_to_move &&
+	   distance_rival[rand_x - 1][rand_y - 1].cost >= 0) {
 	  min_x_next = rand_x - 1;
 	  min_y_next = rand_y - 1;
 	  
@@ -1014,56 +987,64 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	min_x_next = 0;
 	min_y_next = 0;
 	
-	if(abs(distance_hiker[rand_x + 1][rand_y].cost) < cost_to_move) {
+	if(distance_hiker[rand_x + 1][rand_y].cost < cost_to_move &&
+	   distance_hiker[rand_x + 1][rand_y].cost >= 0) {
 	  min_x_next = rand_x + 1;
 	  min_y_next = rand_y;
 	  
 	  cost_to_move = distance_hiker[rand_x + 1][rand_y].cost;
 	}
 	
-	if( abs(distance_hiker[rand_x][rand_y + 1].cost) < cost_to_move) {
+	if(distance_hiker[rand_x][rand_y + 1].cost < cost_to_move &&
+	   distance_hiker[rand_x][rand_y + 1].cost >= 0) {
 	  min_x_next = rand_x;
 	  min_y_next = rand_y + 1;
 	  
 	  cost_to_move = distance_hiker[rand_x][rand_y + 1].cost;
 	}
 	
-	if( abs(distance_hiker[rand_x - 1][rand_y].cost) < cost_to_move) {
+	if(distance_hiker[rand_x - 1][rand_y].cost < cost_to_move &&
+	   distance_hiker[rand_x - 1][rand_y].cost >= 0) {
 	  min_x_next = rand_x - 1;
 	  min_y_next = rand_y;
 	  
 	  cost_to_move = distance_hiker[rand_x - 1][rand_y].cost;
 	}
 	
-	if( abs(distance_hiker[rand_x][rand_y - 1].cost) < cost_to_move) {
+	if(distance_hiker[rand_x][rand_y - 1].cost < cost_to_move &&
+	    distance_hiker[rand_x][rand_y - 1].cost >= 0) {
 	  min_x_next = rand_x;
 	  min_y_next = rand_y - 1;
 	  
 	  cost_to_move = distance_hiker[rand_x][rand_y - 1].cost;
 	}
 	
-	if( abs(distance_hiker[rand_x + 1][rand_y + 1].cost) < cost_to_move) {
+	if( distance_hiker[rand_x + 1][rand_y + 1].cost < cost_to_move &&
+	    distance_hiker[rand_x + 1][rand_y + 1].cost >= 0) {
 	  min_x_next = rand_x + 1;
 	  min_y_next = rand_y + 1;
 	  
 	  cost_to_move = distance_hiker[rand_x + 1][rand_y + 1].cost;
 	}
 	
-	if( abs(distance_hiker[rand_x + 1][rand_y - 1].cost) < cost_to_move) {
+	if( distance_hiker[rand_x + 1][rand_y - 1].cost < cost_to_move &&
+	    distance_hiker[rand_x + 1][rand_y - 1].cost >= 0) {
 	  min_x_next = rand_x + 1;
 	  min_y_next = rand_y - 1;
 	  
 	  cost_to_move = distance_hiker[rand_x + 1][rand_y - 1].cost;
 	}
 	
-	if(abs(distance_hiker[rand_x - 1][rand_y + 1].cost) < cost_to_move) {
+	if(distance_hiker[rand_x - 1][rand_y + 1].cost < cost_to_move &&
+	   distance_hiker[rand_x - 1][rand_y + 1].cost >= 0) {
 	  min_x_next = rand_x - 1;
 	  min_y_next = rand_y + 1;
 	  
 	  cost_to_move = distance_hiker[rand_x - 1][rand_y + 1].cost;
 	}
 	
-	if( abs(distance_hiker[rand_x - 1][rand_y - 1].cost) < cost_to_move) {
+	if(distance_hiker[rand_x - 1][rand_y - 1].cost < cost_to_move &&
+	   distance_hiker[rand_x - 1][rand_y - 1].cost >= 0) {
 	  min_x_next = rand_x - 1;
 	  min_y_next = rand_y - 1;
 	  
@@ -1115,6 +1096,7 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
     case down:
       move_down(m, h, pacer_to_move, current_x, current_y);
       break;
+      
     case up:
       move_up(m, h, pacer_to_move, current_x, current_y);
       break;
@@ -1252,35 +1234,40 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move;
     
-    if( abs(dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost >= 0) {
       min_x_next = character_to_move -> next_x + 1;
       min_y_next = character_to_move -> next_y;
       
       cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost;
     }
     
-    if( abs(dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost >= 0) {
       min_x_next = character_to_move -> next_x;
       min_y_next = character_to_move -> next_y + 1;
       
       cost_to_move = dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost;
     }
     
-    if( abs(dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost >= 0) {
       min_x_next = character_to_move -> next_x - 1;
       min_y_next = character_to_move -> next_y;
       
       cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost;
     }
     
-    if( abs(dijkstra[character_to_move -> next_x][character_to_move -> y_pos - 1].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x][character_to_move -> y_pos - 1].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x][character_to_move -> next_y - 1].cost >= 0) {
       min_x_next = character_to_move -> next_x;
       min_y_next = character_to_move -> next_y - 1;
       
       cost_to_move = dijkstra[character_to_move -> next_x][character_to_move -> next_y - 1].cost;
     }
     
-    if( abs(dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost >= 0) {
       min_x_next = character_to_move -> next_x + 1;
       min_y_next = character_to_move -> next_y + 1;
       
@@ -1288,7 +1275,8 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     }
     
     
-    if( abs(dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost >= 0) {
       min_x_next = character_to_move -> next_x + 1;
       min_y_next = character_to_move -> next_y - 1;
       
@@ -1296,7 +1284,8 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     }
     
     
-    if( abs(dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost >= 0) {
       min_x_next = character_to_move -> next_x - 1;
       min_y_next = character_to_move -> next_y + 1;
       
@@ -1304,13 +1293,14 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     }
     
     
-    if( abs(dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost) < cost_to_move) {
+    if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost < cost_to_move &&
+	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost >= 0) {
       min_x_next = character_to_move -> next_x - 1;
       min_y_next = character_to_move -> next_y - 1;
       
       cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost;
     }
-    
+
     // I have no idea why this is adding 10 :(
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move - 10;
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
@@ -1363,12 +1353,7 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> terrain_type = wanderer_to_move -> terrain_type;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> x_pos = current_x;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> y_pos = current_y;
-    printf("got past assignments\n");
     
-    printf("moving: %d\n", wanderer_to_move -> direction);
-    printf("stay on type %d\n", wanderer_to_move -> terrain_type);
-    printf("moving x: %d y: %d\n", last_x, last_y);
-
     m -> character_positions[last_x][last_y] = NULL;
     free(m -> character_positions[last_x][last_y]);
     
@@ -1392,10 +1377,12 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
 
 void move_up_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> y_pos - 1 > 0 ) {
+if( character_to_move -> y_pos - 1 >= 0 ) {
 	if(
 	   (m -> generate_map[current_x][current_y - 1] != tree) &&
 	   (m -> generate_map[current_x][current_y - 1] != boulder) &&
+	   (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+	   (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
 	   (m -> character_positions[current_x][current_y - 1] == NULL)) {
 	  
@@ -1411,7 +1398,6 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    printf("valid up: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1420,6 +1406,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
 		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
 		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
@@ -1433,6 +1421,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
 		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
 		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
@@ -1446,6 +1436,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
 		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
 		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
@@ -1467,10 +1459,12 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 
 void move_down_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> y_pos - 1 > 0 ) {
+if( character_to_move -> y_pos + 1 < 21 ) {
 	if(
 	   (m -> generate_map[current_x][current_y + 1] != tree) &&
 	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
+	   (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+	   (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
 	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
 	  
@@ -1487,7 +1481,6 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 
 	  while(!valid) {
 
-	    printf("valid down: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1496,6 +1489,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
 		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
 		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
@@ -1509,6 +1504,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
 		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
 		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
@@ -1522,6 +1519,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
 		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
 		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
@@ -1547,6 +1546,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	if(
 	   (m -> generate_map[current_x + 1][current_y] != tree) &&
 	   (m -> generate_map[current_x + 1][current_y] != boulder) &&
+	   (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+	   (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
 	   (m -> character_positions[current_x + 1][current_y] == NULL)) {
 	  
@@ -1562,7 +1563,6 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    printf("valid right: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1571,6 +1571,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
 		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
 		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
@@ -1584,6 +1586,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
 		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
 		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
@@ -1597,6 +1601,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
 		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
 		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
@@ -1618,10 +1624,12 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 
 void move_left_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> x_pos - 1 > 0 ) {
+if( character_to_move -> x_pos - 1 >= 0 ) {
 	if(
 	   (m -> generate_map[current_x - 1][current_y] != tree) &&
 	   (m -> generate_map[current_x - 1][current_y] != boulder) &&
+	   (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+	   (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 	   (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
 	   (m -> character_positions[current_x - 1][current_y] == NULL)) {
 	  
@@ -1637,7 +1645,6 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1646,6 +1653,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
 		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
 		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
@@ -1659,6 +1668,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
 		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
 		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
@@ -1672,6 +1683,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
 		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
 		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
@@ -1715,10 +1728,7 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
     m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> direction = walker_to_move -> direction;
     m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> x_pos = current_x;
     m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> y_pos = current_y;
-    printf("got past assignments\n");
     
-    printf("moving: %d\n", walker_to_move -> direction);
-    printf("moving x: %d y: %d\n", last_x, last_y);
     
     m -> character_positions[last_x][last_y] = NULL;
     free(m -> character_positions[last_x][last_y]);
@@ -1743,10 +1753,12 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
 
 void move_left_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> x_pos - 1 > 0 ) {
+if( character_to_move -> x_pos - 1 >= 0 ) {
 	if(
 	   (m -> generate_map[current_x - 1][current_y] != tree) &&
 	   (m -> generate_map[current_x - 1][current_y] != boulder) &&
+	   (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+	   (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 	   (m -> character_positions[current_x - 1][current_y] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
@@ -1761,9 +1773,6 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    usleep(500000);
-	    printf("x: %d y: %d\n", current_x, current_y);
-	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1772,6 +1781,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
 		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
 		m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -1784,6 +1795,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
 		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
 		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
@@ -1796,6 +1809,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
 		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
 		m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -1820,6 +1835,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	if(
 	   (m -> generate_map[current_x + 1][current_y] != tree) &&
 	   (m -> generate_map[current_x + 1][current_y] != boulder) &&
+	   (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+	   (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 	   (m -> character_positions[current_x + 1][current_y] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
@@ -1834,9 +1851,6 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    usleep(500000);
-	    printf("x: %d y: %d\n", current_x, current_y);
-	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1845,6 +1859,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
 		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
 		m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -1857,6 +1873,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
 		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
 		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
@@ -1869,6 +1887,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
 		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
 		m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -1889,10 +1909,12 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 
 void move_up_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
 
-if( character_to_move -> y_pos - 1 > 0 ) {
+if( character_to_move -> y_pos - 1 >= 0 ) {
 	if(
 	   (m -> generate_map[current_x][current_y - 1] != tree) &&
 	   (m -> generate_map[current_x][current_y - 1] != boulder) &&
+	   (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+	   (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 	   (m -> character_positions[current_x][current_y - 1] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
@@ -1907,9 +1929,6 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    usleep(500000);
-	    printf("x: %d y: %d\n", current_x, current_y);
-	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1918,6 +1937,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y + 1] != tree) &&
 		 (m -> generate_map[current_x][current_y + 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y + 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
 		m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -1930,6 +1951,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
 		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
 		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
@@ -1942,6 +1965,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
 		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
 		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
@@ -1966,6 +1991,8 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	if(
 	   (m -> generate_map[current_x][current_y + 1] != tree) &&
 	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
+	   (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
+	   (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
 	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
@@ -1980,9 +2007,6 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	  int valid = 0;
 
 	  while(!valid) {
-	    usleep(500000);
-	    printf("x: %d y: %d\n", current_x, current_y);
-	    printf("valid left: %d\n", valid);
 
 	    direction_to_move = rand() % 3;
 	  
@@ -1991,6 +2015,8 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	    case 0:
 	      if(( m -> generate_map[current_x][current_y - 1] != tree) &&
 		 (m -> generate_map[current_x][current_y - 1] != boulder) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
+		 (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
 		 (m -> character_positions[current_x][current_y - 1] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
 		m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -2003,6 +2029,8 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	    case 1:
 	      if(( m -> generate_map[current_x + 1][current_y] != tree) &&
 		 (m -> generate_map[current_x + 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x + 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);
 		m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
@@ -2015,6 +2043,8 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	    case 2:
 	      if(( m -> generate_map[current_x - 1][current_y] != tree) &&
 		 (m -> generate_map[current_x - 1][current_y] != boulder) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
+		 (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
 		 (m -> character_positions[current_x - 1][current_y] == NULL)) {
 		m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
 		m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
