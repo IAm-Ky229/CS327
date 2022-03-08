@@ -27,7 +27,8 @@ void generate_new_map(generated_map_t *map_data,
 		      int *random_path_x,
 		      int *random_path_y,
 		      cost_t distance_hiker[HORIZONTAL][VERTICAL],
-		      cost_t distance_rival[HORIZONTAL][VERTICAL]);
+		      cost_t distance_rival[HORIZONTAL][VERTICAL],
+		      int numtrainers);
 
 // Check and see if our exits should be random, or they already exist
 void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH],
@@ -57,7 +58,7 @@ static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERTICAL],  int from_x, int from_y);
 
 // Place characters into the map
-void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL]);
+void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL], int numtrainers);
 
 // Function for moving a pacer character
 void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h);

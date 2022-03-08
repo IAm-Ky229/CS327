@@ -4,6 +4,7 @@
 #include <time.h>
 #include <limits.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "terrain_generation.h"
 #include "world_generation.h"
@@ -17,7 +18,7 @@ static int32_t move_cost_cmp(const void *key, const void *with) {
   return ((character_t *) key)-> cost_to_move - ((character_t *) with)-> cost_to_move;
 }
 
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[]) {
   
   // Keep track of place in world
   int x_explore_position;
@@ -33,6 +34,9 @@ int main(int argc, char * argv[]) {
 
   // The scanned input character
   char scanned;
+
+  // Keep track of how many trainers we need
+  int numtrainers;
 
   // Map we are going to traverse
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
@@ -59,6 +63,11 @@ int main(int argc, char * argv[]) {
   int j;
 
   heap_t characters_to_move;
+
+  if(strcmp(argv[1], "--numtrainers") == 0)
+    {
+      numtrainers = atoi(argv[2]);
+    }
 
   // Initialize map
   for(i = 0; i < WORLD_Y_LENGTH; i++) {
@@ -89,7 +98,8 @@ int main(int argc, char * argv[]) {
 		  &random_road_x,
 		  &random_road_y,
 		  distance_hiker,
-		  distance_rival);
+		  distance_rival,
+		  numtrainers);
 
  int game_time = 0;
 
@@ -182,7 +192,8 @@ void generate_new_map(generated_map_t *map_data,
 		      int *random_path_x,
 		      int *random_path_y,
 		      cost_t distance_hiker[HORIZONTAL][VERTICAL],
-		      cost_t distance_rival[HORIZONTAL][VERTICAL]) {
+		      cost_t distance_rival[HORIZONTAL][VERTICAL],
+		      int numtrainers) {
   
   // I was getting some weird memory problems without initializing
   // everything to nothing
@@ -200,7 +211,6 @@ void generate_new_map(generated_map_t *map_data,
       map_data -> character_positions[j][i] = NULL;
     }
   }
-
 
   // Calculate manhattan distance
   int manhattan_distance = abs(manhattan_x) + abs(manhattan_y);
@@ -233,7 +243,7 @@ void generate_new_map(generated_map_t *map_data,
   dijkstra_path_rival(map_data, distance_rival, *random_path_x, *random_path_y);
   dijkstra_path_hiker(map_data, distance_hiker, *random_path_x, *random_path_y);
   
-  place_characters(map_data, h, distance_hiker, distance_rival);
+  place_characters(map_data, h, distance_hiker, distance_rival, numtrainers);
   
   print_map(map_data);
 }
@@ -705,7 +715,7 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   heap_delete(&h);
 }
 
-void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL]) {
+void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL], int numtrainers) {
 
   int placed_characters = 0;
   int rand_x;
@@ -716,11 +726,11 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   int cost_to_move;
 
   int i;
-  enum char_type characters_to_place[10];
+  enum char_type characters_to_place[numtrainers];
   
   int choose_character;
 
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < numtrainers; i++) {
 
     choose_character = rand() % 6;
 
@@ -748,7 +758,7 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   }
 
   i = 0;
-  while (placed_characters < 8) {
+  while (placed_characters < numtrainers) {
     rand_x = (rand() % (78 - 2 + 1)) + 2;
     rand_y = (rand() % (19 - 2 + 1)) + 2;
 
@@ -1068,8 +1078,8 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 
 void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
   
-  int current_x;
-  int current_y;
+  int current_x = pacer_to_move -> x_pos;
+  int current_y = pacer_to_move -> y_pos;
 
   int last_x;
   int last_y;
@@ -1091,6 +1101,10 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
     m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> x_pos = current_x;
     m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> y_pos = current_y;
 
+    m -> character_positions[last_x][last_y] = NULL;
+    free(m -> character_positions[last_x][last_y]);
+  }
+  
     switch(pacer_to_move -> direction) {
       
     case down:
@@ -1108,13 +1122,8 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
     case left:
       move_left(m, h, pacer_to_move, current_x, current_y);     
       break;
-    }
-
-    m -> character_positions[last_x][last_y] = NULL;
-    free(m -> character_positions[last_x][last_y]);
     
   }
-  
   
 }
 
@@ -1150,7 +1159,7 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	   (m -> generate_map[current_x][current_y + 1] != tree) &&
 	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
 	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	  
+	  printf("assigned new position down\n");
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
 	  m -> character_positions[current_x][current_y] -> next_x = current_x;
 	  m -> character_positions[current_x][current_y] -> next_y  = current_y + 1;
@@ -1330,8 +1339,8 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
 
 void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h) {
 
-  int current_x;
-  int current_y;
+  int current_x = wanderer_to_move -> x_pos;
+  int current_y = wanderer_to_move -> y_pos;
 
   int last_x;
   int last_y;
@@ -1356,6 +1365,8 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
     
     m -> character_positions[last_x][last_y] = NULL;
     free(m -> character_positions[last_x][last_y]);
+
+  }
     
     switch(wanderer_to_move -> direction) {
     case down:
@@ -1371,8 +1382,7 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
       move_left_random(m, h, wanderer_to_move, current_x, current_y);     
       break;
     }
-    
-  }
+
 }
 
 void move_up_random(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y) {
@@ -1706,8 +1716,8 @@ if( character_to_move -> x_pos - 1 >= 0 ) {
 
 void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t *h) {
 
-  int current_x;
-  int current_y;
+  int current_x = walker_to_move -> x_pos;
+  int current_y = walker_to_move -> y_pos;;
 
   int last_x;
   int last_y;
@@ -1732,7 +1742,9 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
     
     m -> character_positions[last_x][last_y] = NULL;
     free(m -> character_positions[last_x][last_y]);
-    
+
+  }
+  
     switch(walker_to_move -> direction) {
     case down:
       move_down_walker(m, h, walker_to_move, current_x, current_y);
@@ -1746,7 +1758,6 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
     case left:
       move_left_walker(m, h, walker_to_move, current_x, current_y);     
       break;
-    }
     
   }
 }
