@@ -1,0 +1,5 @@
+As a preface I brute forced a lot of stuff, meaning that there might be some replicated code/ might look ugly. It works for the most part though.
+
+main: This has been edited to just print a single map, and enter a while loop that increments a counter every 250000 microseconds. It extracts characters from the heap when their move weight has been reached by the counter. Once extracted, the correct movement function is called depending on the character type.
+
+

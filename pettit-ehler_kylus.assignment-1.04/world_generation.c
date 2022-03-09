@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
   char scanned;
 
   // Keep track of how many trainers we need
-  int numtrainers;
+  int numtrainers = -1;
 
   // Map we are going to traverse
   generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH];
@@ -64,10 +64,16 @@ int main(int argc, char *argv[]) {
 
   heap_t characters_to_move;
 
-  if(strcmp(argv[1], "--numtrainers") == 0)
-    {
-      numtrainers = atoi(argv[2]);
-    }
+  // Assign the number of trainers
+  if(argc == 3) {
+    if(strcmp(argv[1], "--numtrainers") == 0)
+      {
+	numtrainers = atoi(argv[2]);
+      }
+  }
+  else {
+    numtrainers = 10;
+  }
 
   // Initialize map
   for(i = 0; i < WORLD_Y_LENGTH; i++) {
@@ -110,37 +116,40 @@ int main(int argc, char *argv[]) {
  while(1) {
    
    character_t *to_move;
-
-   to_move = heap_peek_min(&characters_to_move);
-   while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
-     to_move = heap_remove_min(&characters_to_move);
-     switch (to_move -> player_type) {
+   if(characters_to_move.size != 0) {
+     to_move = heap_peek_min(&characters_to_move);
+     while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
+       
+       printf("extracted: %d\n", to_move -> cost_to_move);
+       to_move = heap_remove_min(&characters_to_move);
+       switch (to_move -> player_type) {
        case random_walker:
 	 move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move); 
-       break;
+	 break;
+	 
+       case wanderer:
+	 move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
+	 break;
+	 
+       case pacer:
+	 move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
+	 break;
+	 
+       case hiker:
+	 dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, random_road_x, random_road_y);
+	 move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &characters_to_move);
+	 break;
+	 
+       case rival:
+	 dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_rival, random_road_x, random_road_y);
+	 move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, to_move, &characters_to_move);
+	 break;
+	 
+       }
        
-     case wanderer:
-       move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
-       break;
+       to_move = heap_peek_min(&characters_to_move);
        
-     case pacer:
-       move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
-       break;
-       
-     case hiker:
-       dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, random_road_x, random_road_y);
-       move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &characters_to_move);
-       break;
-
-     case rival:
-       dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_rival, random_road_x, random_road_y);
-       move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, to_move, &characters_to_move);
-       break;
-
      }
-     
-     to_move = heap_peek_min(&characters_to_move);
-     
    }
 
    print_map(map_exploration[y_explore_position][x_explore_position]);
@@ -238,11 +247,12 @@ void generate_new_map(generated_map_t *map_data,
   check_edge_cases(map_data, manhattan_y + 199, manhattan_x + 199);
 
   // Insert the PC
-  // Sometimes this just doesn't execute either, and the PC is placed at (0,0). I don't know why!
+  // Sometimes this just doesn't execute either, and the PC is placed at (0,0).
+  // It's brute forcing the map diagonally, so there is no reason for this to happen if it does execute!
+  // Maybe a memory thing?
   choose_random_road_spot(map_data, random_path_x, random_path_y);
   map_data -> character_positions[*random_path_x][*random_path_y] = malloc(sizeof(character_t));
   map_data -> character_positions[*random_path_x][*random_path_y] -> player_type = PC;
-  heap_insert(h, map_data -> character_positions[*random_path_x][*random_path_y]);
 
   dijkstra_path_rival(map_data, distance_rival, *random_path_x, *random_path_y);
   dijkstra_path_hiker(map_data, distance_hiker, *random_path_x, *random_path_y);
@@ -719,6 +729,8 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
 
 void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZONTAL][VERTICAL], cost_t distance_rival[HORIZONTAL][VERTICAL], int numtrainers) {
 
+  int number_trainers = numtrainers;
+  
   int placed_characters = 0;
   int rand_x;
   int rand_y;
@@ -728,12 +740,36 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   int cost_to_move;
 
   int i;
-  enum char_type characters_to_place[numtrainers];
+  enum char_type characters_to_place[number_trainers];
+
+  // Default to 10
+  if(number_trainers < 0) {
+    number_trainers = 10;
+  }
+
+  if(number_trainers == 1) { 
+    characters_to_place[0] = hiker;
+    i = 1;
+  }
+  else {
+  characters_to_place[0] = hiker;
+  characters_to_place[1] = rival;
+
+  i = 2;
+  }
+
+  // Anything more than like 30 trainers is probably ridiculous
+  // Remove this for testing purposes if you have to
+  if (number_trainers > 30) {
+    number_trainers = 30;
+  }
   
   int choose_character;
-
-  for (i = 0; i < numtrainers; i++) {
-
+  //printf("numtrainers: %d\n", numtrainers);
+  for (i; i < number_trainers; i++) {
+    printf("assigning trainer types\n");
+    printf("i: %d\n", i);
+    printf("number_trainers: %d\n", number_trainers);
     choose_character = rand() % 6;
 
     switch (choose_character) {
@@ -763,7 +799,10 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   // I brute forced a lot of this and there's some replicated code
   // Sorry if this hurts to look at
   i = 0;
-  while (placed_characters < numtrainers) {
+  while (placed_characters < number_trainers) {
+    printf("placing character\n");
+    printf("placed_characters: %d\n", placed_characters);
+    printf("going to place: %d\n", characters_to_place[placed_characters]);
     rand_x = (rand() % (78 - 2 + 1)) + 2;
     rand_y = (rand() % (19 - 2 + 1)) + 2;
 
@@ -1084,7 +1123,7 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
   int last_x;
   int last_y;
 
-  // Always move the pacer
+  // Always try to move the pacer
   if((m -> generate_map[pacer_to_move -> next_x][pacer_to_move -> next_y] != tree) &&
      (m -> generate_map[pacer_to_move -> next_x][pacer_to_move -> next_y] != boulder) &&
      (m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] == NULL)) {
@@ -1106,7 +1145,7 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
     free(m -> character_positions[last_x][last_y]);
   }
 
-  // Always move so we don't get stuck
+  // Always find the next move so we don't get stuck
     switch(pacer_to_move -> direction) {
       
     case down:
@@ -1314,6 +1353,7 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     }
 
     // I have no idea why this is adding 10 :(
+    // So I just subtracted 10
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move - 10;
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
@@ -1373,6 +1413,9 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
   }
 
   // Always check for a new move or we will stop
+  // If we find we can't move the assigned direction,
+  // We will attempt to move a random direction that
+  // Isn't the same direction we were just moving
     switch(wanderer_to_move -> direction) {
     case down:
       move_down_random(m, h, wanderer_to_move, current_x, current_y);
@@ -1751,6 +1794,8 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
   }
 
   // Always check for a new move or we will stop
+  // Random walker moves are a like wanderer moves
+  // But they don't check for same terrain
     switch(walker_to_move -> direction) {
     case down:
       move_down_walker(m, h, walker_to_move, current_x, current_y);
