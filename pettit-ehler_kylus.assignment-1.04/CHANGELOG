@@ -18,4 +18,4 @@ Mar 6: Everybody moves but I'm still getting some strange bugs with the hiker/ri
 
 Mar 7: Resolved some bugs, still have to implement the --numtrainers switch, probably gonna do that tomorrow. Still have a few bugs with movement, but if nobody collides excessively everything seems to be working
 
-Mar 8: Fixed the majority of the remaining bugs. Also implemented the numtrainers switch. Do the readme, cleanup code, and submit
+Mar 8: Fixed the majority of the remaining bugs. Also implemented the numtrainers switch. Do the readme and cleanup code. Still have to make hikers / rivals work around stationaries

@@ -758,14 +758,11 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   i = 2;
   }
 
-  // Anything more than like 30 trainers is probably ridiculous
-  // Remove this for testing purposes if you have to
-  if (number_trainers > 30) {
-    number_trainers = 30;
-  }
+  // I thought about adding a check for a max number of trainers but
+  // I'm assuming the intention isn't to break the game
   
   int choose_character;
-  //printf("numtrainers: %d\n", numtrainers);
+
   for (i; i < number_trainers; i++) {
     printf("assigning trainer types\n");
     printf("i: %d\n", i);
@@ -800,9 +797,7 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   // Sorry if this hurts to look at
   i = 0;
   while (placed_characters < number_trainers) {
-    printf("placing character\n");
-    printf("placed_characters: %d\n", placed_characters);
-    printf("going to place: %d\n", characters_to_place[placed_characters]);
+
     rand_x = (rand() % (78 - 2 + 1)) + 2;
     rand_y = (rand() % (19 - 2 + 1)) + 2;
 
@@ -1174,6 +1169,8 @@ if( character_to_move -> y_pos - 1 > 0 ) {
 	if(
 	   (m -> generate_map[current_x][current_y - 1] != tree) &&
 	   (m -> generate_map[current_x][current_y - 1] != boulder) &&
+	   (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
+	   (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
 	   (m -> character_positions[current_x][current_y - 1] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y - 1);
@@ -1199,6 +1196,8 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 	if(
 	   (m -> generate_map[current_x][current_y + 1] != tree) &&
 	   (m -> generate_map[current_x][current_y + 1] != boulder) &&
+	   (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
+	   (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
 	   (m -> character_positions[current_x][current_y + 1] == NULL)) {
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x, current_y + 1);
 	  m -> character_positions[current_x][current_y] -> next_x = current_x;
@@ -1223,6 +1222,8 @@ if( character_to_move -> x_pos - 1 > 0 ) {
 	if(
 	   (m -> generate_map[current_x - 1][current_y] != tree) &&
 	   (m -> generate_map[current_x - 1][current_y] != boulder) &&
+	   (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
+	   (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
 	   (m -> character_positions[current_x - 1][current_y] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x - 1, current_y);
@@ -1249,6 +1250,8 @@ if( character_to_move -> x_pos + 1 < 80 ) {
 	if(
 	   (m -> generate_map[current_x + 1][current_y] != tree) &&
 	   (m -> generate_map[current_x + 1][current_y] != boulder) &&
+	   (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
+	   (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
 	   (m -> character_positions[current_x + 1][current_y] == NULL)) {
 	  
 	  m -> character_positions[current_x][current_y] -> cost_to_move += determine_cost_rival(m, current_x + 1, current_y);

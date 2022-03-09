@@ -1,5 +1,41 @@
-As a preface I brute forced a lot of stuff, meaning that there might be some replicated code/ might look ugly. It works for the most part though.
+As a preface I brute forced a lot of stuff, meaning that there might be some replicated code/ might be a bit ugly in some places.
+
+There's probably some inefficient logic in some places, but it works, and you'll get the general idea if you scroll through it.
 
 main: This has been edited to just print a single map, and enter a while loop that increments a counter every 250000 microseconds. It extracts characters from the heap when their move weight has been reached by the counter. Once extracted, the correct movement function is called depending on the character type.
 
+generate_new_map: Has ben altered to take a random road position x, random road position y, a dijkstra distance graph for the hiker, a dijkstra distance graph for the rival, and a number of trainers to place. This function now places the PC in a random spot on a path. It does not insert the PC into the heap, because I didn't implement any movement for the PC.
 
+place_characters: Use the numtrainers switch to determine how many trainers there should be. Default to 10 if no switch. Check numtrainers to be sure that we will generate the correct number and have at least one rival / hiker. Create the rest of the random character types. Create random positions for the characters, and assign their first move based on what type they are. Their first move is calculated basically the same as calling their movement function. Just a little different because, we aren't actually moving them. Do this for the number specified in the --numtrainers flag.
+
+move_pacer: First attempt to move the pacer based on the assigned next move. If we can't (something blocking us) just don't move. Regardless of if we moved or not, generate a new move for the pacer, based on whatever direction we're heading. Pacers go up and down by default, I didn't add any logic to randomize their direction.
+
+move_up: Used by pacers. Check to see if moving up would be valid. If it is, assign it as our next move. If not, turn around and assign down to be our next move instead.
+
+move_down: Used by pacers. Check to see if moving down would be valid. If it is, assign it as our next move. If not, turn around and assign up to be our next move instead.
+
+move_left: Used by pacers. Check to see if moving right would be valid. If it is, assign it as our next move. If not, turn around and assign down to be our next move instead.
+
+move_right: Used by pacers. Check to see if moving left would be valid. If it is, assign it as our next move. If not, turn around and assign down to be our next move instead.
+
+move_via_shortest_path: Used by rivals and hikers, a dijkstra path is computed to every node before this function is called. Check to see that our next move is valid. if it is, move and determine our next shortest path move. Determine the shortest path move by looking at all 8 possible moves around us, and choosing one with the least weight. Otherwise, just add the cost of whatever terrain we are on, and wait until the move becomes valid. Because, our path can only be obstructed by moving NPCs.
+
+move_wanderer: Check to see whether the next move is valid. If it is, perform it. Regardless, calculate our next move so we don't get stuck. The next move is similar to a pacer, where the next move is calculated based on the direction we're currently heading.
+
+move_up_random: Used by wanderers. Check to see if there is the same terrain type moving upwards. If there is, we have found our next move. If not, we need to randomly choose a direction to move that is not up. Keep producing a random direction between down, right, and left until we find a suitable next move.
+
+move_down_random: Used by wanderers. Check to see if there is the same terrain type moving downwards. If there is, we have found our next move. If not, we need to randomly choose a direction to move that is not down. Keep producing a random direction between up, right, and left until we find a suitable next move.
+
+move_left_random: Used by wanderers. Check to see if there is the same terrain type moving upwards. If there is, we have found our next move. If not, we need to randomly choose a direction to move that is not up. Keep producing a random direction between down, up, and right until we find a suitable next move.
+
+move_right_random: Used by wanderers. Check to see if there is the same terrain type moving upwards. If there is, we have found our next move. If not, we need to randomly choose a direction to move that is not up. Keep producing a random direction between down, up, and left until we find a suitable next move.
+
+move_random_walker: Check to see whether the next move is valid. If it is, perform it. Regardless, calculate the next move. This works similarly to a pacer, where the next move is calculated based on the direction we're heading.
+
+move_left_walker: If moving left is a valid next move, do it. Otherwise, similar to a wanderer, determine a new random direction that is both valid and not the direction we're currently heading.
+
+move_right_walker: If moving right is a valid next move, do it. Otherwise, similar to a wanderer, determine a new random direction that is both valid and not the direction we're currently heading.
+
+move_up_walker: If moving up is a valid next move, do it. Otherwise, similar to a wanderer, determine a new random direction that is both valid and not the direction we're currently heading.
+
+move_down_walker: If moving down is a valid next move, do it. Otherwise, similar to a wanderer, determine a new random direction that is both valid and not the direction we're currently heading.
