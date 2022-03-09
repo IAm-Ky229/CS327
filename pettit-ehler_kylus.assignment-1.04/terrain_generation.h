@@ -28,7 +28,8 @@ typedef enum __attribute__ ((__packed__)) terrain {
 	      clearing,
 	      boulder,
 	      tree,
-	      border_exit
+	      border_exit,
+	      stationary_occupied
 } terrain_type_t;
 
 typedef enum char_type {

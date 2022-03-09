@@ -19,3 +19,5 @@ Mar 6: Everybody moves but I'm still getting some strange bugs with the hiker/ri
 Mar 7: Resolved some bugs, still have to implement the --numtrainers switch, probably gonna do that tomorrow. Still have a few bugs with movement, but if nobody collides excessively everything seems to be working
 
 Mar 8: Fixed the majority of the remaining bugs. Also implemented the numtrainers switch. Do the readme and cleanup code. Still have to make hikers / rivals work around stationaries
+
+Mar 9: I think I've got all the major bugs fixed. Lower volumes of trainers seem to be able to move around just fine. Implemented some code so that stationarires are treated as impassible terrain, so that hikers and rivals can go around them

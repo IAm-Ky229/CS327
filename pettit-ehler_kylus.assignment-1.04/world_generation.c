@@ -301,12 +301,14 @@ void choose_random_road_spot(generated_map_t *map_data, int *chosen_spot_x, int 
   int i;
   int j;
 
-  for (i = (rand() % (19 - 2 + 1)) + 2; i < VERTICAL; i++) {
-    for(j = (rand() % (78 - 2 + 1)) + 2; j < HORIZONTAL; j++) {
-      if(map_data -> generate_map[j][i] == path) {
-	*chosen_spot_x = j;
-	*chosen_spot_y = i;
-	return;
+  while(*chosen_spot_x == 0){
+    for (i = (rand() % (19 - 2 + 1)) + 2; i < VERTICAL; i++) {
+      for(j = (rand() % (78 - 2 + 1)) + 2; j < HORIZONTAL; j++) {
+	if(map_data -> generate_map[j][i] == path) {
+	  *chosen_spot_x = j;
+	  *chosen_spot_y = i;
+	  return;
+	}
       }
     }
   }
@@ -332,6 +334,8 @@ int determine_cost_rival(generated_map_t *map_data, int x_dim, int y_dim) {
     return INT_MAX;
   case tree:
     return INT_MAX;
+  case stationary_occupied:
+    return INT_MAX;
   default:
     return 0;
   }
@@ -356,6 +360,8 @@ int determine_cost_hiker(generated_map_t *map_data, int x_dim, int y_dim) {
   case boulder:
     return INT_MAX;
   case tree:
+    return INT_MAX;
+  case stationary_occupied:
     return INT_MAX;
   default:
     return 0;
@@ -906,6 +912,7 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	}
 	break;
       case stationary:
+	m -> generate_map[rand_x][rand_y] = stationary_occupied;
 	break;
       case pacer:
 	if(m -> generate_map[rand_x][rand_y + 1] != tree &&

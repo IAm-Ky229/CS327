@@ -2,11 +2,17 @@ As a preface I brute forced a lot of stuff, meaning that there might be some rep
 
 There's probably some inefficient logic in some places, but it works, and you'll get the general idea if you scroll through it.
 
+Honestly I did not handle literally all of the edge cases, so there might be a few extreme yet pretty unlikely cases that break something.
+
 main: This has been edited to just print a single map, and enter a while loop that increments a counter every 250000 microseconds. It extracts characters from the heap when their move weight has been reached by the counter. Once extracted, the correct movement function is called depending on the character type.
 
 generate_new_map: Has ben altered to take a random road position x, random road position y, a dijkstra distance graph for the hiker, a dijkstra distance graph for the rival, and a number of trainers to place. This function now places the PC in a random spot on a path. It does not insert the PC into the heap, because I didn't implement any movement for the PC.
 
-place_characters: Use the numtrainers switch to determine how many trainers there should be. Default to 10 if no switch. Check numtrainers to be sure that we will generate the correct number and have at least one rival / hiker. Create the rest of the random character types. Create random positions for the characters, and assign their first move based on what type they are. Their first move is calculated basically the same as calling their movement function. Just a little different because, we aren't actually moving them. Do this for the number specified in the --numtrainers flag.
+determine_cost_hiker: Changed so that stationary_occupied gets cost INT_MAX
+ 
+determine_cost_rival: Changed so that stationary_occupied gets cost INT_MAX
+
+place_characters: Use the numtrainers switch to determine how many trainers there should be. Default to 10 if no switch. Check numtrainers to be sure that we will generate the correct number and have at least one rival / hiker. Create the rest of the random character types. Create random positions for the characters, and assign their first move based on what type they are. Their first move is calculated basically the same as calling their movement function. Stationaries are a little special and just get assigned a terrain type of stationary_occupied. Just a little different because, we aren't actually moving them. Do this for the number specified in the --numtrainers flag.
 
 move_pacer: First attempt to move the pacer based on the assigned next move. If we can't (something blocking us) just don't move. Regardless of if we moved or not, generate a new move for the pacer, based on whatever direction we're heading. Pacers go up and down by default, I didn't add any logic to randomize their direction.
 
