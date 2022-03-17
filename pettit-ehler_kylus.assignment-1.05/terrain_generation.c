@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <curses.h>
 #include "terrain_generation.h"
 
 void print_map(generated_map_t *map_data) {
@@ -15,66 +16,67 @@ void print_map(generated_map_t *map_data) {
       if(map_data -> character_positions[j][i] != NULL) {
 	  switch ( map_data -> character_positions[j][i] -> player_type) {
 	  case hiker:
-	    printf("H");
+	    mvaddch(i, j, 'H');
 	    break;
 	  case rival:
-	    printf("R");
+	    mvaddch(i, j, 'R');
 	    break;
 	  case pacer:
-	    printf("P");
+	    mvaddch(i, j, 'P');
 	    break;
 	  case wanderer:
-	    printf("W");
+	    mvaddch(i, j, 'W');
 	    break;
 	  case stationary:
-	    printf("S");
+	    mvaddch(i, j, 'S');
 	    break;
 	  case random_walker:
-	    printf("N");
+	    mvaddch(i, j, 'N');
 	    break;
 	  case PC:
-	    printf("@");
+	    mvaddch(i, j, '@');
+	    break;
 	break;
 	  }
 	}
       else {
       switch(map_data -> generate_map[j][i]) {
       case boulder :
-	printf("%%");
+	mvaddch(i, j, '%');
 	break;
       case clearing :
-	printf(".");
+	mvaddch(i, j, '.');
 	break;
       case tall_grass :
-	printf(",");
+	mvaddch(i, j, ',');
 	break;
       case border_exit :
-	printf("#");
+	mvaddch(i, j, '#');
 	break;
       case path :
-	printf("#");
+	mvaddch(i, j, '#');
 	break;
       case pokemon_center :
-	printf("C");
+	mvaddch(i, j, 'C');
 	break;
       case pokemon_mart :
-	printf("M");
+	mvaddch(i, j, 'M');
 	break;
       case nothing :
-	printf(":");
+	mvaddch(i, j, ':');
 	break;
       case tree :
-	printf("^");
+	mvaddch(i, j, '^');
 	break;
       default :
-	printf(" ");
+	mvaddch(i, j, ' ');
 	break;
 	}
       }
       }
-    printf("\n");
+    //printf("\n");
   }
-
+  refresh();
 }
 
 void place_border_boulders(generated_map_t *map_data) {

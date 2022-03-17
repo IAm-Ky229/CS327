@@ -63,7 +63,19 @@ int main(int argc, char *argv[]) {
   int i;
   int j;
 
+  // Keep track of characters in the map
   heap_t characters_to_move;
+
+  // Store the game time of this map
+  int game_time = 0;
+
+  // Get the user's input
+  char user_input;
+
+  initscr();
+  cbreak();
+  halfdelay(1);
+  noecho();
 
   // Assign the number of trainers
   if(argc == 3) {
@@ -108,20 +120,19 @@ int main(int argc, char *argv[]) {
 		  distance_rival,
 		  numtrainers);
 
- int game_time = 0;
-
  // Movement is implemented here
  // It's based on peeking the minimum cost character move in the queue
  // If we find one should be removed (equal to game time), do it
  // And replace the same character with an updated cost / new move
  while(1) {
+
+   user_input = getch();
    
    character_t *to_move;
    if(characters_to_move.size != 0) {
      to_move = heap_peek_min(&characters_to_move);
      while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
        
-       printf("extracted: %d\n", to_move -> cost_to_move);
        to_move = heap_remove_min(&characters_to_move);
        switch (to_move -> player_type) {
        case random_walker:
@@ -154,9 +165,17 @@ int main(int argc, char *argv[]) {
    }
 
    print_map(map_exploration[y_explore_position][x_explore_position]);
-   printf("\n");
-   usleep(250000);
+   usleep(150000);
    game_time++;
+
+   switch (user_input) {
+   case 'a':
+     mvaddstr(22, 30, "lowercase a");
+     break;
+   case 'A':
+     mvaddstr(22, 30, "uppercase A");
+     break;
+   }
  }
 
  
@@ -254,7 +273,10 @@ void generate_new_map(generated_map_t *map_data,
   choose_random_road_spot(map_data, random_path_x, random_path_y);
   map_data -> character_positions[*random_path_x][*random_path_y] = malloc(sizeof(character_t));
   map_data -> character_positions[*random_path_x][*random_path_y] -> player_type = PC;
+  map_data -> character_positions[*random_path_x][*random_path_y] -> x_pos = *random_path_x;
+  map_data -> character_positions[*random_path_x][*random_path_y] -> y_pos = *random_path_y;
 
+  
   dijkstra_path_rival(map_data, distance_rival, *random_path_x, *random_path_y);
   dijkstra_path_hiker(map_data, distance_hiker, *random_path_x, *random_path_y);
   
@@ -771,9 +793,6 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
   int choose_character;
 
   for (i; i < number_trainers; i++) {
-    printf("assigning trainer types\n");
-    printf("i: %d\n", i);
-    printf("number_trainers: %d\n", number_trainers);
     choose_character = rand() % 6;
 
     switch (choose_character) {
