@@ -3,7 +3,12 @@
 #define WORLD_X_START 199
 #define WORLD_Y_START 199
 
+#ifndef HEAP_H
+#define HEAP_H
+
 #include "heap.h"
+
+#endif
 
 typedef struct costs {
   heap_node_t *hn;

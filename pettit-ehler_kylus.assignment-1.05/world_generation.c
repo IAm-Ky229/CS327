@@ -63,19 +63,20 @@ int main(int argc, char *argv[]) {
   int i;
   int j;
 
-  // Keep track of characters in the map
-  heap_t characters_to_move;
-
-  // Store the game time of this map
-  int game_time = 0;
-
   // Get the user's input
   char user_input;
 
+  printf("test\n");
+  
   initscr();
+  //mvaddstr(0,0, "test");
   cbreak();
+  //mvaddstr(0,0, "test");
   halfdelay(1);
+  //mvaddstr(0,0, "test");
   noecho();
+
+  //mvaddstr(0,0, "test");
 
   // Assign the number of trainers
   if(argc == 3) {
@@ -102,12 +103,12 @@ int main(int argc, char *argv[]) {
  x_explore_position = WORLD_X_START;
  y_explore_position = WORLD_Y_START;
 
- heap_init(&characters_to_move, move_cost_cmp, NULL);
+ heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
 
  // Make first map
  map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
  generate_new_map(map_exploration[y_explore_position][x_explore_position],
-		  &characters_to_move,
+		  &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
 		  exit_bottom,
 		  exit_right,
 		  exit_left,
@@ -126,56 +127,58 @@ int main(int argc, char *argv[]) {
  // And replace the same character with an updated cost / new move
  while(1) {
 
-   user_input = getch();
+   //user_input = getch();
+
+   //printf("size of characters to move: %d\n", map_exploration[y_explore_position][x_explore_position] -> characters_to_move.size);
    
    character_t *to_move;
-   if(characters_to_move.size != 0) {
-     to_move = heap_peek_min(&characters_to_move);
-     while(to_move -> cost_to_move <= game_time && (game_time != 0)) {
+   if(map_exploration[y_explore_position][x_explore_position] -> characters_to_move.size != 0) {
+     to_move = heap_peek_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+     while(to_move -> cost_to_move <= map_exploration[y_explore_position][x_explore_position] -> game_time && (map_exploration[y_explore_position][x_explore_position] -> game_time != 0)) {
        
-       to_move = heap_remove_min(&characters_to_move);
+       to_move = heap_remove_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
        switch (to_move -> player_type) {
        case random_walker:
-	 move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move); 
+	 move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move); 
 	 break;
 	 
        case wanderer:
-	 move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
+	 move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case pacer:
-	 move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &characters_to_move);
+	 move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case hiker:
 	 dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, random_road_x, random_road_y);
-	 move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &characters_to_move);
+	 move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case rival:
 	 dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_rival, random_road_x, random_road_y);
-	 move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, to_move, &characters_to_move);
+	 move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        }
        
-       to_move = heap_peek_min(&characters_to_move);
+       to_move = heap_peek_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
        
      }
    }
 
    print_map(map_exploration[y_explore_position][x_explore_position]);
    usleep(150000);
-   game_time++;
+   map_exploration[y_explore_position][x_explore_position] -> game_time++;
 
-   switch (user_input) {
-   case 'a':
-     mvaddstr(22, 30, "lowercase a");
-     break;
-   case 'A':
-     mvaddstr(22, 30, "uppercase A");
-     break;
-   }
+   //switch (user_input) {
+   //case 'a':
+   //mvaddstr(22, 30, "lowercase a");
+   // break;
+   //case 'A':
+   //mvaddstr(22, 30, "uppercase A");
+   // break;
+   //}
  }
 
  
@@ -1129,7 +1132,8 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	
 	break; 
       }
-      
+
+      //printf("inserting character\n");
       heap_insert(h, m -> character_positions[rand_x][rand_y]);
       placed_characters++;
     }

@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "heap.h"
+
 // Max length of the GUI
 #define HORIZONTAL 80
 
@@ -79,6 +81,12 @@ typedef struct generated_map {
   int exit_right;
   // Remember where the bottom exit is
   int exit_bottom;
+
+  // Keep track of characters in the map
+  heap_t characters_to_move;
+
+  // Store the game time of this map
+  int game_time;
   
 } generated_map_t;
 
