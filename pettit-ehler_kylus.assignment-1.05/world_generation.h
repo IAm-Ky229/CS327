@@ -3,12 +3,8 @@
 #define WORLD_X_START 199
 #define WORLD_Y_START 199
 
-#ifndef HEAP_H
-#define HEAP_H
-
 #include "heap.h"
 
-#endif
 
 typedef struct costs {
   heap_node_t *hn;
@@ -112,3 +108,9 @@ void move_right_walker(generated_map_t *m, heap_t *h, character_t *character_to_
 
 // Move the specified character up
 void move_left_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
+
+// Attempt to move the PC, assign next move
+void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h);
+
+// Actually move the PC
+void move_PC(character_t *PC, generated_map_t *m);

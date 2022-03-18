@@ -1,1 +1,3 @@
-Mar 17: Added curses library to program, got everything printing with mvaddch. Also got mvaddstr working. Buffered input with a halfdelay of 0.1 seconds seems to be allowing the program to update in the background, while retaining any user input. Will work on refactoring so that we can move to different maps tomorrow.
+Mar 16: Added curses library to program, got everything printing with mvaddch. Also got mvaddstr working. Buffered input with a halfdelay of 0.1 seconds seems to be allowing the program to update in the background, while retaining any user input. Will work on refactoring so that we can move to different maps tomorrow.
+
+Mar 17: Refactored characters to be stored in each map. PC can now move, and hikers/rivals shortest paths are updated properly. Probably gonna work on moving to and generating different maps tomorrow.

@@ -2,6 +2,7 @@
 
 #include "heap.h"
 
+
 // Max length of the GUI
 #define HORIZONTAL 80
 
@@ -87,6 +88,12 @@ typedef struct generated_map {
 
   // Store the game time of this map
   int game_time;
+
+  // Store the player character's position
+  int PC_position_x;
+
+  // Store the player character's position
+  int PC_position_y;
   
 } generated_map_t;
 
