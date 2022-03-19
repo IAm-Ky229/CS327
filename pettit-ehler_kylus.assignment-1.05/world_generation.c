@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
   int road_spot_y;
   
   // Choose random road spot for PC
-  int random_road_x;
-  int random_road_y;
+  int PC_road_x;
+  int PC_road_y;
 
   // The scanned input character
   char scanned;
@@ -66,6 +66,9 @@ int main(int argc, char *argv[]) {
   // Get the user's input
   char user_input;
 
+  // We only want random placement when we enter the first map
+  int first_map = -1;
+
   // curses init
   initscr();
   cbreak();
@@ -98,6 +101,8 @@ int main(int argc, char *argv[]) {
  x_explore_position = WORLD_X_START;
  y_explore_position = WORLD_Y_START;
 
+ char buffer[50];
+
  // Make first map. Malloc the first space, init the heap, then generate the map
  map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
  heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
@@ -109,11 +114,12 @@ int main(int argc, char *argv[]) {
 		  exit_top,
 		  manhattan_x,
 		  manhattan_y,
-		  &random_road_x,
-		  &random_road_y,
+		  PC_road_x,
+		  PC_road_y,
 		  distance_hiker,
 		  distance_rival,
-		  numtrainers);
+		  numtrainers,
+		  &first_map);
 
 
  // Movement is implemented here
@@ -165,7 +171,7 @@ int main(int argc, char *argv[]) {
    }
 
    print_map(map_exploration[y_explore_position][x_explore_position]);
-   usleep(150000);
+   //usleep(150000);
    map_exploration[y_explore_position][x_explore_position] -> game_time++;
 
    switch(user_input) {
@@ -254,7 +260,7 @@ int main(int argc, char *argv[]) {
      mvaddstr(22, 30, "got 3");
      
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
-		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
+		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
 		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
      
@@ -264,7 +270,7 @@ int main(int argc, char *argv[]) {
      mvaddstr(22, 30, "got n");
 
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
-		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
+		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
 		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
      
@@ -294,7 +300,7 @@ int main(int argc, char *argv[]) {
      mvaddstr(22, 30, "got 1");
 
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
-		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
+		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
 		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
      
@@ -304,7 +310,7 @@ int main(int argc, char *argv[]) {
      mvaddstr(22, 30, "got b");
 
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
-		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
+		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
 		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
      
@@ -351,6 +357,251 @@ int main(int argc, char *argv[]) {
      break;
      
    }
+
+   // exit right
+   if(map_exploration[y_explore_position][x_explore_position] -> PC_position_x == 79) {
+     map_exploration[y_explore_position][x_explore_position]
+       -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] = NULL;
+     free(map_exploration[y_explore_position][x_explore_position]
+       -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y]);
+     
+     exit_bottom = -1;
+     exit_right = -1;
+     exit_top = -1;
+     exit_left = -1;
+     if (map_exploration[y_explore_position][x_explore_position + 1] == NULL) {
+       x_explore_position++;
+       manhattan_x++;
+       map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+       
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
+       PC_road_x = 1;
+       PC_road_y = exit_left;
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			&map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top,
+			manhattan_x,
+			manhattan_y,
+			PC_road_x,
+			PC_road_y,
+			distance_hiker,
+			distance_rival,
+			numtrainers,
+			&first_map);
+     }
+     else {
+       x_explore_position++;
+       manhattan_x++;
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       PC_road_x = 1;
+       PC_road_y = exit_left;
+
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] = malloc(sizeof(character_t));
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> player_type = PC;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> x_pos = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> y_pos = PC_road_y;
+       
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_x = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_y = PC_road_y;
+       
+       print_map(map_exploration[y_explore_position][x_explore_position]);
+     }
+     
+   }
+
+   // exit left
+   if(map_exploration[y_explore_position][x_explore_position] -> PC_position_x == 0) {
+     map_exploration[y_explore_position][x_explore_position]
+       -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] = NULL;
+     free(map_exploration[y_explore_position][x_explore_position]
+	  -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y]);
+     
+     exit_bottom = -1;
+     exit_right = -1;
+     exit_top = -1;
+     exit_left = -1;
+     if (map_exploration[y_explore_position][x_explore_position - 1] == NULL) {
+       x_explore_position--;
+       manhattan_x--;
+       map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+       
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
+       PC_road_x = 78;
+       PC_road_y = exit_right;
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			&map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top,
+			manhattan_x,
+			manhattan_y,
+			PC_road_x,
+			PC_road_y,
+			distance_hiker,
+			distance_rival,
+			numtrainers,
+			&first_map);
+     }
+     else {
+       x_explore_position--;
+       manhattan_x--;
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       PC_road_x = 78;
+       PC_road_y = exit_right;
+
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] = malloc(sizeof(character_t));
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> player_type = PC;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> x_pos = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> y_pos = PC_road_y;
+       
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_x = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_y = PC_road_y;
+       
+       print_map(map_exploration[y_explore_position][x_explore_position]);
+     }
+   }
+
+   // exit up
+   if(map_exploration[y_explore_position][x_explore_position] -> PC_position_y == 0) {
+     map_exploration[y_explore_position][x_explore_position]
+       -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] = NULL;
+     free(map_exploration[y_explore_position][x_explore_position]
+	  -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y]);
+     
+     exit_bottom = -1;
+     exit_right = -1;
+     exit_top = -1;
+     exit_left = -1;
+     if (map_exploration[y_explore_position - 1][x_explore_position] == NULL) {
+       y_explore_position--;
+       manhattan_y--;
+       map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+       
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
+       sprintf(buffer, "assigning X: %d Y: 19", exit_bottom);
+       mvaddstr(21, 30, buffer);
+       refresh();
+       PC_road_x = exit_bottom;
+       PC_road_y = 19;
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			&map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top,
+			manhattan_x,
+			manhattan_y,
+			PC_road_x,
+			PC_road_y,
+			distance_hiker,
+			distance_rival,
+			numtrainers,
+			&first_map);
+     }
+     else {
+       y_explore_position--;
+       manhattan_y--;
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       PC_road_x = exit_bottom;
+       PC_road_y = 19;
+
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] = malloc(sizeof(character_t));
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> player_type = PC;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> x_pos = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> y_pos = PC_road_y;
+       
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_x = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_y = PC_road_y;
+       
+       print_map(map_exploration[y_explore_position][x_explore_position]);
+     }
+   }
+
+   // exit down
+   if(map_exploration[y_explore_position][x_explore_position] -> PC_position_y == 20) {
+     map_exploration[y_explore_position][x_explore_position]
+       -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] = NULL;
+     free(map_exploration[y_explore_position][x_explore_position]
+	  -> character_positions[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y]);
+     
+     exit_bottom = -1;
+     exit_right = -1;
+     exit_top = -1;
+     exit_left = -1;
+     if (map_exploration[y_explore_position + 1][x_explore_position] == NULL) {
+       y_explore_position++;
+       manhattan_y++;
+       map_exploration[y_explore_position][x_explore_position] = malloc(sizeof(generated_map_t));
+       
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
+       PC_road_x = exit_top;
+       PC_road_y = 1;
+       generate_new_map(map_exploration[y_explore_position][x_explore_position],
+			&map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+			exit_bottom,
+			exit_right,
+			exit_left,
+			exit_top,
+			manhattan_x,
+			manhattan_y,
+			PC_road_x,
+			PC_road_y,
+			distance_hiker,
+			distance_rival,
+			numtrainers,
+			&first_map);
+     }
+     else {
+       y_explore_position++;
+       manhattan_y++;
+       check_exits(map_exploration,
+		   x_explore_position,
+		   y_explore_position,
+		   &exit_bottom, &exit_right, &exit_left, &exit_top);
+       PC_road_x = exit_top;
+       PC_road_y = 1;
+
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] = malloc(sizeof(character_t));
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> player_type = PC;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> x_pos = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> character_positions[PC_road_x][PC_road_y] -> y_pos = PC_road_y;
+       
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_x = PC_road_x;
+       map_exploration[y_explore_position][x_explore_position] -> PC_position_y = PC_road_y;
+       
+       print_map(map_exploration[y_explore_position][x_explore_position]);
+     }
+   }
+   
  }
 
  
@@ -396,11 +647,12 @@ void generate_new_map(generated_map_t *map_data,
 		      int exit_top,
 		      int manhattan_x,
 		      int manhattan_y,
-		      int *random_path_x,
-		      int *random_path_y,
+		      int PC_path_x,
+		      int PC_path_y,
 		      cost_t distance_hiker[HORIZONTAL][VERTICAL],
 		      cost_t distance_rival[HORIZONTAL][VERTICAL],
-		      int numtrainers) {
+		      int numtrainers,
+		      int *first_map) {
   
   // I was getting some weird memory problems without initializing
   // everything to nothing
@@ -442,26 +694,22 @@ void generate_new_map(generated_map_t *map_data,
   check_edge_cases(map_data, manhattan_y + 199, manhattan_x + 199);
 
   // Insert the PC
-  // Sometimes this just doesn't execute either, and the PC is placed at (0,0).
-  // It's brute forcing the map diagonally, so there is no reason for this to happen if it does execute!
-  // Maybe a memory thing?
-  choose_random_road_spot(map_data, random_path_x, random_path_y);
-  map_data -> character_positions[*random_path_x][*random_path_y] = malloc(sizeof(character_t));
-  map_data -> character_positions[*random_path_x][*random_path_y] -> player_type = PC;
-  map_data -> character_positions[*random_path_x][*random_path_y] -> x_pos = *random_path_x;
-  map_data -> character_positions[*random_path_x][*random_path_y] -> y_pos = *random_path_y;
+  // Only randomize position for the first map
+  if(*first_map == -1) {
+  choose_random_road_spot(map_data, &PC_path_x, &PC_path_y);
+  *first_map = 1;
+  }
+ 
+  map_data -> character_positions[PC_path_x][PC_path_y] = malloc(sizeof(character_t));
+  map_data -> character_positions[PC_path_x][PC_path_y] -> player_type = PC;
+  map_data -> character_positions[PC_path_x][PC_path_y] -> x_pos = PC_path_x;
+  map_data -> character_positions[PC_path_x][PC_path_y] -> y_pos = PC_path_y;
 
-  map_data -> PC_position_x = *random_path_x;
-  map_data -> PC_position_y = *random_path_y;
+  map_data -> PC_position_x = PC_path_x;
+  map_data -> PC_position_y = PC_path_y;
 
-  char buffer[50];
-
-  sprintf(buffer, "adding PC X: %d, Y: %d", map_data -> PC_position_x, map_data -> PC_position_y);
-  mvaddstr(21, 30, buffer);
-  refresh();
-
-  dijkstra_path_rival(map_data, distance_rival, *random_path_x, *random_path_y);
-  dijkstra_path_hiker(map_data, distance_hiker, *random_path_x, *random_path_y);
+  dijkstra_path_rival(map_data, distance_rival, PC_path_x, PC_path_y);
+  dijkstra_path_hiker(map_data, distance_hiker, PC_path_x, PC_path_y);
   
   place_characters(map_data, h, distance_hiker, distance_rival, numtrainers);
   
@@ -536,6 +784,33 @@ int determine_cost_rival(generated_map_t *map_data, int x_dim, int y_dim) {
     return INT_MAX;
   case pokemon_mart:
     return INT_MAX;
+  case boulder:
+    return INT_MAX;
+  case tree:
+    return INT_MAX;
+  case stationary_occupied:
+    return INT_MAX;
+  default:
+    return 0;
+  }
+}
+
+int determine_cost_PC(generated_map_t *map_data, int x_dim, int y_dim) {
+
+  switch(map_data -> generate_map[x_dim][y_dim]) {
+
+  case path:
+    return 10;
+  case tall_grass:
+    return 20;
+  case clearing:
+    return 10;
+  case nothing:
+    return 10;
+  case pokemon_center:
+    return 10;
+  case pokemon_mart:
+    return 10;
   case boulder:
     return INT_MAX;
   case tree:
@@ -2342,16 +2617,16 @@ if( character_to_move -> y_pos + 1 < 21 ) {
 void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h) {
   char buffer[50];
 
-  if(x_move > 0
+  if(x_move >= 0
      && x_move < 80
-     && y_move > 0
+     && y_move >= 0
      && y_move < 21) {
     if(m -> generate_map[x_move][y_move] != boulder &&
        m -> generate_map[x_move][y_move] != tree &&
        m -> character_positions[x_move][y_move] == NULL) {
       m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> next_x = x_move;
       m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> next_y = y_move;
-      m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + determine_cost_rival(m, x_move, y_move);
+      m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + determine_cost_PC(m, x_move, y_move);
 
       int x = m -> PC_position_x;
       int y = m -> PC_position_y;

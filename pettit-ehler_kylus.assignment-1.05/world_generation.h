@@ -25,11 +25,12 @@ void generate_new_map(generated_map_t *map_data,
 		      int exit_top,
 		      int manhattan_x,
 		      int manhattan_y,
-		      int *random_path_x,
-		      int *random_path_y,
+		      int PC_path_x,
+		      int PC_path_y,
 		      cost_t distance_hiker[HORIZONTAL][VERTICAL],
 		      cost_t distance_rival[HORIZONTAL][VERTICAL],
-		      int numtrainers);
+		      int numtrainers,
+		      int *first_map);
 
 // Check and see if our exits should be random, or they already exist
 void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH],
@@ -114,3 +115,6 @@ void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h);
 
 // Actually move the PC
 void move_PC(character_t *PC, generated_map_t *m);
+
+// Determine the cost we should assign, based on the terrain type
+int determine_cost_PC(generated_map_t *map_data, int x_dim, int y_dim);
