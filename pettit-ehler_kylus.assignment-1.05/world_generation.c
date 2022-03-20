@@ -136,6 +136,7 @@ int main(int argc, char *argv[]) {
      while(to_move -> cost_to_move <= map_exploration[y_explore_position][x_explore_position] -> game_time && (map_exploration[y_explore_position][x_explore_position] -> game_time != 0)) {
        
        to_move = heap_remove_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+
        switch (to_move -> player_type) {
        case random_walker:
 	 move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
@@ -337,7 +338,23 @@ int main(int argc, char *argv[]) {
      break;
      
    case '>':
+
      mvaddstr(22, 30, "got >");
+
+     
+     if(map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_center ||
+	map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_mart) {
+       
+       mvaddstr(22, 30, "PLACEHOLDER FOR POKEMON MART / CENTER");
+       char mart;
+       char buffer[50];
+       
+       while(getchar() != 27) {
+       }  
+     
+     }
+     
+       
      break;
 
    case '5':
@@ -880,7 +897,6 @@ static void dijkstra_path_rival(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   
   // Insert the first node
   dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
-  
 
   // Extract the best (cheapest) node in the heap
   while ((p = heap_remove_min(&h))) {
@@ -1072,7 +1088,6 @@ static void dijkstra_path_hiker(generated_map_t *m, cost_t dijkstra[HORIZONTAL][
   
   // Insert the first node
   dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
-  
   
   while ((p = heap_remove_min(&h))) {
     p->hn = NULL;
@@ -1832,32 +1847,34 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     
     
     if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost >= 0) {
+	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost >= 0 ) {
       min_x_next = character_to_move -> next_x - 1;
-      min_y_next = character_to_move -> next_y - 1;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost;
+  min_y_next = character_to_move -> next_y - 1;
+  
+  cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost;
     }
 
-    // I have no idea why this is adding 10 :(
-    // So I just subtracted 10
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move - 10;
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
+      // I have no idea why this is adding 10 :(
+      // So I just subtracted 10
+     
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move - 10;
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
+      
+      int x_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x;
+      int y_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y;
+      
+      int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
+      int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
+      
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
+      
+      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
+      free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
+      heap_insert(h, m -> character_positions[x_position][y_position]);
     
-    int x_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x;
-    int y_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y;
-    
-    int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
-    int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
-
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
-
-    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
-    free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
-    heap_insert(h, m -> character_positions[x_position][y_position]);
-   }
+  }
   else{
     m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move +=
       determine_cost_rival(m, character_to_move -> x_pos, character_to_move -> y_pos);
