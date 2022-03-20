@@ -5,3 +5,5 @@ Mar 17: Refactored characters to be stored in each map. PC can now move, and hik
 Mar 18: Traversing right and left works, but sometimes rivals and hikers stop moving. Traversing up and down doesn't work yet. Still need to implement a placeholder for the mart/centers, and a list of all characters in the map.
 
 Mar 19: Fixed upwards and downwards traversing. I still can't figure out why dijkstra's isn't working sometimes, it's like my code fails to insert the first node, leaving the whole distance array initialized to INT_MAX. There are also some extreme cases where rivals/hikers get next to the PC, and stop moving as well. This is honestly more acceptable, as they have never stopped in the middle of their pathfinding. I will continue to look into it though.
+
+Tried to fix hikers and rivals pathing towards the PC when the PC is in a mart or center, mostly (but not entirely) fixed the issues. Really, the only time things break is when there is a horde of hikers / rivals outside the center. Last thing to do is implement a list of the current characters on screen

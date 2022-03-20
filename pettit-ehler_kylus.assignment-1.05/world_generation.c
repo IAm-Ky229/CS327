@@ -133,6 +133,12 @@ int main(int argc, char *argv[]) {
    character_t *to_move;
    if(map_exploration[y_explore_position][x_explore_position] -> characters_to_move.size != 0) {
      to_move = heap_peek_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+
+     char buffer[50];
+     sprintf(buffer, "moving X: %d Y: %d cost: %d", to_move -> x_pos, to_move -> y_pos, to_move -> cost_to_move);
+     mvaddstr(21, 30, buffer);
+     refresh();
+     
      while(to_move -> cost_to_move <= map_exploration[y_explore_position][x_explore_position] -> game_time && (map_exploration[y_explore_position][x_explore_position] -> game_time != 0)) {
        
        to_move = heap_remove_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
@@ -1849,23 +1855,30 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost < cost_to_move &&
 	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost >= 0 ) {
       min_x_next = character_to_move -> next_x - 1;
-  min_y_next = character_to_move -> next_y - 1;
+      min_y_next = character_to_move -> next_y - 1;
   
   cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost;
     }
 
+    int x_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x;
+    int y_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y;
+    
+    int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
+    int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
+
+    char buffer[50];
+    sprintf(buffer, "min X: %d min Y: %d cost: %d", min_x_next, min_y_next, m -> character_positions[x_position][y_position] -> cost_to_move);
+    mvaddstr(22, 30, buffer);
+    refresh();
+
+
+    
       // I have no idea why this is adding 10 :(
       // So I just subtracted 10
-     
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += dijkstra[character_to_move -> x_pos][character_to_move -> y_pos].cost - cost_to_move - 10;
+
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_rival(m, min_x_next, min_y_next);
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
-      
-      int x_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x;
-      int y_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y;
-      
-      int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
-      int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
       
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
@@ -1873,9 +1886,10 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
       m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
       free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
       heap_insert(h, m -> character_positions[x_position][y_position]);
+
     
   }
-  else{
+  else {
     m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move +=
       determine_cost_rival(m, character_to_move -> x_pos, character_to_move -> y_pos);
     heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
