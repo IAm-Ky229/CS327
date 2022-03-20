@@ -3,3 +3,5 @@ Mar 16: Added curses library to program, got everything printing with mvaddch. A
 Mar 17: Refactored characters to be stored in each map. PC can now move, and hikers/rivals shortest paths are updated properly. Probably gonna work on moving to and generating different maps tomorrow.
 
 Mar 18: Traversing right and left works, but sometimes rivals and hikers stop moving. Traversing up and down doesn't work yet. Still need to implement a placeholder for the mart/centers, and a list of all characters in the map.
+
+Mar 19: Fixed upwards and downwards traversing

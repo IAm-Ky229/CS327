@@ -500,9 +500,6 @@ int main(int argc, char *argv[]) {
 		   y_explore_position,
 		   &exit_bottom, &exit_right, &exit_left, &exit_top);
        heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
-       sprintf(buffer, "assigning X: %d Y: 19", exit_bottom);
-       mvaddstr(21, 30, buffer);
-       refresh();
        PC_road_x = exit_bottom;
        PC_road_y = 19;
        generate_new_map(map_exploration[y_explore_position][x_explore_position],
@@ -685,6 +682,7 @@ void generate_new_map(generated_map_t *map_data,
   place_clearings(map_data);
   place_tall_grass(map_data);
   place_border_boulders(map_data);
+  
   place_exits(map_data, exit_bottom, exit_right, exit_left, exit_top);
   place_paths(map_data);
   place_buildings(map_data, building_spawn_rate);
@@ -726,7 +724,7 @@ void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH
 
   if(y_explore + 1 < 400) {
     if(map_exploration[y_explore + 1][x_explore] != NULL) {
-      *exit_top = map_exploration[y_explore + 1][x_explore] -> exit_bottom;
+      *exit_bottom = map_exploration[y_explore + 1][x_explore] -> exit_top;
     }
   }
 
@@ -738,7 +736,7 @@ void check_exits(generated_map_t *map_exploration[WORLD_Y_LENGTH][WORLD_X_LENGTH
 
   if(y_explore - 1 > -1) {
     if(map_exploration[y_explore - 1][x_explore] != NULL) {
-      *exit_bottom = map_exploration[y_explore - 1][x_explore] -> exit_top;
+      *exit_top = map_exploration[y_explore - 1][x_explore] -> exit_bottom;
     }
   }
 
