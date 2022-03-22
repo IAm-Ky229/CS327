@@ -126,7 +126,10 @@ int main(int argc, char *argv[]) {
  // It's based on peeking the minimum cost character move in the queue
  // If we find one should be removed (equal to game time), do it
  // And replace the same character with an updated cost / new move
- while(1) {
+
+ int quit_game = 0;
+ 
+ while(!quit_game) {
 
    user_input = getch();
    
@@ -350,12 +353,12 @@ int main(int argc, char *argv[]) {
      
      if(map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_center ||
 	map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_mart) {
+
+       clear();
+       mvaddstr(11, 20, "PLACEHOLDER FOR POKEMON MART / CENTER");
+       refresh();
        
-       mvaddstr(22, 30, "PLACEHOLDER FOR POKEMON MART / CENTER");
-       char mart;
-       char buffer[50];
-       
-       while(getchar() != 27) {
+       while(getchar() != '<') {
        }  
      
      }
@@ -365,18 +368,26 @@ int main(int argc, char *argv[]) {
 
    case '5':
      mvaddstr(22, 30, "got 5");
+     // Do nothing
      break;
 
    case ' ':
      mvaddstr(22, 30, "got _");
+     // Do nothing
      break;
 
    case '.':
      mvaddstr(22, 30, "got .");
+     // Do nothing
      break;
 
    case 't':
      mvaddstr(22, 30, "got t");
+     break;
+
+   case 'q':
+     quit_game = 1;
+     endwin();
      break;
      
    }
