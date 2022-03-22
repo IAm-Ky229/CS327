@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
      to_move = heap_peek_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 
      char buffer[50];
-     sprintf(buffer, "moving X: %d Y: %d cost: %d", to_move -> x_pos, to_move -> y_pos, to_move -> cost_to_move);
+     sprintf(buffer, "still moving X: %d Y: %d cost: %d", to_move -> x_pos, to_move -> y_pos, to_move -> cost_to_move);
      mvaddstr(21, 30, buffer);
      refresh();
      
@@ -383,6 +383,56 @@ int main(int argc, char *argv[]) {
 
    case 't':
      mvaddstr(22, 30, "got t");
+
+     heap_t characters_copy;
+     int window = 0;
+
+     int i;
+     int j;
+
+     heap_init(&characters_copy, move_cost_cmp, NULL);
+     
+     for(i = 0; i < VERTICAL; i++) {
+       for(j = 0; j < HORIZONTAL; j++) {
+	 if(map_exploration[y_explore_position][x_explore_position] -> character_positions[j][i] != NULL) {
+	   if(map_exploration[y_explore_position][x_explore_position] -> character_positions[j][i] -> player_type != PC) {
+	     heap_insert(&characters_copy, map_exploration[y_explore_position][x_explore_position] -> character_positions[j][i]);
+	   }
+	 }
+       }
+     }
+
+     character_t *characters_list;
+     characters_list = malloc(map_exploration[y_explore_position][x_explore_position] -> characters_to_move.size * sizeof(character_t));
+
+     int size = map_exploration[y_explore_position][x_explore_position] -> characters_to_move.size;
+     character_t *temp_character;
+
+     for(i = 0; i < size; i++) {
+       temp_character = heap_remove_min(&characters_copy);
+       characters_list[i] = *temp_character;
+     }
+
+     clear();
+
+     int return_to_game = 0;
+     char pressed_key;
+     
+     while(!return_to_game) {
+
+       update_list(map_exploration[y_explore_position][x_explore_position], characters_list, window, size);
+       pressed_key = getchar();
+
+       if(pressed_key == 27) {
+	 return_to_game = 1;
+       }
+
+     }
+
+     characters_list = NULL;
+     free(characters_list);
+     heap_delete(&characters_copy);
+     
      break;
 
    case 'q':
@@ -1421,6 +1471,7 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	break;
       case stationary:
 	m -> generate_map[rand_x][rand_y] = stationary_occupied;
+	m -> character_positions[rand_x][rand_y] -> cost_to_move = 5000;
 	break;
       case pacer:
 	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
@@ -1618,7 +1669,6 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	break; 
       }
 
-      //printf("inserting character\n");
       heap_insert(h, m -> character_positions[rand_x][rand_y]);
       placed_characters++;
     }
@@ -1881,28 +1931,33 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     sprintf(buffer, "min X: %d min Y: %d cost: %d", min_x_next, min_y_next, m -> character_positions[x_position][y_position] -> cost_to_move);
     mvaddstr(22, 30, buffer);
     refresh();
-
-
     
-      // I have no idea why this is adding 10 :(
-      // So I just subtracted 10
-
+    if(character_to_move -> player_type == rival) {
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_rival(m, min_x_next, min_y_next);
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
-      
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
-      
-      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
-      free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
-      heap_insert(h, m -> character_positions[x_position][y_position]);
-
+    }
+    else {
+      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_hiker(m, min_x_next, min_y_next);
+    }
     
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_rival(m, min_x_next, min_y_next);
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
+    
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
+    
+    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
+    free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
+    heap_insert(h, m -> character_positions[x_position][y_position]);
+
   }
   else {
-    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move +=
-      determine_cost_rival(m, character_to_move -> x_pos, character_to_move -> y_pos);
+    if(character_to_move -> player_type == rival) {
+      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move += determine_cost_rival(m, character_to_move -> x_pos, character_to_move -> y_pos);
+    }
+    else {
+      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move += determine_cost_hiker(m, character_to_move -> x_pos, character_to_move -> y_pos);
+    }
     heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
   }
 }
@@ -2700,4 +2755,93 @@ void move_PC(character_t *player_char, generated_map_t *m) {
     free(m -> character_positions[prev_x][prev_y]);
   }
   
+}
+
+void update_list(generated_map_t *m, character_t *list_copy, int window, int size) {
+
+  int to_print_final;
+  int pages;
+  int total;
+  
+  to_print_final = size % 10;
+  pages = size / 10;
+  total = pages * 10 + to_print_final;
+  
+  int position;
+  int i;
+  
+  char buffer[100];
+  char player_type[15];
+  int iterate = 3;
+  
+  if(window == pages) {
+    position = 10 * pages;
+    
+    for(i = position; i < to_print_final; i++) {
+      
+      switch(list_copy[i].player_type) {
+      case rival:
+	strcpy(player_type, "RIVAL");
+	break;
+      case hiker:
+	strcpy(player_type, "HIKER");
+	break;
+      case pacer:
+	strcpy(player_type, "PACER");
+	break;
+      case wanderer:
+	strcpy(player_type, "WANDERER");
+	break;
+      case random_walker:
+	strcpy(player_type, "RANDOM WALKER");
+	break;
+      case stationary:
+	strcpy(player_type, "STATIONARY");
+	break;
+      }
+      
+      sprintf(buffer, "CHARACTER: %s DISTANCE FROM PC X: %d Y: %d", player_type, list_copy[i].x_pos - m -> PC_position_x, list_copy[i].y_pos - m -> PC_position_y);
+      mvaddstr(iterate, 10, buffer);
+      
+      iterate += 1;
+      
+    }
+  }
+  
+  else {
+    
+    position = window * 10;
+    
+    for(i = position; i < 10; i++) {
+      
+      switch(list_copy[i].player_type) {
+      case rival:
+	strcpy(player_type, "RIVAL");
+	break;
+      case hiker:
+	strcpy(player_type, "HIKER");
+	break;
+      case pacer:
+	strcpy(player_type, "PACER");
+	break;
+      case wanderer:
+	strcpy(player_type, "WANDERER");
+	break;
+      case random_walker:
+	strcpy(player_type, "RANDOM WALKER");
+	break;
+      case stationary:
+	strcpy(player_type, "STATIONARY");
+	break;
+      }
+      
+      sprintf(buffer, "CHARACTER: %s DISTANCE FROM PC X: %d Y: %d", player_type, list_copy[i].x_pos - m -> PC_position_x, list_copy[i].y_pos - m -> PC_position_y);
+      mvaddstr(iterate, 10, buffer);
+      
+      iterate += 1;
+    }
+    
+    refresh();
+    
+  }
 }

@@ -118,3 +118,6 @@ void move_PC(character_t *PC, generated_map_t *m);
 
 // Determine the cost we should assign, based on the terrain type
 int determine_cost_PC(generated_map_t *map_data, int x_dim, int y_dim);
+
+// Update the list of characters printed
+void update_list(generated_map_t *m, character_t *list_copy, int window, int size);

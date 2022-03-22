@@ -6,4 +6,6 @@ Mar 18: Traversing right and left works, but sometimes rivals and hikers stop mo
 
 Mar 19: Fixed upwards and downwards traversing. I still can't figure out why dijkstra's isn't working sometimes, it's like my code fails to insert the first node, leaving the whole distance array initialized to INT_MAX. There are also some extreme cases where rivals/hikers get next to the PC, and stop moving as well. This is honestly more acceptable, as they have never stopped in the middle of their pathfinding. I will continue to look into it though.
 
-Tried to fix hikers and rivals pathing towards the PC when the PC is in a mart or center, mostly (but not entirely) fixed the issues. Really, the only time things break is when there is a horde of hikers / rivals outside the center. Last thing to do is implement a list of the current characters on screen
+Tried to fix hikers and rivals pathing towards the PC when the PC is in a mart or center, mostly (but not entirely) fixed the issues. Really, the only time things break is when there is a horde of hikers / rivals outside the center. One of the last things to do is implement a list of the current characters on screen
+
+Mar 21: Displaying a simple list of characters works. Struggled a bit with making a deep copy but I think I get that memcpy is just a shallow copy now, so any and all pointers will be modified in the copied object. Still need to implement up and down arrow functionality, and lastly implement a battle placeholder, which is basically just the NPC tried to move on top of the PC
