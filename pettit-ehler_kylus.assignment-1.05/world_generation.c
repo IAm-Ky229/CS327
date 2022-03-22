@@ -416,17 +416,48 @@ int main(int argc, char *argv[]) {
      clear();
 
      int return_to_game = 0;
-     char pressed_key;
+     int pressed_key_1;
+     int pressed_key_2;
+     int pressed_key_3;
+
+     int extra = 0;
+     if(size % 10 != 0) {
+       extra = 1;
+     }
      
      while(!return_to_game) {
-
+       pressed_key_1 = -1;
+       pressed_key_2 = -1;
+       pressed_key_3 = -1;
+       
        update_list(map_exploration[y_explore_position][x_explore_position], characters_list, window, size);
-       pressed_key = getchar();
+       pressed_key_1 = getchar();
+       
+       if(pressed_key_1 == 0x1B) {
+	 pressed_key_2 = getchar();
+	 
+	 if(pressed_key_2 == 0x5B) {
+	   
+	   pressed_key_3 = getchar();
 
-       if(pressed_key == 27) {
-	 return_to_game = 1;
+	   // Up arrow
+	   if(pressed_key_3 == 0x41) {
+
+	   }
+
+	   // Down arrow
+	   if(pressed_key_3 == 0x42) {
+
+	   }
+	   
+	 }
+
+	 // Escape
+	 if(pressed_key_2 == 0x1B) {
+	   return_to_game = 1;
+	 }
        }
-
+       
      }
 
      characters_list = NULL;
@@ -1939,7 +1970,6 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_hiker(m, min_x_next, min_y_next);
     }
     
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_rival(m, min_x_next, min_y_next);
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
     
@@ -2835,7 +2865,7 @@ void update_list(generated_map_t *m, character_t *list_copy, int window, int siz
 	break;
       }
       
-      sprintf(buffer, "CHARACTER: %s DISTANCE FROM PC X: %d Y: %d", player_type, list_copy[i].x_pos - m -> PC_position_x, list_copy[i].y_pos - m -> PC_position_y);
+      sprintf(buffer, "CHARACTER: %s [] DISTANCE FROM PC X: %d Y: %d", player_type, list_copy[i].x_pos - m -> PC_position_x, list_copy[i].y_pos - m -> PC_position_y);
       mvaddstr(iterate, 10, buffer);
       
       iterate += 1;
