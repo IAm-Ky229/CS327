@@ -61,6 +61,7 @@ typedef struct character {
   int y_pos;
   int next_x;
   int next_y;
+  int battled;
 } character_t;
 
 typedef struct generated_map {
@@ -130,4 +131,3 @@ void place_pokemart(int selected_row, generated_map_t *map_data);
 
 // Finalize any spaces that were left uninitialized
 void fill_blank_space(generated_map_t *map_data);
-

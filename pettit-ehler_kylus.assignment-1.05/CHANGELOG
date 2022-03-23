@@ -9,3 +9,5 @@ Mar 19: Fixed upwards and downwards traversing. I still can't figure out why dij
 Tried to fix hikers and rivals pathing towards the PC when the PC is in a mart or center, mostly (but not entirely) fixed the issues. Really, the only time things break is when there is a horde of hikers / rivals outside the center. One of the last things to do is implement a list of the current characters on screen
 
 Mar 21: Displaying a simple list of characters works. Struggled a bit with making a deep copy but I think I get that memcpy is just a shallow copy now, so any and all pointers will be modified in the copied object. Still need to implement up and down arrow functionality, and lastly implement a battle placeholder, which is basically just the NPC tried to move on top of the PC
+
+Mar 22: Display a more detailed list, can handle more than 1 page. Might fix some pathing stuff. Also implemented a battle placeholder for NPCs.

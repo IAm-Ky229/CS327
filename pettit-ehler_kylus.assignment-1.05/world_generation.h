@@ -121,3 +121,6 @@ int determine_cost_PC(generated_map_t *map_data, int x_dim, int y_dim);
 
 // Update the list of characters printed
 void update_list(generated_map_t *m, character_t *list_copy, int window, int size);
+
+// Placeholder for pokemon battle
+void engage_battle();
