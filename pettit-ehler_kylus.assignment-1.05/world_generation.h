@@ -111,7 +111,7 @@ void move_right_walker(generated_map_t *m, heap_t *h, character_t *character_to_
 void move_left_walker(generated_map_t *m, heap_t *h, character_t *character_to_move, int current_x, int current_y);
 
 // Attempt to move the PC, assign next move
-void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h);
+void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h, int *PC_added_to_heap);
 
 // Actually move the PC
 void move_PC(character_t *PC, generated_map_t *m);

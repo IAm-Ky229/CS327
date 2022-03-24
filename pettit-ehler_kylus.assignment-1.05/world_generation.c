@@ -69,6 +69,9 @@ int main(int argc, char *argv[]) {
   // We only want random placement when we enter the first map
   int first_map = -1;
 
+  // We only want to add 1 PC move at a time
+  int PC_added_to_heap = 0;
+
   // curses init
   initscr();
   cbreak();
@@ -138,11 +141,12 @@ int main(int argc, char *argv[]) {
      to_move = heap_peek_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 
      char buffer[50];
-     sprintf(buffer, "still moving X: %d Y: %d cost: %d", to_move -> x_pos, to_move -> y_pos, to_move -> cost_to_move);
+     sprintf(buffer, "moving X: %d Y: %d cost: %d", to_move -> x_pos, to_move -> y_pos, to_move -> cost_to_move);
      mvaddstr(21, 30, buffer);
      refresh();
      
-     while(to_move -> cost_to_move <= map_exploration[y_explore_position][x_explore_position] -> game_time && (map_exploration[y_explore_position][x_explore_position] -> game_time != 0)) {
+     while(to_move -> cost_to_move <= map_exploration[y_explore_position][x_explore_position] -> game_time
+	   && (map_exploration[y_explore_position][x_explore_position] -> game_time != 0)) {
        
        to_move = heap_remove_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 
@@ -171,6 +175,7 @@ int main(int argc, char *argv[]) {
 
        case PC:
 	 move_PC(to_move, map_exploration[y_explore_position][x_explore_position]);
+	 PC_added_to_heap = 0;
 	 break;
 	 
        }
@@ -189,160 +194,209 @@ int main(int argc, char *argv[]) {
    case '7':
      mvaddstr(22, 30, "got 7");
 
-     attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
-		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
-		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+     if(!PC_added_to_heap) {
+       attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
+		       map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
+		       map_exploration[y_explore_position][x_explore_position],
+		       &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		       &PC_added_to_heap);
+     }
      
      break;
 
    case 'y':
      mvaddstr(22, 30, "got y");
 
-     attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
-		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
-		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+     if(!PC_added_to_heap) {
+       attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
+		       map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
+		       map_exploration[y_explore_position][x_explore_position],
+		       &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		       &PC_added_to_heap);
+     }
      
      break;
      
    case '8':
      mvaddstr(22, 30, "got 8");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'k':
      mvaddstr(22, 30, "got k");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case '9':
      mvaddstr(22, 30, "got 9");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'u':
      mvaddstr(22, 30, "got u");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y - 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
+     
      
      break;
 
    case '6':
      mvaddstr(22, 30, "got 6");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'l':
      mvaddstr(22, 30, "got l");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case '3':
      mvaddstr(22, 30, "got 3");
-     
+
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'n':
      mvaddstr(22, 30, "got n");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x + 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
      
    case '2':
      mvaddstr(22, 30, "got 2");
-     
+
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'j':
      mvaddstr(22, 30, "got j");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
      
    case '1':
      mvaddstr(22, 30, "got 1");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'b':
      mvaddstr(22, 30, "got b");
 
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y + 1,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case '4':
      mvaddstr(22, 30, "got 4");
-     
+
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
 
    case 'h':
      mvaddstr(22, 30, "got h");
-     
+
+     if(!PC_added_to_heap) {
      attempt_move_PC(map_exploration[y_explore_position][x_explore_position] -> PC_position_x - 1,
 		     map_exploration[y_explore_position][x_explore_position] -> PC_position_y,
 		     map_exploration[y_explore_position][x_explore_position],
-		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+		     &map_exploration[y_explore_position][x_explore_position] -> characters_to_move,
+		     &PC_added_to_heap);
+     }
      
      break;
      
@@ -1510,7 +1564,7 @@ void place_characters(generated_map_t *m, heap_t *h, cost_t distance_hiker[HORIZ
 	break;
       case stationary:
 	m -> generate_map[rand_x][rand_y] = stationary_occupied;
-	m -> character_positions[rand_x][rand_y] -> cost_to_move = 5000;
+	m -> character_positions[rand_x][rand_y] -> cost_to_move = 2000000000;
 	break;
       case pacer:
 	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
@@ -1725,10 +1779,10 @@ void move_pacer(generated_map_t *m, character_t *pacer_to_move, heap_t *h) {
 
   if(m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] != NULL) {
     if(m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> player_type == PC &&
-       m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> battled == 0) {
+       m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> battled == 0) {
       
       engage_battle();
-      m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> battled = 1;
+      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> battled = 1;
       
     }
   }
@@ -2022,11 +2076,6 @@ void move_via_shortest_path(generated_map_t *m, cost_t dijkstra[HORIZONTAL][VERT
     
     int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
     int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
-
-    char buffer[50];
-    sprintf(buffer, "min X: %d min Y: %d cost: %d", min_x_next, min_y_next, m -> character_positions[x_position][y_position] -> cost_to_move);
-    mvaddstr(22, 30, buffer);
-    refresh();
     
     if(character_to_move -> player_type == rival) {
       m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += determine_cost_rival(m, min_x_next, min_y_next);
@@ -2069,10 +2118,10 @@ void move_wanderer(generated_map_t *m, character_t *wanderer_to_move, heap_t *h)
 
   if(m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] != NULL) {
     if(m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> player_type == PC &&
-       m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> battled == 0) {
+       m -> character_positions[wanderer_to_move -> x_pos][wanderer_to_move -> y_pos] -> battled == 0) {
       
       engage_battle();
-      m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> battled = 1;
+      m -> character_positions[wanderer_to_move -> x_pos][wanderer_to_move -> y_pos] -> battled = 1;
       
     }
   }
@@ -2620,10 +2669,10 @@ void move_random_walker(generated_map_t *m, character_t *walker_to_move, heap_t 
 
   if(m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] != NULL) {
     if(m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> player_type == PC &&
-       m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> battled == 0) {
+       m -> character_positions[walker_to_move -> x_pos][walker_to_move -> y_pos] -> battled == 0) {
       
       engage_battle();
-      m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> battled = 1;
+      m -> character_positions[walker_to_move -> x_pos][walker_to_move -> y_pos] -> battled = 1;
       
     }
   }
@@ -3129,7 +3178,7 @@ if( character_to_move -> y_pos + 1 < 21 ) {
   
 }
 
-void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h) {
+void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h, int *PC_added_to_heap) {
   char buffer[50];
 
   if(x_move >= 0
@@ -3137,16 +3186,24 @@ void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h) {
      && y_move >= 0
      && y_move < 21) {
     if(m -> generate_map[x_move][y_move] != boulder &&
-       m -> generate_map[x_move][y_move] != tree &&
-       m -> character_positions[x_move][y_move] == NULL) {
+       m -> generate_map[x_move][y_move] != tree) {
       m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> next_x = x_move;
       m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> next_y = y_move;
-      m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + determine_cost_PC(m, x_move, y_move);
+
+      if(m -> character_positions[x_move][y_move] != NULL) {
+	if(m -> character_positions[x_move][y_move] -> player_type == stationary) {
+	  m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + 10;
+	}
+      }
+      else {	
+	m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + determine_cost_PC(m, x_move, y_move);
+      }
 
       int x = m -> PC_position_x;
       int y = m -> PC_position_y;
       
       heap_insert(h, m -> character_positions[x][y]);
+      *PC_added_to_heap = 1;
     }
   }
   
@@ -3154,14 +3211,21 @@ void attempt_move_PC(int x_move, int y_move, generated_map_t *m, heap_t *h) {
 
 void move_PC(character_t *player_char, generated_map_t *m) {
 
+  int prev_x = player_char -> x_pos;
+  int prev_y = player_char -> y_pos;
+
+  int next_x_move = player_char -> next_x;
+  int next_y_move = player_char -> next_y;
+
+  if(m -> character_positions[player_char -> next_x][player_char -> next_y] != NULL) {
+    char buffer[50];
+    sprintf(buffer, "battled: %d", m -> character_positions[player_char -> next_x][player_char -> next_y] -> battled);
+    mvaddstr(21, 0, buffer);
+    refresh();
+  }
+  
   if(m -> character_positions[player_char -> next_x][player_char -> next_y] == NULL) {
-
-    int prev_x = player_char -> x_pos;
-    int prev_y = player_char -> y_pos;
-
-    int next_x_move = player_char -> next_x;
-    int next_y_move = player_char -> next_y;
-
+    
     m -> character_positions[next_x_move][next_y_move] = malloc(sizeof(character_t));
     m -> character_positions[next_x_move][next_y_move] -> player_type = PC;
     
@@ -3174,7 +3238,12 @@ void move_PC(character_t *player_char, generated_map_t *m) {
     m -> character_positions[prev_x][prev_y] = NULL;
     free(m -> character_positions[prev_x][prev_y]);
   }
-  
+  else if (m -> character_positions[next_x_move][next_y_move] -> battled == 0) {
+     
+      engage_battle();
+      m -> character_positions[next_x_move][next_y_move] -> battled = 1;
+      
+  }
 }
 
 void update_list(generated_map_t *m, character_t *list_copy, int window, int size) {

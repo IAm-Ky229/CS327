@@ -10,4 +10,8 @@ Tried to fix hikers and rivals pathing towards the PC when the PC is in a mart o
 
 Mar 21: Displaying a simple list of characters works. Struggled a bit with making a deep copy but I think I get that memcpy is just a shallow copy now, so any and all pointers will be modified in the copied object. Still need to implement up and down arrow functionality, and lastly implement a battle placeholder, which is basically just the NPC tried to move on top of the PC
 
-Mar 22: Display a more detailed list, can handle more than 1 page. Might fix some pathing stuff. Also implemented a battle placeholder for NPCs.
+Mar 22: Display a more detailed list, can handle more than 1 page. Might fix some hiker/rival pathing stuff, they will get stuck if they try to path "into" another character that can't move out of the way. But this doesn't happen a lot, or as long as there isn't a huge amount of characters, so I haven't put much time into fixing it. Also implemented a battle placeholder for NPCs.
+
+Mar 23: Finished battle placeholder for NPCs. Also fixed a few of the more serious bugs, still need to fix one more bug and submit. Might implement color if I get time.
+
+
