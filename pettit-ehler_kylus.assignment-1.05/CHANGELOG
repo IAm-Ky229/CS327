@@ -14,4 +14,6 @@ Mar 22: Display a more detailed list, can handle more than 1 page. Might fix som
 
 Mar 23: Finished battle placeholder for NPCs. Also fixed a few of the more serious bugs, still need to fix one more bug and submit. Might implement color if I get time.
 
+Mar 24: Fixed a bug with movement, ended up being a problem with if / else if statements. I now check to see if we should battle the PC at the end of each movement assignment. Everything seems to be working about as well as I can make it, wrap up readme and submit.
+
 
