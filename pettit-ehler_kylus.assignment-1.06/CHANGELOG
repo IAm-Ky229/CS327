@@ -1,0 +1,3 @@
+Mar 27: Fixed the long list of c++ compile errors I got today, probably gonna work on re-factoring PC / NCP characters and parsing a file tomorrow. A lot of my variables are public, so it kind of defeats the purpose of classes, but all the assignment says is to port the program from C to C++. So, for now, I didn't make any getters and setters.
+
+
