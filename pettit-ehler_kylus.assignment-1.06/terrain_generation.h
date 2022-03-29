@@ -54,25 +54,32 @@ enum direction {
 
 class characterData {
   
- private:
-
- public:
-
-  terrain terrain_type;
+public:
   char_type player_type;
-  direction cur_direction;
   int cost_to_move;
   int x_pos;
   int y_pos;
   int next_x;
   int next_y;
+  terrain terrain_type;
+  direction cur_direction;
   int battled;
   
 };
 
-class generatedMap {
+class NPC_char: public characterData {
 
- private:
+public:
+  // No new member variables needed. Just doing this for assignment 1.06
+};
+
+class PC_char: public characterData {
+  
+public:
+  // No new member variables needed. Just doing this for assignment 1.06
+};
+
+class generatedMap {
 
  public:
 

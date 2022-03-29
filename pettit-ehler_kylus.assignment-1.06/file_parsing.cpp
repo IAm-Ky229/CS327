@@ -267,17 +267,11 @@ void file_reader::read_lines_pokemon(ifstream &input_file, int num_lines) {
 }
 
 void file_reader::read_lines_pokemon_moves(ifstream &input_file, int num_lines) {
-  //std::cout << "Num_lines / 1000: " << (num_lines / 1000) << "\n";
-  //std::cout << "Dimension 2: " << 1000 << "\n";
-  //pokemon_moves pkmn_mv[num_lines / 1000][1000];
-
   std::vector<pokemon_moves> v;
   
   // Skip first line
   String line;
   std::getline(input_file, line);
-
-  std::cout << "got into read lines pokemon moves\n";
   
   for(int i = 0; i < num_lines; i++) {
     

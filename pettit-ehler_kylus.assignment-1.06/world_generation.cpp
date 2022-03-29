@@ -166,29 +166,29 @@ int main(int argc, char *argv[]) {
 
        switch (to_move -> player_type) {
        case random_walker:
-	 processAction.move_random_walker(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	 processAction.move_random_walker(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case wanderer:
-	 processAction.move_wanderer(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	 processAction.move_wanderer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case pacer:
-	 processAction.move_pacer(map_exploration[y_explore_position][x_explore_position], to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	 processAction.move_pacer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case hiker:
 	 dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, map_exploration[y_explore_position][x_explore_position] -> PC_position_x , map_exploration[y_explore_position][x_explore_position] -> PC_position_y);
-	 processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	 processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 	 
        case rival:
 	 dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], distance_rival, map_exploration[y_explore_position][x_explore_position] -> PC_position_x, map_exploration[y_explore_position][x_explore_position] -> PC_position_y);
-	 processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	 processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
 	 break;
 
        case PC:
-	 processAction.move_PC(to_move, map_exploration[y_explore_position][x_explore_position]);
+	 processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position]);
 	 PC_added_to_heap = 0;
 	 break;
 	 
@@ -499,7 +499,7 @@ int main(int argc, char *argv[]) {
        pressed_key_2 = -1;
        pressed_key_3 = -1;
        
-       listUtil.update_list(map_exploration[y_explore_position][x_explore_position], characters_list, window, size);
+       listUtil.update_list(map_exploration[y_explore_position][x_explore_position], (NPC_char*) characters_list, window, size);
        char buffer[50];
        sprintf(buffer, "window: %d", window);
        mvaddstr(20, 10, buffer);
@@ -899,7 +899,7 @@ void mapGen::generate_new_map(generatedMap *map_data,
   *first_map = 1;
   }
  
-  map_data -> character_positions[PC_path_x][PC_path_y] = (characterData*) malloc(sizeof(characterData));
+  map_data -> character_positions[PC_path_x][PC_path_y] = (PC_char*) malloc(sizeof(PC_char));
   map_data -> character_positions[PC_path_x][PC_path_y] -> player_type = PC;
   map_data -> character_positions[PC_path_x][PC_path_y] -> x_pos = PC_path_x;
   map_data -> character_positions[PC_path_x][PC_path_y] -> y_pos = PC_path_y;
@@ -1491,7 +1491,7 @@ void characterLogic::place_characters(generatedMap *m, heap_t *h, movementCosts 
         m -> generate_map[rand_x][rand_y] != path &&
 	m -> character_positions[rand_x][rand_y] == NULL) {
      
-      m -> character_positions[rand_x][rand_y] = (characterData*) malloc(sizeof(characterData));
+      m -> character_positions[rand_x][rand_y] = (NPC_char*) malloc(sizeof(NPC_char));
       m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
       m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
       m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
@@ -1795,7 +1795,7 @@ void characterLogic::place_characters(generatedMap *m, heap_t *h, movementCosts 
 
 }
 
-void characterLogic::move_pacer(generatedMap *m, characterData *pacer_to_move, heap_t *h) {
+void characterLogic::move_pacer(generatedMap *m, NPC_char *pacer_to_move, heap_t *h) {
 
   characterLogic characterLogic;
   
@@ -1826,7 +1826,7 @@ void characterLogic::move_pacer(generatedMap *m, characterData *pacer_to_move, h
     last_x = pacer_to_move -> x_pos;
     last_y = pacer_to_move -> y_pos;
     
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] = (characterData*) malloc(sizeof(characterData));
+    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] =  (NPC_char*) malloc(sizeof(NPC_char));
     m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> player_type = pacer;
     m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> cost_to_move = pacer_to_move -> cost_to_move;
     m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> cur_direction = pacer_to_move -> cur_direction;
@@ -1861,7 +1861,7 @@ void characterLogic::move_pacer(generatedMap *m, characterData *pacer_to_move, h
   
 }
 
-void characterLogic::move_up(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_up(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
   int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
@@ -1904,7 +1904,7 @@ if( character_to_move -> y_pos - 1 > 0 ) {
   
 }
 
-void characterLogic::move_down(generatedMap *m, heap_t *h, characterData *character_to_move,  int current_x, int current_y) {
+void characterLogic::move_down(generatedMap *m, heap_t *h, NPC_char *character_to_move,  int current_x, int current_y) {
 
   movementCosts pathfind;
   
@@ -1944,7 +1944,7 @@ if( character_to_move -> y_pos + 1 < 21 ) {
  heap_insert(h, m -> character_positions[current_x][current_y]);
 }
 
-void characterLogic::move_left(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_left(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
   
@@ -1987,7 +1987,7 @@ void characterLogic::move_left(generatedMap *m, heap_t *h, characterData *charac
   heap_insert(h, m -> character_positions[current_x][current_y]);
 }
 
-void characterLogic::move_right(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_right(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -2031,7 +2031,7 @@ void characterLogic::move_right(generatedMap *m, heap_t *h, characterData *chara
 }
 
 
-void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], characterData *character_to_move, heap_t *h) {
+void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], NPC_char *character_to_move, heap_t *h) {
 
   int min_x_next;
   int min_y_next;
@@ -2053,7 +2053,7 @@ void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijks
   // Check to see if we are going to run into another character
   if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] == NULL &&
      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled != 1) {
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = (characterData*) malloc(sizeof(characterData));
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type = character_to_move -> player_type;
     
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move;
@@ -2162,7 +2162,7 @@ void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijks
 
 
 
-void characterLogic::move_wanderer(generatedMap *m, characterData *wanderer_to_move, heap_t *h) {
+void characterLogic::move_wanderer(generatedMap *m, NPC_char *wanderer_to_move, heap_t *h) {
 
   int current_x = wanderer_to_move -> x_pos;
   int current_y = wanderer_to_move -> y_pos;
@@ -2191,7 +2191,7 @@ void characterLogic::move_wanderer(generatedMap *m, characterData *wanderer_to_m
     last_x = wanderer_to_move -> x_pos;
     last_y = wanderer_to_move -> y_pos;
     
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] = (characterData*) malloc(sizeof(characterData));
+    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> player_type = wanderer;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> cost_to_move = wanderer_to_move -> cost_to_move;
     m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> cur_direction = wanderer_to_move -> cur_direction;
@@ -2226,7 +2226,7 @@ void characterLogic::move_wanderer(generatedMap *m, characterData *wanderer_to_m
 
 }
 
-void characterLogic::move_up_random(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_up_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -2330,7 +2330,7 @@ if( character_to_move -> y_pos - 1 >= 0 ) {
   
 }
 
-void characterLogic::move_down_random(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_down_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
   
   movementCosts pathfind;
   int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
@@ -2436,7 +2436,7 @@ if( character_to_move -> y_pos + 1 < 21 ) {
   
 }
 
-void characterLogic::move_right_random(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_right_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -2541,7 +2541,7 @@ if( character_to_move -> x_pos + 1 < 80 ) {
   
 }
 
-void characterLogic::move_left_random(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_left_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -2642,7 +2642,7 @@ if( character_to_move -> x_pos - 1 >= 0 ) {
   
 }
 
-void characterLogic::move_random_walker(generatedMap *m, characterData *walker_to_move, heap_t *h) {
+void characterLogic::move_random_walker(generatedMap *m, NPC_char *walker_to_move, heap_t *h) {
 
   characterLogic characterLogic;
 
@@ -2673,7 +2673,7 @@ void characterLogic::move_random_walker(generatedMap *m, characterData *walker_t
     last_x = walker_to_move -> x_pos;
     last_y = walker_to_move -> y_pos;
     
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] = (characterData*) malloc(sizeof(characterData));
+    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
     m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> player_type = random_walker;
     m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> cost_to_move = walker_to_move -> cost_to_move;
     m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> cur_direction = walker_to_move -> cur_direction;
@@ -2707,7 +2707,7 @@ void characterLogic::move_random_walker(generatedMap *m, characterData *walker_t
   }
 }
 
-void characterLogic::move_left_walker(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_left_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -2827,7 +2827,7 @@ void characterLogic::move_left_walker(generatedMap *m, heap_t *h, characterData 
   }
 }
 
-void characterLogic::move_right_walker(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_right_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -2946,7 +2946,7 @@ if( character_to_move -> x_pos + 1 < 80 ) {
   
 }
 
-void characterLogic::move_up_walker(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_up_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -3066,7 +3066,7 @@ if( character_to_move -> y_pos - 1 > 0 ) {
   
 }
 
-void characterLogic::move_down_walker(generatedMap *m, heap_t *h, characterData *character_to_move, int current_x, int current_y) {
+void characterLogic::move_down_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
 
   movementCosts pathfind;
 
@@ -3217,7 +3217,7 @@ void characterLogic::attempt_move_PC(int x_move, int y_move, generatedMap *m, he
   
 }
 
-void characterLogic::move_PC(characterData *player_char, generatedMap *m) {
+void characterLogic::move_PC(PC_char *player_char, generatedMap *m) {
 
   int prev_x = player_char -> x_pos;
   int prev_y = player_char -> y_pos;
@@ -3234,7 +3234,7 @@ void characterLogic::move_PC(characterData *player_char, generatedMap *m) {
   
   if(m -> character_positions[player_char -> next_x][player_char -> next_y] == NULL) {
     
-    m -> character_positions[next_x_move][next_y_move] = (characterData*) malloc(sizeof(characterData));
+    m -> character_positions[next_x_move][next_y_move] = (PC_char*) malloc(sizeof(PC_char));
     m -> character_positions[next_x_move][next_y_move] -> player_type = PC;
     
     m -> character_positions[next_x_move][next_y_move] -> x_pos = next_x_move;
@@ -3254,7 +3254,7 @@ void characterLogic::move_PC(characterData *player_char, generatedMap *m) {
   }
 }
 
-void displayList::update_list(generatedMap *m, characterData *list_copy, int window, int size) {
+void displayList::update_list(generatedMap *m, NPC_char *list_copy, int window, int size) {
 
   int to_print_final;
   int pages;
