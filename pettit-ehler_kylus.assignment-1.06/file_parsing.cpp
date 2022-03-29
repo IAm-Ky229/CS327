@@ -3,13 +3,12 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include "file_parsing.h"
 
 using String = std::string;
 using ifstream = std::ifstream;
-
-pokemon_moves *pkmn_mv;
 
 void file_reader::read_in_file(String file_to_open) {
 
@@ -268,15 +267,20 @@ void file_reader::read_lines_pokemon(ifstream &input_file, int num_lines) {
 }
 
 void file_reader::read_lines_pokemon_moves(ifstream &input_file, int num_lines) {
-  pkmn_mv = (pokemon_moves*) malloc(num_lines * sizeof(pkmn_mv));
+  //std::cout << "Num_lines / 1000: " << (num_lines / 1000) << "\n";
+  //std::cout << "Dimension 2: " << 1000 << "\n";
+  //pokemon_moves pkmn_mv[num_lines / 1000][1000];
+
+  std::vector<pokemon_moves> v;
   
   // Skip first line
   String line;
   std::getline(input_file, line);
 
-      std::cout << "got into read lines pokemon moves\n";
+  std::cout << "got into read lines pokemon moves\n";
   
   for(int i = 0; i < num_lines; i++) {
+    
     std::getline(input_file, line);
     std::istringstream lineStream(line);
 
@@ -301,22 +305,24 @@ void file_reader::read_lines_pokemon_moves(ifstream &input_file, int num_lines) 
     check_if_null(&read5);
     check_if_null(&read6);
 
-
-    pkmn_mv[i].pokemon_id = read1;
-    pkmn_mv[i].version_group_id = read2;
-    pkmn_mv[i].move_id = read3;
-    pkmn_mv[i].pokemon_move_method_id = read4;
-    pkmn_mv[i].level = read5;
-    pkmn_mv[i].order = read6;
-
-    /*
-    std::cout << "id: " << pkmn_mv[i].pokemon_id << ", "
-	      << "version_group_id: " << pkmn_mv[i].version_group_id << ", "
-	      << "move_id: " << pkmn_mv[i].move_id << ", "
-	      << "pokemon_move_method_id: " << pkmn_mv[i].pokemon_move_method_id << ", "
-	      << "level: " << pkmn_mv[i].level << ", "
-	      << "order: " << pkmn_mv[i].order << "\n";
-    */
+    pokemon_moves temp;
+    
+    temp.pokemon_id = read1;
+    temp.version_group_id = read2;
+    temp.move_id = read3;
+    temp.pokemon_move_method_id = read4;
+    temp.level = read5;
+    temp.order = read6;
+    
+    v.push_back(temp);
+    
+    std::cout << "id: " << v[i].pokemon_id << ", "
+	      << "version_group_id: " << v[i].version_group_id << ", "
+	      << "move_id: " << v[i].move_id << ", "
+	      << "pokemon_move_method_id: " << v[i].pokemon_move_method_id << ", "
+	      << "level: " << v[i].level << ", "
+	      << "order: " << v[i].order << "\n";
+    
   }
 }
 
