@@ -12,6 +12,7 @@
 
 #include "terrain_generation.h"
 #include "world_generation.h"
+#include "file_parsing.h"
 
 
 static int32_t path_cmp(const void *key, const void *with) {
@@ -21,6 +22,7 @@ static int32_t path_cmp(const void *key, const void *with) {
 static int32_t move_cost_cmp(const void *key, const void *with) {
   return ((characterData *) key)-> cost_to_move - ((characterData *) with)-> cost_to_move;
 }
+
 
 int main(int argc, char *argv[]) {
   
@@ -80,6 +82,13 @@ int main(int argc, char *argv[]) {
   characterLogic processAction;
   movementCosts pathfind;
   generatedMap processMap;
+  file_reader FileReader;
+
+  // Read in specified file
+  FileReader.read_in_file(argv[1]);
+
+  // We are exiting before the game for now
+  return 0;
 
   // curses init
   initscr();
