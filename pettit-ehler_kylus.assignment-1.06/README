@@ -1,0 +1,105 @@
+You can see the C++ classes I created/refactored in my header files
+
+There was like 1 compile error in heap.cpp, other than that heap.cpp and heap.h were good
+
+----> terrain_generation.h <----
+
+characterData: holds all the data for a PC / NPC
+
+I used casting (NPC_char*) to make characterData objects usable by classes that needed an NPC_char object or vice versa
+
+NPC_char: class to hold an NPC character. Empty, just inherits from characterData
+
+PC_char: class to hold a PC character. Empty, just inherits from characterData
+
+generatedMap: holds character positions, and the array of terrain that will be used to print the map. Among other important things like game time, characters to move queue, map generation methods, etc
+
+all methods to create map terrain are now a part of the generatedMap class (void generatedMap::methodname)
+
+
+----> world_generation.h <----
+
+movementCosts: used to help the Rival and Hiker pathfind to the PC. Stores things like heap node to insert into priority queue, and methods to determine cost of a move
+
+the methods to compare costs and navigate through the map were static, so I just left them outside of the movement Costs class
+
+mapGen: contains methods that generate each individual map in the (400, 400) world
+
+Any method to generate a world should now be in the mapGen class (void mapGen::methodname)
+
+characterLogic: contains methods that place and move characters. Any method should now be a part of the class characterLogic (void characterLogic::methodname)
+
+any methods taking an NPC character as an argument now take NPC_char instead of characterData
+
+any methods taking a PC character as an argument anow take PC_char instead of characterData
+
+displayList: Now takes a list of NPC_char instead of characterData
+
+
+----> file_parsing.h <----
+
+experience: used to store a single line from the experience csv
+
+moves: used to store a single line from the moves csv
+
+pokemon: used to store a single line from the pokemon csv
+
+pokemon_moves: used to store a single line from the pokemon_moves csv
+
+pokemon_species: used to store a single line from the pokemon_species csv
+
+type_names: used to store a single line from the type_names csv
+
+file_reader: logic used to parse a file of a specific type
+
+	read_in_file: driver for the class, decides what type of csv we have
+	
+	read_lines_experience: read in all the lines from the experience csv
+	
+	read_lines_moves: read in all the lines from the moves csv
+	
+	read_lines_pokemon: read in all the lines from the pokemon csv
+	
+	read_lines_pokemon_moves: read in all the lines from the pokemon_moves csv
+	
+	read_lines_pokemon_species: read in all the lines from the pokemon_species csv
+	
+	read_lines_type_names: read in all the lines from the type_names csv
+	
+	check_if_null: check if we should assign -1 to this value
+	
+	format_for_printing: check if -1 was assigned to this value. Update the to_print pointer if so
+	
+	determine_num_lines: I used an array for 5 of the 6 file types, pokemon_moves had too many lines to work 		with, so I just used a vector for that one and reallocated with every new line.
+	
+	
+----> file_parsing.cpp <----
+
+read_in_file: check under two directories:
+	- "share/cs327/{csv file}"
+	- :$HOME/.poke327/{csv file}"
+
+
+There is a share directory in the assignment I submitted, so that will be found if you just run it in my assignment directory. Otherwise it will look for a share directory, then look in your $HOME directory. My Linux terminal was resolving $HOME automatically? I checked and my code is going into the right "if" statements when I passed in $HOME. I didn't want to set up another environment just to test $HOME resolution with getenv().
+
+If an open file is found, it will count the lines and enter the corresponding parsing method.
+
+*The objects I created were local to these 6 functions reading in the line of the files. If I need the data back in the main of world_generation.cpp I can just refactor a bit and pass in an object with a pointer there. In general the functions are reading a line, then turing the line into an istringstream, and reading through that stream, delimited by commas
+
+read_lines_experience: use 3 temp variables to read in a line and assign it to an object. Print using a dummy variable to remove -1's
+
+read_lines_moves: use 15 temp variables to read in a line and assign it to an object. Print using a dummy variable to remove -1's
+
+read_lines_pokemon: use 8 temp variables to read in a line and assign it to an object. Print using a dummy variable to remove -1's
+
+read_lines_pokemon_moves: use 6 temp variables to read in a line and assign it to an object. Print using a dummy variable to remove -1's
+
+read_lines_pokemon_species: use 20 temp variables to read in a line and assign it to an object. Print using a dummy variable to remove -1's
+
+read_lines_type_names: use 3 temp variables to read in a line and assign it to an object. Print using a dummy variable to remove -1's
+
+check_if_null: check if the value we read is "". If so, assign placeholder -1
+
+determine_num_lines: used when we aren't using a vector to store objects. Used to know how much memory we should allocate
+
+format_for_printing: Used in tandem with a dummy to_print String to remove -1's from the lines we print, and just make them "" instead
