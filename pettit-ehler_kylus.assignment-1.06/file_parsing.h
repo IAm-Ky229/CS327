@@ -116,8 +116,6 @@ class type_names {
 
 class file_reader {
 
- private:
-  
  public:
 
   void read_in_file(String file_to_open);
@@ -128,6 +126,7 @@ class file_reader {
   void read_lines_pokemon_species(ifstream &input_file, int num_lines);
   void read_lines_type_names(ifstream &input_file, int num_lines);
   void check_if_null(String *value);
+  void format_for_printing(String value, String *to_print);
   int determine_num_lines(ifstream &input_file);
   
 };

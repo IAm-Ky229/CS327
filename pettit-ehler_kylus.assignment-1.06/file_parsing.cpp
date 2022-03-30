@@ -76,7 +76,7 @@ void file_reader::read_in_file(String file_to_open) {
     std::cout << "No file found\n";
   }
 
-  // I only did those two, the last one seemed optional
+  // I only did those two, the last one was optional
 
   my_input_file.close();
   
@@ -109,9 +109,15 @@ void file_reader::read_lines_experience(ifstream &input_file, int num_lines)  {
     exp[i].level = read2;
     exp[i].experience = read3;
 
-    std::cout << "growth_rate_id: " << exp[i].growth_rate_id << ", "
-	      << "level: " << exp[i].level << ", "
-	      << "experience: " << exp[i].experience << "\n";
+    experience to_print;
+    
+    format_for_printing(exp[i].growth_rate_id, &to_print.growth_rate_id);
+    format_for_printing(exp[i].level, &to_print.level);
+    format_for_printing(exp[i].experience, &to_print.experience);
+
+    std::cout << "growth_rate_id: " << to_print.growth_rate_id << ", "
+	      << "level: " << to_print.level << ", "
+	      << "experience: " << to_print.experience << "\n";
   }
 }
 
@@ -190,21 +196,39 @@ void file_reader::read_lines_moves(ifstream &input_file, int num_lines) {
     mv[i].contest_effect_id = read14;
     mv[i].super_contest_effect_id = read15;
 
-    std::cout << "id: " << mv[i].id << ", "
-	      << "identifier: " << mv[i].identifier << ", "
-	      << "generation_id: " << mv[i].generation_id << ", "
-	      << "type_id: " << mv[i].type_id << ", "
-	      << "power: " << mv[i].power << ", "
-	      << "pp: " << mv[i].pp << ", "
-	      << "accuracy: " << mv[i].accuracy << ", "
-	      << "priority: " << mv[i].priority << ", "
-	      << "target_id: " << mv[i].target_id << ", "
-	      << "damage_class_id: " << mv[i].damage_class_id << ", "
-	      << "effect_id: " << mv[i].effect_id << ", "
-	      << "effect_chance: " << mv[i].effect_chance << ", "
-	      << "contest_type_id: " << mv[i].contest_type_id << ", "
-	      << "contest_effect_id: " << mv[i].contest_effect_id << ", "
-	      << "super_contest_effect_id: " << mv[i].super_contest_effect_id << "\n";
+    moves to_print;
+    
+    format_for_printing(mv[i].id, &to_print.id);
+    format_for_printing(mv[i].identifier, &to_print.identifier);
+    format_for_printing(mv[i].generation_id, &to_print.generation_id);
+    format_for_printing(mv[i].type_id, &to_print.type_id);
+    format_for_printing(mv[i].power, &to_print.power);
+    format_for_printing(mv[i].pp, &to_print.pp);
+    format_for_printing(mv[i].accuracy, &to_print.accuracy);
+    format_for_printing(mv[i].priority, &to_print.priority);
+    format_for_printing(mv[i].target_id, &to_print.target_id);
+    format_for_printing(mv[i].damage_class_id, &to_print.damage_class_id);
+    format_for_printing(mv[i].effect_id, &to_print.effect_id);
+    format_for_printing(mv[i].effect_chance, &to_print.effect_chance);
+    format_for_printing(mv[i].contest_type_id, &to_print.contest_type_id);
+    format_for_printing(mv[i].contest_effect_id, &to_print.contest_effect_id);
+    format_for_printing(mv[i].super_contest_effect_id, &to_print.super_contest_effect_id);
+
+    std::cout << "id: " << to_print.id << ", "
+	      << "identifier: " << to_print.identifier << ", "
+	      << "generation_id: " << to_print.generation_id << ", "
+	      << "type_id: " << to_print.type_id << ", "
+	      << "power: " << to_print.power << ", "
+	      << "pp: " << to_print.pp << ", "
+	      << "accuracy: " << to_print.accuracy << ", "
+	      << "priority: " << to_print.priority << ", "
+	      << "target_id: " << to_print.target_id << ", "
+	      << "damage_class_id: " << to_print.damage_class_id << ", "
+	      << "effect_id: " << to_print.effect_id << ", "
+	      << "effect_chance: " << to_print.effect_chance << ", "
+	      << "contest_type_id: " << to_print.contest_type_id << ", "
+	      << "contest_effect_id: " << to_print.contest_effect_id << ", "
+	      << "super_contest_effect_id: " << to_print.super_contest_effect_id << "\n";
   }
 }
 
@@ -255,14 +279,25 @@ void file_reader::read_lines_pokemon(ifstream &input_file, int num_lines) {
     pkmn[i].order = read7;
     pkmn[i].is_default = read8;
 
-    std::cout << "id: " << pkmn[i].id << ", "
-	      << "identifier: " << pkmn[i].identifier << ", "
-	      << "species_id: " << pkmn[i].species_id << ", "
-	      << "height: " << pkmn[i].height << ", "
-	      << "weight: " << pkmn[i].weight << ", "
-	      << "base_experience: " << pkmn[i].base_experience << ", "
-	      << "order: " << pkmn[i].order << ", "
-	      << "is_default: " << pkmn[i].is_default << "\n";
+    pokemon to_print;
+
+    format_for_printing(pkmn[i].id, &to_print.id);
+    format_for_printing(pkmn[i].identifier, &to_print.identifier);
+    format_for_printing(pkmn[i].species_id, &to_print.species_id);
+    format_for_printing(pkmn[i].height, &to_print.height);
+    format_for_printing(pkmn[i].weight, &to_print.weight);
+    format_for_printing(pkmn[i].base_experience, &to_print.base_experience);
+    format_for_printing(pkmn[i].order, &to_print.order);
+    format_for_printing(pkmn[i].is_default, &to_print.is_default);
+
+    std::cout << "id: " << to_print.id << ", "
+	      << "identifier: " << to_print.identifier << ", "
+	      << "species_id: " << to_print.species_id << ", "
+	      << "height: " << to_print.height << ", "
+	      << "weight: " << to_print.weight << ", "
+	      << "base_experience: " << to_print.base_experience << ", "
+	      << "order: " << to_print.order << ", "
+	      << "is_default: " << to_print.is_default << "\n";
       }
 }
 
@@ -309,13 +344,22 @@ void file_reader::read_lines_pokemon_moves(ifstream &input_file, int num_lines) 
     temp.order = read6;
     
     v.push_back(temp);
+
+    pokemon_moves to_print;
     
-    std::cout << "id: " << v[i].pokemon_id << ", "
-	      << "version_group_id: " << v[i].version_group_id << ", "
-	      << "move_id: " << v[i].move_id << ", "
-	      << "pokemon_move_method_id: " << v[i].pokemon_move_method_id << ", "
-	      << "level: " << v[i].level << ", "
-	      << "order: " << v[i].order << "\n";
+    format_for_printing(v[i].pokemon_id, &to_print.pokemon_id);
+    format_for_printing(v[i].version_group_id, &to_print.version_group_id);
+    format_for_printing(v[i].move_id, &to_print.move_id);
+    format_for_printing(v[i].pokemon_move_method_id, &to_print.pokemon_move_method_id);
+    format_for_printing(v[i].level, &to_print.level);
+    format_for_printing(v[i].order, &to_print.order);
+    
+    std::cout << "id: " << to_print.pokemon_id << ", "
+	      << "version_group_id: " << to_print.version_group_id << ", "
+	      << "move_id: " << to_print.move_id << ", "
+	      << "pokemon_move_method_id: " << to_print.pokemon_move_method_id << ", "
+	      << "level: " << to_print.level << ", "
+	      << "order: " << to_print.order << "\n";
     
   }
 }
@@ -416,26 +460,50 @@ void file_reader::read_lines_pokemon_species(ifstream &input_file, int num_lines
     pkmn_spc[i].order = read19;
     pkmn_spc[i].conquest_order = read20;
 
-    std::cout << "id: " << pkmn_spc[i].id << ", "
-	      << "identifier: " << pkmn_spc[i].identifier << ", "
-	      << "generation_id: " << pkmn_spc[i].generation_id << ", "
-	      << "evolves_from_species_id: " << pkmn_spc[i].evolves_from_species_id << ", "
-	      << "evolution_chain_id: " << pkmn_spc[i].evolution_chain_id << ", "
-	      << "color_id: " << pkmn_spc[i].color_id << "\n"
-	      << "shape_id: " << pkmn_spc[i].shape_id << ", "
-	      << "habitat_id: " << pkmn_spc[i].habitat_id << ", "
-	      << "gender_rate: " << pkmn_spc[i].gender_rate << ", "
-	      << "capture_rate: " << pkmn_spc[i].capture_rate << ", "
-	      << "base_happiness: " << pkmn_spc[i].base_happiness << ", "
-	      << "is_baby: " << pkmn_spc[i].is_baby << "\n"
-	      << "hatch_counter: " << pkmn_spc[i].hatch_counter << ", "
-	      << "has_gender_differences: " << pkmn_spc[i].has_gender_differences << ", "
-	      << "growth_rate_id: " << pkmn_spc[i].growth_rate_id << ", "
-	      << "forms_switchable: " << pkmn_spc[i].forms_switchable << ", "
-	      << "is_legendary: " << pkmn_spc[i].is_legendary << ", "
-	      << "is_mythical: " << pkmn_spc[i].is_mythical << "\n"
-	      << "order: " << pkmn_spc[i].order << ", "
-	      << "conquest_order: " << pkmn_spc[i].conquest_order << "\n";
+    pokemon_species to_print;
+    
+    format_for_printing(pkmn_spc[i].id, &to_print.id);
+    format_for_printing(pkmn_spc[i].identifier, &to_print.identifier);
+    format_for_printing(pkmn_spc[i].generation_id, &to_print.generation_id);
+    format_for_printing(pkmn_spc[i].evolves_from_species_id, &to_print.evolves_from_species_id);
+    format_for_printing(pkmn_spc[i].evolution_chain_id, &to_print.evolution_chain_id);
+    format_for_printing(pkmn_spc[i].color_id, &to_print.color_id);
+    format_for_printing(pkmn_spc[i].shape_id, &to_print.shape_id);
+    format_for_printing(pkmn_spc[i].habitat_id, &to_print.habitat_id);
+    format_for_printing(pkmn_spc[i].gender_rate, &to_print.gender_rate);
+    format_for_printing(pkmn_spc[i].capture_rate, &to_print.capture_rate);
+    format_for_printing(pkmn_spc[i].base_happiness, &to_print.base_happiness);
+    format_for_printing(pkmn_spc[i].is_baby, &to_print.is_baby);
+    format_for_printing(pkmn_spc[i].hatch_counter, &to_print.hatch_counter);
+    format_for_printing(pkmn_spc[i].has_gender_differences, &to_print.has_gender_differences);
+    format_for_printing(pkmn_spc[i].growth_rate_id, &to_print.growth_rate_id);
+    format_for_printing(pkmn_spc[i].forms_switchable, &to_print.forms_switchable);
+    format_for_printing(pkmn_spc[i].is_legendary, &to_print.is_legendary);
+    format_for_printing(pkmn_spc[i].is_mythical, &to_print.is_mythical);
+    format_for_printing(pkmn_spc[i].order, &to_print.order);
+    format_for_printing(pkmn_spc[i].conquest_order, &to_print.conquest_order);
+    
+
+    std::cout << "id: " << to_print.id << ", "
+	      << "identifier: " << to_print.identifier << ", "
+	      << "generation_id: " << to_print.generation_id << ", "
+	      << "evolves_from_species_id: " << to_print.evolves_from_species_id << ", "
+	      << "evolution_chain_id: " << to_print.evolution_chain_id << ", "
+	      << "color_id: " << to_print.color_id << "\n"
+	      << "shape_id: " << to_print.shape_id << ", "
+	      << "habitat_id: " << to_print.habitat_id << ", "
+	      << "gender_rate: " << to_print.gender_rate << ", "
+	      << "capture_rate: " << to_print.capture_rate << ", "
+	      << "base_happiness: " << to_print.base_happiness << ", "
+	      << "is_baby: " << to_print.is_baby << "\n"
+	      << "hatch_counter: " << to_print.hatch_counter << ", "
+	      << "has_gender_differences: " << to_print.has_gender_differences << ", "
+	      << "growth_rate_id: " << to_print.growth_rate_id << ", "
+	      << "forms_switchable: " << to_print.forms_switchable << ", "
+	      << "is_legendary: " << to_print.is_legendary << ", "
+	      << "is_mythical: " << to_print.is_mythical << "\n"
+	      << "order: " << to_print.order << ", "
+	      << "conquest_order: " << to_print.conquest_order << "\n";
 
       }
 }
@@ -467,9 +535,15 @@ void file_reader::read_lines_type_names(ifstream &input_file, int num_lines) {
     typ_nm[i].local_language_id = read2;
     typ_nm[i].name = read3;
 
-    std::cout << "type_id: " << typ_nm[i].type_id << ", "
-	      << "local_language_id: " << typ_nm[i].local_language_id << ", "
-	      << "name: " << typ_nm[i].name << "\n";
+    type_names to_print;
+    
+    format_for_printing(typ_nm[i].type_id, &to_print.type_id);
+    format_for_printing(typ_nm[i].local_language_id, &to_print.local_language_id);
+    format_for_printing(typ_nm[i].name, &to_print.name);
+
+    std::cout << "type_id: " << to_print.type_id << ", "
+	      << "local_language_id: " << to_print.local_language_id << ", "
+	      << "name: " << to_print.name << "\n";
   }
 }
 
@@ -498,4 +572,14 @@ int file_reader::determine_num_lines(ifstream &input_file) {
 
   // We counted 1 more line than there actually is
   return count - 1;
+}
+
+void file_reader::format_for_printing(String value, String *to_print) {
+  
+  if(value == "-1") {
+    *to_print = "";
+  } else {
+    *to_print = value;
+  }
+ 
 }
