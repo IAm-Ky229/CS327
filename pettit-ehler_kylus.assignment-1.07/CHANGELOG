@@ -1,0 +1,7 @@
+Mar 31: I can't belive it, but I can't figure out this linker issue. I keep getting redefinition errors, no matter what I do. I'm probably gonna have to go to office hours to get it resolved.
+
+I might be figuring out the dependency issue. It's been defined multiple times somewhere, so I just have to find the place where it should be defined once for all files needing it. Easier said than done.
+
+Made a class for the in-game pokemon to be displayed, and a class for the wild pokemon spawning logic.
+
+Pokemon now have a 10% chance of appearing in tall grass. They are chosen uniformly when a they appear. Will implement stats and such sometime later.

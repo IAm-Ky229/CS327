@@ -1,4 +1,0 @@
-user_interface: terrain_generation.cpp world_generation.cpp heap.cpp
-	g++ -g heap.c terrain_generation.c world_generation.c -o user_interface -lncurses
-clean:
-	rm -f *~ ~o core
