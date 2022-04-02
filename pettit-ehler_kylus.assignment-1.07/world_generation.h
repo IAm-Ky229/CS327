@@ -145,9 +145,9 @@ public:
   void attempt_move_PC(int x_move, int y_move, generatedMap *m, heap_t *h, int *PC_added_to_heap);
 
   // Actually move the PC
-  void move_PC(PC_char *PC, generatedMap *m, std::vector<pokemon> pkmn_list);
+  void move_PC(PC_char *PC, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv);
 
-  // Placeholder for pokemon battle
+  // Placeholder for NPC pokemon battle
   void engage_battle();
 };
 
@@ -176,8 +176,17 @@ private:
   int accuracy;
   int evasion;
 
+  int HP_iv;
+  int attack_iv;
+  int defense_iv;
+  int special_attack_iv;
+  int special_defense_iv;
+  int speed_iv;
+
   String move1;
   String move2;
+  int move_id_1;
+  int move_id_2;
 
   String name;
 
@@ -195,8 +204,18 @@ public:
     accuracy = 0;
     evasion = 0;
 
+    HP_iv = 0;
+    attack_iv = 0;
+    defense_iv = 0;
+    special_attack_iv = 0;
+    special_defense_iv = 0;
+    speed_iv = 0;
+
     move1 = "UNASSIGNED";
     move2 = "UNASSIGNED";
+
+    move_id_1 = -1;
+    move_id_2 = -1;
 
     name = "UNASSIGNED";
   }
@@ -211,8 +230,16 @@ public:
   void set_speed(int val) { speed = val; }
   void set_accuracy(int val) { accuracy = val; }
   void set_evasion(int val) { evasion = val; }
-  void set_move1(String val) { move1 = val; }
-  void set_move2(String val) { move2 = val; }
+  void set_HP_iv(int val) { HP_iv = val; }
+  void set_attack_iv(int val) { attack_iv = val; }
+  void set_defense_iv(int val) { defense_iv = val; }
+  void set_special_attack_iv(int val) { special_attack_iv = val; }
+  void set_special_defense_iv(int val) { special_defense_iv = val; }
+  void set_speed_iv(int val) { speed_iv = val; }
+  void set_move_1(String val) { move1 = val; }
+  void set_move_2(String val) { move2 = val; }
+  void set_move_id_1(int val) { move_id_1 = val; }
+  void set_move_id_2(int val) { move_id_2 = val; }
   void set_name(String val) { name = val; }
 
   int get_id() { return id; }
@@ -225,8 +252,16 @@ public:
   int get_speed() { return speed; }
   int get_accuracy() { return accuracy; }
   int get_evasion() { return evasion; }
-  String get_move() { return move1; }
-  String get_move2() { return move2; }
+  int get_HP_iv() { return HP_iv; }
+  int get_attack_iv() { return attack_iv; }
+  int get_defense_iv() { return defense_iv; }
+  int get_special_attack_iv() { return special_attack_iv; }
+  int get_special_defense_iv() { return special_defense_iv; }
+  int get_speed_iv() { return speed_iv; }
+  String get_move_1() { return move1; }
+  String get_move_2() { return move2; }
+  int get_move_id_1() { return move_id_1; }
+  int get_move_id_2() { return move_id_2; }
   String get_name() { return name; }
   
 };
@@ -236,9 +271,16 @@ class wild_pokemon_battle {
 public:
 
   int determine_battle();
-  void engage_battle(std::vector<pokemon> pkmn_list);
-  in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list);
+  void engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv);
+  in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv);
+  void get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats> pkmn_st);
+  void get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv);
+  void resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves> mv);
   void choose_random_pokemon(in_game_pokemon &pkmn, std::vector<pokemon> pkmn_list);
+  void assign_ivs(in_game_pokemon &pkmn);
+  int generate_HP_lv_up(int base_HP, int HP_iv, int level);
+  int generate_otherstat_lv_up(int base_stat, int base_iv, int level);
+  void level_up(in_game_pokemon &pkmn);
   
 };
 

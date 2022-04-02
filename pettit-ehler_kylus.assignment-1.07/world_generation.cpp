@@ -7,6 +7,7 @@
 #include <string.h>
 #include <curses.h>
 #include <vector>
+#include <cmath>
 
 #include <iostream>
 #include <cstdlib>
@@ -197,7 +198,7 @@ int main(int argc, char *argv[]) {
 	  break;
 
 	case PC:
-	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn);
+	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv);
 	  PC_added_to_heap = 0;
 	  break;
 	 
@@ -1503,6 +1504,7 @@ void characterLogic::place_characters(generatedMap *m, heap_t *h, movementCosts 
       m -> character_positions[rand_x][rand_y] = (NPC_char*) malloc(sizeof(NPC_char));
       m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
       m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
+      m -> character_positions[rand_x][rand_y] -> battled = 0;
       m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
       m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
       
@@ -2064,8 +2066,10 @@ void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijks
      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled != 1) {
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type = character_to_move -> player_type;
+    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> battled = character_to_move -> battled;
     
     m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move;
+    
     
     if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost < cost_to_move &&
 	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost >= 0) {
@@ -3226,13 +3230,20 @@ void characterLogic::attempt_move_PC(int x_move, int y_move, generatedMap *m, he
   
 }
 
-void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list) {
+void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
   int prev_x = player_char -> x_pos;
   int prev_y = player_char -> y_pos;
 
   int next_x_move = player_char -> next_x;
   int next_y_move = player_char -> next_y;
+
+  if(m -> character_positions[player_char -> next_x][player_char -> next_y] != NULL) {
+    char buffer[50];
+    sprintf(buffer, "battled: %d", m -> character_positions[player_char -> next_x][player_char -> next_y] -> battled);
+    mvaddstr(21, 0, buffer);
+    refresh();
+  }
   
   if(m -> character_positions[player_char -> next_x][player_char -> next_y] == NULL) {
     
@@ -3256,7 +3267,7 @@ void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<
       enter_battle = wild_encounter.determine_battle();
 
       if(enter_battle) {
-	wild_encounter.engage_battle(pkmn_list);
+	wild_encounter.engage_battle_wild(pkmn_list, pkmn_st, pkmn_mv, mv);
       }
     }
     
@@ -3390,14 +3401,41 @@ int wild_pokemon_battle::determine_battle() {
   return 0;
 }
 
-void wild_pokemon_battle::engage_battle(std::vector<pokemon> pkmn_list) {
+void wild_pokemon_battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
-  in_game_pokemon to_spawn = generate_pokemon(pkmn_list);
+  in_game_pokemon to_spawn = generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv);
 
   clear();
-  char buffer[100];
-  sprintf(buffer, "POKEMON ID: %d [] POKEMON: %s", to_spawn.get_id(), to_spawn.get_name().c_str());
-  mvaddstr(11, 20, buffer);
+  char buffer1[100];
+  sprintf(buffer1, "POKEMON: %s", to_spawn.get_name().c_str());
+  char buffer2[100];
+  sprintf(buffer2, "LEVEL: %d", to_spawn.get_level());
+  char buffer3[100];
+  sprintf(buffer3, "HP: %d", to_spawn.get_HP());
+  char buffer4[100];
+  sprintf(buffer4, "ATTACK: %d", to_spawn.get_attack());
+  char buffer5[100];
+  sprintf(buffer5, "DEFENSE: %d", to_spawn.get_defense());
+  char buffer6[100];
+  sprintf(buffer6, "SPECIAL ATTACK: %d", to_spawn.get_special_attack());
+  char buffer7[100];
+  sprintf(buffer7, "SPECIAL DEFENSE: %d", to_spawn.get_special_defense());
+  char buffer8[100];
+  sprintf(buffer8, "SPEED: %d", to_spawn.get_speed());
+  char buffer9[100];
+  sprintf(buffer9, "MOVE 1: %s", to_spawn.get_move_1().c_str());
+  char buffer10[100];
+  sprintf(buffer10, "MOVE 2: %s", to_spawn.get_move_2().c_str());
+  mvaddstr(5, 20, buffer1);
+  mvaddstr(6, 20, buffer2);
+  mvaddstr(7, 20, buffer3);
+  mvaddstr(8, 20, buffer4);
+  mvaddstr(9, 20, buffer5);
+  mvaddstr(10, 20, buffer6);
+  mvaddstr(11, 20, buffer7);
+  mvaddstr(12, 20, buffer8);
+  mvaddstr(13, 20, buffer9);
+  mvaddstr(14, 20, buffer10);
   refresh();
 
   int stay = 1;
@@ -3415,10 +3453,15 @@ void wild_pokemon_battle::engage_battle(std::vector<pokemon> pkmn_list) {
   
 }
 
-in_game_pokemon wild_pokemon_battle::generate_pokemon(std::vector<pokemon> pkmn_list) {
+in_game_pokemon wild_pokemon_battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
   in_game_pokemon to_spawn;
   choose_random_pokemon(to_spawn, pkmn_list);
+  get_pokemon_stats(to_spawn, pkmn_st);
+  assign_ivs(to_spawn);
+  level_up(to_spawn);
+  get_pokemon_moves(to_spawn, pkmn_mv);
+  resolve_pokemon_move_names(to_spawn, mv);
 
   return to_spawn;
   
@@ -3431,5 +3474,154 @@ void wild_pokemon_battle::choose_random_pokemon(in_game_pokemon &pkmn, std::vect
 
   pkmn.set_id(stoi(selected_pkmn.id));
   pkmn.set_name(selected_pkmn.identifier);
+  
+}
+
+void wild_pokemon_battle::get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats> pkmn_st) {
+  std::vector<pokemon_stats> selected_stats;
+   
+  for(int i = 0; i < pkmn_st.size(); i++) {
+    if(pkmn.get_id() == stoi(pkmn_st[i].pokemon_id)) {
+      selected_stats.push_back(pkmn_st[i]);
+    }
+  }
+
+  // We should be parsing the stats in this order
+  pkmn.set_HP(stoi(selected_stats[0].base_stat));
+  pkmn.set_attack(stoi(selected_stats[1].base_stat));
+  pkmn.set_defense(stoi(selected_stats[2].base_stat));
+  pkmn.set_special_attack(stoi(selected_stats[3].base_stat));
+  pkmn.set_special_defense(stoi(selected_stats[4].base_stat));
+  pkmn.set_speed(stoi(selected_stats[5].base_stat));
+}
+
+void wild_pokemon_battle::get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv) {
+  std::vector<pokemon_moves> selected_moves;
+  
+  for(int i = 0; i < pkmn_mv.size(); i++) {
+    if(stoi(pkmn_mv[i].version_group_id) == 20
+       && stoi(pkmn_mv[i].pokemon_id) == pkmn.get_id()
+       && pkmn.get_level() >= stoi(pkmn_mv[i].level)) {
+      selected_moves.push_back(pkmn_mv[i]);
+    }
+  }
+
+  int moves_to_learn = selected_moves.size();
+
+  if(moves_to_learn == 0) {
+
+    // Instead of crashing, let's just not assign any moves if we don't find any
+    
+  }
+  else if(moves_to_learn == 1) {
+    pkmn.set_move_id_1(stoi(selected_moves[0].move_id));
+  }
+
+  else if(moves_to_learn >= 2) {
+    int rand_move_1;
+    int rand_move_2;
+
+    rand_move_1 = rand() % selected_moves.size();
+    pkmn.set_move_id_1(stoi(selected_moves[rand_move_1].move_id));
+
+    
+    rand_move_2 = rand() % selected_moves.size();
+
+    while(rand_move_2 == rand_move_1) {
+      rand_move_2 = rand() % selected_moves.size();
+    }
+    
+    pkmn.set_move_id_2(stoi(selected_moves[rand_move_2].move_id));
+  }
+
+    
+}
+
+void wild_pokemon_battle::assign_ivs(in_game_pokemon &pkmn) {
+
+  int rand_iv;
+
+  rand_iv = rand() % 15;
+  pkmn.set_HP_iv(rand_iv);
+  rand_iv = rand() % 15;
+  pkmn.set_attack_iv(rand_iv);
+  rand_iv = rand() % 15;
+  pkmn.set_defense_iv(rand_iv);
+  rand_iv = rand() % 15;
+  pkmn.set_special_attack_iv(rand_iv);
+  rand_iv = rand() % 15;
+  pkmn.set_special_defense_iv(rand_iv);
+  rand_iv = rand() % 15;
+  pkmn.set_speed_iv(rand_iv);
+  
+}
+
+int wild_pokemon_battle::generate_HP_lv_up(int base_HP, int HP_iv, int level) {
+
+  int calc_1 = (base_HP + HP_iv) * 2 * level;
+  double calc_2 = calc_1 / 100.0;
+  calc_2 = floor(calc_2);
+  int calc_3 = ((int) calc_2) + level + 10;
+  
+
+  return calc_3;
+  
+}
+
+int wild_pokemon_battle::generate_otherstat_lv_up(int base_stat, int base_iv, int level) {
+
+  int calc_1 = (base_stat + base_iv) * 2 * level;
+  double calc_2 = calc_1 / 100.0;
+  calc_2 = floor(calc_2);
+  int calc_3 = ((int) calc_2) + 5;
+  
+
+  return calc_3;
+  
+}
+
+
+void wild_pokemon_battle::level_up(in_game_pokemon &pkmn) {
+
+  pkmn.set_level((rand() % 100) + 1);
+
+  int to_assign;
+
+  to_assign = generate_HP_lv_up(pkmn.get_HP(), pkmn.get_HP_iv(), pkmn.get_level());
+  pkmn.set_HP(to_assign);
+
+  to_assign = generate_otherstat_lv_up(pkmn.get_attack(), pkmn.get_attack_iv(), pkmn.get_level());
+  pkmn.set_attack(to_assign);
+  
+  to_assign = generate_otherstat_lv_up(pkmn.get_defense(), pkmn.get_defense_iv(), pkmn.get_level());
+  pkmn.set_defense(to_assign);
+  
+  to_assign = generate_otherstat_lv_up(pkmn.get_special_attack(), pkmn.get_special_attack_iv(), pkmn.get_level());
+  pkmn.set_special_attack(to_assign);
+  
+  to_assign = generate_otherstat_lv_up(pkmn.get_special_defense(), pkmn.get_special_defense_iv(), pkmn.get_level());
+  pkmn.set_special_defense(to_assign);
+  
+  to_assign = generate_otherstat_lv_up(pkmn.get_speed(), pkmn.get_speed_iv(), pkmn.get_level());
+  pkmn.set_speed(to_assign);
+}
+
+void wild_pokemon_battle::resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves> mv) {
+
+  if(pkmn.get_move_id_1() != -1) {
+    for(int i = 0; i < mv.size(); i++) {
+      if(pkmn.get_move_id_1() == stoi(mv[i].id)) {
+	pkmn.set_move_1(mv[i].identifier);
+      }
+    }
+  }
+
+  if(pkmn.get_move_id_2() != -1) {
+    for(int i = 0; i < mv.size(); i++) {
+      if(pkmn.get_move_id_2() == stoi(mv[i].id)) {
+	pkmn.set_move_2(mv[i].identifier);
+      }
+    }
+  }
   
 }
