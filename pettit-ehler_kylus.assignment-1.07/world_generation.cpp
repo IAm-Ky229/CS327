@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
 	  break;
 
 	case PC:
-	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv);
+	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
 	  PC_added_to_heap = 0;
 	  break;
 	 
@@ -3230,7 +3230,7 @@ void characterLogic::attempt_move_PC(int x_move, int y_move, generatedMap *m, he
   
 }
 
-void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
+void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
 
   int prev_x = player_char -> x_pos;
   int prev_y = player_char -> y_pos;
@@ -3267,7 +3267,7 @@ void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<
       enter_battle = wild_encounter.determine_battle();
 
       if(enter_battle) {
-	wild_encounter.engage_battle_wild(pkmn_list, pkmn_st, pkmn_mv, mv);
+	wild_encounter.engage_battle_wild(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
       }
     }
     
@@ -3401,9 +3401,9 @@ int wild_pokemon_battle::determine_battle() {
   return 0;
 }
 
-void wild_pokemon_battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
+void wild_pokemon_battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
 
-  in_game_pokemon to_spawn = generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv);
+  in_game_pokemon to_spawn = generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
 
   clear();
   char buffer1[100];
@@ -3426,16 +3426,22 @@ void wild_pokemon_battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std
   sprintf(buffer9, "MOVE 1: %s", to_spawn.get_move_1().c_str());
   char buffer10[100];
   sprintf(buffer10, "MOVE 2: %s", to_spawn.get_move_2().c_str());
+  char buffer11[100];
+  sprintf(buffer11, "SHINY: %s", to_spawn.get_shiny().c_str());
+  char buffer12[100];
+  sprintf(buffer12, "GENDER: %s", to_spawn.get_gender().c_str());
   mvaddstr(5, 20, buffer1);
-  mvaddstr(6, 20, buffer2);
-  mvaddstr(7, 20, buffer3);
-  mvaddstr(8, 20, buffer4);
-  mvaddstr(9, 20, buffer5);
-  mvaddstr(10, 20, buffer6);
-  mvaddstr(11, 20, buffer7);
-  mvaddstr(12, 20, buffer8);
-  mvaddstr(13, 20, buffer9);
-  mvaddstr(14, 20, buffer10);
+  mvaddstr(7, 20, buffer2);
+  mvaddstr(8, 20, buffer3);
+  mvaddstr(9, 20, buffer4);
+  mvaddstr(10, 20, buffer5);
+  mvaddstr(11, 20, buffer6);
+  mvaddstr(12, 20, buffer7);
+  mvaddstr(13, 20, buffer8);
+  mvaddstr(15, 20, buffer9);
+  mvaddstr(16, 20, buffer10);
+  mvaddstr(10, 50, buffer11);
+  mvaddstr(11, 50, buffer12);
   refresh();
 
   int stay = 1;
@@ -3453,15 +3459,30 @@ void wild_pokemon_battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std
   
 }
 
-in_game_pokemon wild_pokemon_battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
+in_game_pokemon wild_pokemon_battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
 
   in_game_pokemon to_spawn;
   choose_random_pokemon(to_spawn, pkmn_list);
   get_pokemon_stats(to_spawn, pkmn_st);
   assign_ivs(to_spawn);
-  level_up(to_spawn);
+  level_up(to_spawn, manhattan_x, manhattan_y);
   get_pokemon_moves(to_spawn, pkmn_mv);
   resolve_pokemon_move_names(to_spawn, mv);
+
+  int random = rand() % 8192;
+
+  if(random == 0) {
+    to_spawn.set_shiny("Shiny");
+  }
+
+  random = rand() % 2;
+
+  if(random == 0) {
+    to_spawn.set_gender("Male");
+  }
+  else if(random == 1) {
+    to_spawn.set_gender("Female");
+  }
 
   return to_spawn;
   
@@ -3497,21 +3518,34 @@ void wild_pokemon_battle::get_pokemon_stats(in_game_pokemon &pkmn, std::vector<p
 
 void wild_pokemon_battle::get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv) {
   std::vector<pokemon_moves> selected_moves;
-  
-  for(int i = 0; i < pkmn_mv.size(); i++) {
-    if(stoi(pkmn_mv[i].version_group_id) == 20
-       && stoi(pkmn_mv[i].pokemon_id) == pkmn.get_id()
-       && pkmn.get_level() >= stoi(pkmn_mv[i].level)) {
-      selected_moves.push_back(pkmn_mv[i]);
+
+  // Look among the most common version_ids to find moves. There's still a chance we won't find some, but looking among the most common version_ids,
+  // You really should
+
+  int chosen_version_id = 15;
+
+  while(selected_moves.size() == 0
+	&& chosen_version_id < 21) {
+    
+    for(int i = 0; i < pkmn_mv.size(); i++) {
+      
+      if(stoi(pkmn_mv[i].version_group_id) == chosen_version_id
+	 && stoi(pkmn_mv[i].pokemon_id) == pkmn.get_id()
+	 && pkmn.get_level() >= stoi(pkmn_mv[i].level)
+	 && stoi(pkmn_mv[i].pokemon_move_method_id) == 1) {
+	selected_moves.push_back(pkmn_mv[i]);
+      }
+      
     }
+    
+    chosen_version_id++;
   }
 
   int moves_to_learn = selected_moves.size();
 
   if(moves_to_learn == 0) {
 
-    // Instead of crashing, let's just not assign any moves if we don't find any
-    
+    // Instead of crashing, let's just not assign any moves if we somehow don't find any
   }
   else if(moves_to_learn == 1) {
     pkmn.set_move_id_1(stoi(selected_moves[0].move_id));
@@ -3581,9 +3615,28 @@ int wild_pokemon_battle::generate_otherstat_lv_up(int base_stat, int base_iv, in
 }
 
 
-void wild_pokemon_battle::level_up(in_game_pokemon &pkmn) {
+void wild_pokemon_battle::level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y) {
 
-  pkmn.set_level((rand() % 100) + 1);
+  int abs_man_x = abs(manhattan_x);
+  int abs_man_y = abs(manhattan_y);
+  int distance = abs_man_x + abs_man_y;
+
+  if((distance) <= 200) {
+    int min = 1;
+    int max;
+    if(distance == 0) {
+      max = 1;
+    }
+    else if(distance != 0) {
+      max = (int) distance / 2;
+    }
+    pkmn.set_level((rand() % (max - min + 1)) + min);
+  }
+  else if((distance) > 200) {
+    int min = (int) (distance - 200) / 2;
+    int max = 100;
+    pkmn.set_level(((rand() % (max - min + 1)) + min));
+  }
 
   int to_assign;
 

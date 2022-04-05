@@ -145,7 +145,7 @@ public:
   void attempt_move_PC(int x_move, int y_move, generatedMap *m, heap_t *h, int *PC_added_to_heap);
 
   // Actually move the PC
-  void move_PC(PC_char *PC, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv);
+  void move_PC(PC_char *PC, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y);
 
   // Placeholder for NPC pokemon battle
   void engage_battle();
@@ -190,6 +190,9 @@ private:
 
   String name;
 
+  String shiny;
+  String gender;
+
 public:
 
   in_game_pokemon() {
@@ -218,6 +221,9 @@ public:
     move_id_2 = -1;
 
     name = "UNASSIGNED";
+
+    shiny = "Not shiny";
+    gender = "UNASSIGNED";
   }
 
   void set_id(int val) { id = val; }
@@ -241,6 +247,8 @@ public:
   void set_move_id_1(int val) { move_id_1 = val; }
   void set_move_id_2(int val) { move_id_2 = val; }
   void set_name(String val) { name = val; }
+  void set_shiny(String val) { shiny = val; }
+  void set_gender(String val) { gender = val; }
 
   int get_id() { return id; }
   int get_level() { return level; }
@@ -263,6 +271,8 @@ public:
   int get_move_id_1() { return move_id_1; }
   int get_move_id_2() { return move_id_2; }
   String get_name() { return name; }
+  String get_shiny() { return shiny; }
+  String get_gender() { return gender; }
   
 };
 
@@ -271,8 +281,8 @@ class wild_pokemon_battle {
 public:
 
   int determine_battle();
-  void engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv);
-  in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv);
+  void engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y);
+  in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y);
   void get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats> pkmn_st);
   void get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv);
   void resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves> mv);
@@ -280,7 +290,7 @@ public:
   void assign_ivs(in_game_pokemon &pkmn);
   int generate_HP_lv_up(int base_HP, int HP_iv, int level);
   int generate_otherstat_lv_up(int base_stat, int base_iv, int level);
-  void level_up(in_game_pokemon &pkmn);
+  void level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y);
   
 };
 

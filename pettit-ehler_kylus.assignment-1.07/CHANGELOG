@@ -10,5 +10,8 @@ Apr 1: Stats are now fetched, calculated, and displayed along with pokemon moves
 
 Still need to figure out how to resolve the moves version group ID issue, there isn't an ID that encapsulates all pokemon.
 
-Small rant about C++ pointers:
-I also just discovered a pretty bad bug plaguing my 1.06 submission. Apparently, C int pointer values are initialized to 0, but C++ pointer values are not. So, the battled value for any NPC in my 1.06 submission will probably not start out at 0, meaning they can never be battled. If you'd like to laugh at my misfortune more, I tested a battle with the re-factored C++ code (that is not guaranteed to initialize the pointer to 0) before submission. And by random chance, it was initialized to 0, so I assumed the battle functionality worked. All the times I've tried now, the battle functionality is completely broken. April fools
+Apr 4: Implemented dynamic levels, gender, and shiny chance. The moves ID issue was resolved by just choosing from the most populated version IDs, starting at 15. That's the best workaround I can find for now. Unless Jeremy explicitly tells us to do something.
+
+For now, I'm going to filter wild pokemon moves to only be chosen from their learned moveset. Not TMs, HMs, or egg moves. This is to avoid getting Quagsires that know Giga Impact and Earthquake on the first map.
+
+Do README, will probably submit later.
