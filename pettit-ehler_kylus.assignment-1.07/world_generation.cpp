@@ -9,13 +9,14 @@
 #include <vector>
 #include <cmath>
 
+
 #include <iostream>
 #include <cstdlib>
 
 #include "terrain_generation.h"
 #include "world_generation.h"
 
-
+// These have to be static, so they have to be in the main game loop file
 static int32_t path_cmp(const void *key, const void *with) {
   return ((movementCosts *) key)->cost - ((movementCosts *) with)->cost;
 }
@@ -24,6 +25,368 @@ static int32_t move_cost_cmp(const void *key, const void *with) {
   return ((characterData *) key)-> cost_to_move - ((characterData *) with)-> cost_to_move;
 }
 
+static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y)
+{
+
+  // We'll use this to store and compute costs
+  movementCosts  *p, computeCost;
+
+  // Heap and initialization variables
+  heap_t h;
+  uint32_t x, y;
+  
+  // Initialize all the positions
+  for(y = 0; y < VERTICAL; y++) {
+    for(x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].x_pos = x;
+      dijkstra[x][y].y_pos = y;
+      dijkstra[x][y].visited = 0;
+    }
+  }
+  
+  // Set all costs to be MAX at first
+  for (y = 0; y < VERTICAL; y++) {
+    for (x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].cost = INT_MAX;
+    }
+  }
+
+  // Set starting node distance 0
+  dijkstra[from_x][from_y].cost = 0;
+  
+  heap_init(&h, path_cmp, NULL);
+  
+  // Insert the first node
+  dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
+
+  // Extract the best (cheapest) node in the heap
+  while ((p = (movementCosts*) heap_remove_min(&h))) {
+    p->hn = NULL;
+
+    // In general: check bounds
+    // check if the cost to go a certain direction is less than what is already there
+    // If it is less, update the cost
+    // Else do nothing
+    
+    // Try to go left
+    if(p-> x_pos - 1 > 0) {
+      
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
+	  (p-> cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)));
+	dijkstra[p->x_pos - 1][p->y_pos    ].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos    ].next_y = p -> y_pos;
+      }
+    }
+    
+    // Try to go right
+    if(p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)));
+	dijkstra[p->x_pos + 1][p->y_pos    ].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos    ].next_y = p -> y_pos;
+      }
+    }
+
+    // Try to go down
+    if(p->y_pos - 1 > 0) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)));
+	dijkstra[p->x_pos][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos][p->y_pos - 1].next_y = p -> y_pos;
+      }
+    }
+    
+    // Try to go up
+    if(p-> y_pos + 1 < VERTICAL) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)));
+	dijkstra[p->x_pos][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos][p->y_pos + 1].next_y = p -> y_pos;
+      }
+    }
+
+    // Try to go up right
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)));
+	dijkstra[p->x_pos + 1][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos + 1].next_y = p -> y_pos;
+      }
+    }
+
+    // Try to go down right
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)));
+	dijkstra[p->x_pos - 1][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos + 1].next_y = p -> y_pos;
+      }
+    }
+
+    // Try to go down left
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)));
+	dijkstra[p->x_pos - 1][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos - 1].next_y = p -> y_pos;
+      }
+    }
+
+    // Try to go up left
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)));
+	dijkstra[p->x_pos + 1][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos - 1].next_y = p -> y_pos;
+      }
+    }
+    
+    // Check for valid right neighbor
+    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
+      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
+      }
+    }
+
+    // In general:
+    // Check to see if neighbor in bounds
+    // If neigbor has NOT been marked as visited, add to the heap
+    // Otherwise do nothing
+    
+    // Check for valid left neighbor
+    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
+      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
+      }
+    }
+    
+    // Check for valid up neighbor
+    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
+      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
+      }
+    }
+
+    // Check for valid down neighbor
+    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
+      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
+      }
+    }
+    
+  }
+
+  // We're done with the heap, delete it
+  heap_delete(&h);
+  
+}
+
+// This is the same as dijkstra_path_rival, we're just calling a different cost computation function
+static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y)
+{
+
+  // We'll use this to store and compute costs
+  movementCosts *p, computeCost;
+  
+  heap_t h;
+  uint32_t x, y;
+  
+  // Initialize all the positions
+  for(y = 0; y < VERTICAL; y++) {
+    for(x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].x_pos = x;
+      dijkstra[x][y].y_pos = y;
+      dijkstra[x][y].visited = 0;
+    }
+  }
+  
+  // Set all costs to be MAX at first
+  for (y = 0; y < VERTICAL; y++) {
+    for (x = 0; x < HORIZONTAL; x++) {
+      dijkstra[x][y].cost = INT_MAX;
+    }
+  }
+  
+  dijkstra[from_x][from_y].cost = 0;
+  
+  heap_init(&h, path_cmp, NULL);
+  
+  // Insert the first node
+  dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
+  
+  while ((p = (movementCosts*) heap_remove_min(&h))) {
+    p->hn = NULL;
+    
+    
+    if(p-> x_pos - 1 > 0) {
+      
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
+	  (p-> cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)));
+	dijkstra[p->x_pos - 1][p->y_pos].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos].next_y = p -> y_pos;
+      }
+    }
+    
+    
+    if(p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)));
+	dijkstra[p->x_pos + 1][p->y_pos].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos].next_y = p -> y_pos;
+      }
+    }
+    
+    if(p->y_pos - 1 > 0) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)));
+	dijkstra[p->x_pos][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos][p->y_pos - 1].next_y = p -> y_pos;
+      }
+    }
+    
+    
+    if(p-> y_pos + 1 < VERTICAL) {
+      if (
+	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)));
+	dijkstra[p->x_pos][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos][p->y_pos + 1].next_y = p -> y_pos;
+      }
+    }
+
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)));
+	dijkstra[p->x_pos + 1][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos + 1].next_y = p -> y_pos;
+      }
+    }
+
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)));
+	dijkstra[p->x_pos - 1][p->y_pos + 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos + 1].next_y = p -> y_pos;
+      }
+    }
+
+    if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)));
+	dijkstra[p->x_pos - 1][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos - 1][p->y_pos - 1].next_y = p -> y_pos;
+      }
+    }
+
+    if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
+      if (
+	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
+	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)
+	   )) {
+	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
+	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)));
+	dijkstra[p->x_pos + 1][p->y_pos - 1].next_x = p -> x_pos;
+	dijkstra[p->x_pos + 1][p->y_pos - 1].next_y = p -> y_pos;
+      }
+    }
+    
+    
+    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
+      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
+      }
+    }
+    
+    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
+      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
+	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
+	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
+      }
+    }
+    
+    
+    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
+      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
+      }
+    }
+    
+    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
+      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
+	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
+	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
+      }
+    }
+    
+  }
+  
+  heap_delete(&h);
+}
 
 int main(int argc, char *argv[]) {
   
@@ -211,6 +574,10 @@ int main(int argc, char *argv[]) {
 
     processMap.print_map(map_exploration[y_explore_position][x_explore_position]);
     map_exploration[y_explore_position][x_explore_position] -> game_time++;
+
+    char buffer[50];
+    sprintf(buffer, "PC added to heap: %d", PC_added_to_heap);
+    mvaddstr(22, 0, buffer);
 
     switch(user_input) {
 
@@ -977,2309 +1344,6 @@ void mapGen::choose_random_road_spot(generatedMap *map_data, int *chosen_spot_x,
   }
 }
 
-int movementCosts::determine_cost_rival(generatedMap *map_data, int x_dim, int y_dim) {
-
-  switch(map_data -> generate_map[x_dim][y_dim]) {
-
-  case path:
-    return 10;
-  case tall_grass:
-    return 20;
-  case clearing:
-    return 10;
-  case nothing:
-    return 10;
-  case pokemon_center:
-    return INT_MAX;
-  case pokemon_mart:
-    return INT_MAX;
-  case boulder:
-    return INT_MAX;
-  case tree:
-    return INT_MAX;
-  case stationary_occupied:
-    return INT_MAX;
-  default:
-    return 0;
-  }
-}
-
-int movementCosts::determine_cost_PC(generatedMap *map_data, int x_dim, int y_dim) {
-
-  switch(map_data -> generate_map[x_dim][y_dim]) {
-
-  case path:
-    return 10;
-  case tall_grass:
-    return 20;
-  case clearing:
-    return 10;
-  case nothing:
-    return 10;
-  case pokemon_center:
-    return 10;
-  case pokemon_mart:
-    return 10;
-  case boulder:
-    return INT_MAX;
-  case tree:
-    return INT_MAX;
-  case stationary_occupied:
-    return INT_MAX;
-  default:
-    return 0;
-  }
-}
-
-int movementCosts::determine_cost_hiker(generatedMap *map_data, int x_dim, int y_dim) {
-
-  switch(map_data -> generate_map[x_dim][y_dim]) {
-
-  case path:
-    return 10;
-  case tall_grass:
-    return 15;
-  case clearing:
-    return 10;
-  case nothing:
-    return 10;
-  case pokemon_center:
-    return INT_MAX;
-  case pokemon_mart:
-    return INT_MAX;
-  case boulder:
-    return INT_MAX;
-  case tree:
-    return INT_MAX;
-  case stationary_occupied:
-    return INT_MAX;
-  default:
-    return 0;
-  }
-}
-
-static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y)
-{
-
-  // We'll use this to store and compute costs
-  movementCosts  *p, computeCost;
-
-  // Heap and initialization variables
-  heap_t h;
-  uint32_t x, y;
-  
-  // Initialize all the positions
-  for(y = 0; y < VERTICAL; y++) {
-    for(x = 0; x < HORIZONTAL; x++) {
-      dijkstra[x][y].x_pos = x;
-      dijkstra[x][y].y_pos = y;
-      dijkstra[x][y].visited = 0;
-    }
-  }
-  
-  // Set all costs to be MAX at first
-  for (y = 0; y < VERTICAL; y++) {
-    for (x = 0; x < HORIZONTAL; x++) {
-      dijkstra[x][y].cost = INT_MAX;
-    }
-  }
-
-  // Set starting node distance 0
-  dijkstra[from_x][from_y].cost = 0;
-  
-  heap_init(&h, path_cmp, NULL);
-  
-  // Insert the first node
-  dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
-
-  // Extract the best (cheapest) node in the heap
-  while ((p = (movementCosts*) heap_remove_min(&h))) {
-    p->hn = NULL;
-
-    // In general: check bounds
-    // check if the cost to go a certain direction is less than what is already there
-    // If it is less, update the cost
-    // Else do nothing
-    
-    // Try to go left
-    if(p-> x_pos - 1 > 0) {
-      
-      if (
-	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
-	  (p-> cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)
-	   )) {
-	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos)));
-	dijkstra[p->x_pos - 1][p->y_pos    ].next_x = p -> x_pos;
-	dijkstra[p->x_pos - 1][p->y_pos    ].next_y = p -> y_pos;
-      }
-    }
-    
-    // Try to go right
-    if(p-> x_pos + 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)
-	   )) {
-	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos)));
-	dijkstra[p->x_pos + 1][p->y_pos    ].next_x = p -> x_pos;
-	dijkstra[p->x_pos + 1][p->y_pos    ].next_y = p -> y_pos;
-      }
-    }
-
-    // Try to go down
-    if(p->y_pos - 1 > 0) {
-      if (
-	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)
-	   )) {
-	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)));
-	dijkstra[p->x_pos][p->y_pos - 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos][p->y_pos - 1].next_y = p -> y_pos;
-      }
-    }
-    
-    // Try to go up
-    if(p-> y_pos + 1 < VERTICAL) {
-      if (
-	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)
-	   )) {
-	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1)));
-	dijkstra[p->x_pos][p->y_pos + 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos][p->y_pos + 1].next_y = p -> y_pos;
-      }
-    }
-
-    // Try to go up right
-    if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)
-	   )) {
-	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos + 1)));
-	dijkstra[p->x_pos + 1][p->y_pos + 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos + 1][p->y_pos + 1].next_y = p -> y_pos;
-      }
-    }
-
-    // Try to go down right
-    if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)
-	   )) {
-	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos + 1)));
-	dijkstra[p->x_pos - 1][p->y_pos + 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos - 1][p->y_pos + 1].next_y = p -> y_pos;
-      }
-    }
-
-    // Try to go down left
-    if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)
-	   )) {
-	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos - 1)));
-	dijkstra[p->x_pos - 1][p->y_pos - 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos - 1][p->y_pos - 1].next_y = p -> y_pos;
-      }
-    }
-
-    // Try to go up left
-    if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)
-	   )) {
-	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos - 1)));
-	dijkstra[p->x_pos + 1][p->y_pos - 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos + 1][p->y_pos - 1].next_y = p -> y_pos;
-      }
-    }
-    
-    // Check for valid right neighbor
-    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
-      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && computeCost.determine_cost_rival(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
-	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
-	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
-      }
-    }
-
-    // In general:
-    // Check to see if neighbor in bounds
-    // If neigbor has NOT been marked as visited, add to the heap
-    // Otherwise do nothing
-    
-    // Check for valid left neighbor
-    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
-      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && computeCost.determine_cost_rival(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
-	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
-	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
-      }
-    }
-    
-    // Check for valid up neighbor
-    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
-      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
-	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
-	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
-      }
-    }
-
-    // Check for valid down neighbor
-    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
-      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
-	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
-	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
-      }
-    }
-    
-  }
-
-  // We're done with the heap, delete it
-  heap_delete(&h);
-  
-}
-
-// This is the same as dijkstra_path_rival, we're just calling a different cost computation function
-static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y)
-{
-
-  // We'll use this to store and compute costs
-  movementCosts *p, computeCost;
-  
-  heap_t h;
-  uint32_t x, y;
-  
-  // Initialize all the positions
-  for(y = 0; y < VERTICAL; y++) {
-    for(x = 0; x < HORIZONTAL; x++) {
-      dijkstra[x][y].x_pos = x;
-      dijkstra[x][y].y_pos = y;
-      dijkstra[x][y].visited = 0;
-    }
-  }
-  
-  // Set all costs to be MAX at first
-  for (y = 0; y < VERTICAL; y++) {
-    for (x = 0; x < HORIZONTAL; x++) {
-      dijkstra[x][y].cost = INT_MAX;
-    }
-  }
-  
-  dijkstra[from_x][from_y].cost = 0;
-  
-  heap_init(&h, path_cmp, NULL);
-  
-  // Insert the first node
-  dijkstra[from_x][from_y].hn = heap_insert(&h, &dijkstra[from_x][from_y]);
-  
-  while ((p = (movementCosts*) heap_remove_min(&h))) {
-    p->hn = NULL;
-    
-    
-    if(p-> x_pos - 1 > 0) {
-      
-      if (
-	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
-	  (p-> cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)
-	   )) {
-	dijkstra[p->x_pos - 1][p->y_pos    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos)));
-	dijkstra[p->x_pos - 1][p->y_pos].next_x = p -> x_pos;
-	dijkstra[p->x_pos - 1][p->y_pos].next_y = p -> y_pos;
-      }
-    }
-    
-    
-    if(p-> x_pos + 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos + 1][p->y_pos    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)
-	   )) {
-	dijkstra[p->x_pos + 1][p->y_pos    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos)));
-	dijkstra[p->x_pos + 1][p->y_pos].next_x = p -> x_pos;
-	dijkstra[p->x_pos + 1][p->y_pos].next_y = p -> y_pos;
-      }
-    }
-    
-    if(p->y_pos - 1 > 0) {
-      if (
-	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)
-	   )) {
-	dijkstra[p->x_pos][p->y_pos - 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)));
-	dijkstra[p->x_pos][p->y_pos - 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos][p->y_pos - 1].next_y = p -> y_pos;
-      }
-    }
-    
-    
-    if(p-> y_pos + 1 < VERTICAL) {
-      if (
-	  (dijkstra[p->x_pos][p->y_pos + 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)
-	   )) {
-	dijkstra[p->x_pos][p->y_pos + 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1)));
-	dijkstra[p->x_pos][p->y_pos + 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos][p->y_pos + 1].next_y = p -> y_pos;
-      }
-    }
-
-    if(p-> y_pos + 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)
-	   )) {
-	dijkstra[p->x_pos + 1][p->y_pos + 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos + 1)));
-	dijkstra[p->x_pos + 1][p->y_pos + 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos + 1][p->y_pos + 1].next_y = p -> y_pos;
-      }
-    }
-
-    if(p-> y_pos - 1 < VERTICAL && p-> x_pos + 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)
-	   )) {
-	dijkstra[p->x_pos - 1][p->y_pos + 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos + 1)));
-	dijkstra[p->x_pos - 1][p->y_pos + 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos - 1][p->y_pos + 1].next_y = p -> y_pos;
-      }
-    }
-
-    if(p-> y_pos - 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)
-	   )) {
-	dijkstra[p->x_pos - 1][p->y_pos - 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos - 1)));
-	dijkstra[p->x_pos - 1][p->y_pos - 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos - 1][p->y_pos - 1].next_y = p -> y_pos;
-      }
-    }
-
-    if(p-> y_pos + 1 < VERTICAL && p-> x_pos - 1 < HORIZONTAL) {
-      if (
-	  (dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost) >
-	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)
-	   )) {
-	dijkstra[p->x_pos + 1][p->y_pos - 1    ].cost =
-	  ((p->cost + computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos - 1)));
-	dijkstra[p->x_pos + 1][p->y_pos - 1].next_x = p -> x_pos;
-	dijkstra[p->x_pos + 1][p->y_pos - 1].next_y = p -> y_pos;
-      }
-    }
-    
-    
-    if( p-> x_pos + 1 < HORIZONTAL && p -> x_pos - 1 > 0 ) {
-      if(dijkstra[p->x_pos + 1][p->y_pos].visited != 1 && computeCost.determine_cost_hiker(m, p-> x_pos + 1, p -> y_pos) != INT_MAX) {
-	dijkstra[p->x_pos + 1][p->y_pos].visited = 1;
-	dijkstra[p-> x_pos + 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos + 1][p-> y_pos]);  
-      }
-    }
-    
-    if( p-> x_pos - 1 > 0 && p -> x_pos + 1 < HORIZONTAL) {
-      if(dijkstra[p->x_pos - 1][p->y_pos].visited != 1  && computeCost.determine_cost_hiker(m, p-> x_pos - 1, p -> y_pos) != INT_MAX) {
-	dijkstra[p->x_pos - 1][p->y_pos].visited = 1;
-	dijkstra[p-> x_pos - 1][p -> y_pos].hn = heap_insert(&h, &dijkstra[p-> x_pos - 1][p-> y_pos]); 
-      }
-    }
-    
-    
-    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
-      if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
-	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
-	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
-      }
-    }
-    
-    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
-      if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
-	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
-	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
-      }
-    }
-    
-  }
-  
-  heap_delete(&h);
-}
-
-void characterLogic::place_characters(generatedMap *m, heap_t *h, movementCosts distance_hiker[HORIZONTAL][VERTICAL], movementCosts distance_rival[HORIZONTAL][VERTICAL], int numtrainers) {
-
-  movementCosts pathfind;
-
-  int number_trainers = numtrainers;
-  
-  int placed_characters = 0;
-  int rand_x;
-  int rand_y;
-
-  int min_x_next;
-  int min_y_next;
-  int cost_to_move;
-
-  int i;
-  enum char_type characters_to_place[number_trainers];
-
-  // Default to 10
-  if(number_trainers < 0) {
-    number_trainers = 10;
-  }
-
-  if(number_trainers == 1) { 
-    characters_to_place[0] = hiker;
-    i = 1;
-  }
-  else {
-    characters_to_place[0] = hiker;
-    characters_to_place[1] = rival;
-
-    i = 2;
-  }
-
-  // I thought about adding a check for a max number of trainers but
-  // I'm assuming the intention isn't to break the game
-  
-  int choose_character;
-
-  for (i; i < number_trainers; i++) {
-    choose_character = rand() % 6;
-
-    switch (choose_character) {
-    case 0:
-      characters_to_place[i] = hiker;
-      break;
-    case 1:
-      characters_to_place[i] = rival;
-      break;
-    case 2:
-      characters_to_place[i] = pacer;
-      break;
-    case 3:
-      characters_to_place[i] = wanderer;
-      break;
-    case 4:
-      characters_to_place[i] = stationary;
-      break;
-    case 5:
-      characters_to_place[i] = random_walker;
-      break;
-    }
-    
-  }
-
-  // Place all the characters, and determine their first moves
-  // I brute forced a lot of this and there's some replicated code
-  // Sorry if this hurts to look at
-  i = 0;
-  while (placed_characters < number_trainers) {
-
-    rand_x = (rand() % (78 - 2 + 1)) + 2;
-    rand_y = (rand() % (19 - 2 + 1)) + 2;
-
-    if(m -> generate_map[rand_x][rand_y] != boulder &&
-       m -> generate_map[rand_x][rand_y] != tree &&
-       m -> generate_map[rand_x][rand_y] != pokemon_mart &&
-       m -> generate_map[rand_x][rand_y] != pokemon_center &&
-       m -> generate_map[rand_x][rand_y] != path &&
-       m -> character_positions[rand_x][rand_y] == NULL) {
-     
-      m -> character_positions[rand_x][rand_y] = (NPC_char*) malloc(sizeof(NPC_char));
-      m -> character_positions[rand_x][rand_y] -> player_type = characters_to_place[placed_characters];
-      m -> character_positions[rand_x][rand_y] -> cost_to_move = 0;
-      m -> character_positions[rand_x][rand_y] -> battled = 0;
-      m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-      m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-      
-      switch(m -> character_positions[rand_x][rand_y] -> player_type) {
-      case wanderer:
-	m -> character_positions[rand_x][rand_y] -> terrain_type = m -> generate_map[rand_x][rand_y];
-	
-	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
-	   m -> generate_map[rand_x][rand_y + 1] != boulder &&
-	   m -> character_positions[rand_x][rand_y] -> terrain_type == m -> generate_map[rand_x][rand_y + 1]) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = down;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y + 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
-	}
-	else if(m -> generate_map[rand_x][rand_y - 1] != tree &&
-		m -> generate_map[rand_x][rand_y - 1] != boulder &&
-		m -> character_positions[rand_x][rand_y] -> terrain_type == m -> generate_map[rand_x][rand_y - 1]) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = up;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y - 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
-	}
-	else if(m -> generate_map[rand_x + 1][rand_y] != tree &&
-		m -> generate_map[rand_x + 1][rand_y] != boulder &&
-		m -> character_positions[rand_x][rand_y] -> terrain_type == m -> generate_map[rand_x + 1][rand_y]) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = right;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x + 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	else if(m -> generate_map[rand_x - 1][rand_y] != tree &&
-		m -> generate_map[rand_x - 1][rand_y] != boulder &&
-		m -> character_positions[rand_x][rand_y] -> terrain_type == m -> generate_map[rand_x - 1][rand_y]) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = left;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x - 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	break;
-      case random_walker:
-	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
-	   m -> generate_map[rand_x][rand_y + 1] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = down;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y + 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
-	}
-	else if(m -> generate_map[rand_x][rand_y - 1] != tree &&
-		m -> generate_map[rand_x][rand_y - 1] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = up;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y - 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
-	}
-	else if(m -> generate_map[rand_x + 1][rand_y] != tree &&
-		m -> generate_map[rand_x + 1][rand_y] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = right;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x + 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	else if(m -> generate_map[rand_x - 1][rand_y] != tree &&
-		m -> generate_map[rand_x - 1][rand_y] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = left;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x - 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	break;
-      case stationary:
-	m -> generate_map[rand_x][rand_y] = stationary_occupied;
-	m -> character_positions[rand_x][rand_y] -> cost_to_move = 2000000000;
-	break;
-      case pacer:
-	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
-	   m -> generate_map[rand_x][rand_y + 1] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = down;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y + 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
-	}
-	else if(m -> generate_map[rand_x][rand_y - 1] != tree &&
-		m -> generate_map[rand_x][rand_y - 1] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = up;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y - 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
-	}
-	else if(m -> generate_map[rand_x + 1][rand_y] != tree &&
-		m -> generate_map[rand_x + 1][rand_y] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = right;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x + 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	else if(m -> generate_map[rand_x - 1][rand_y] != tree &&
-		m -> generate_map[rand_x - 1][rand_y] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = left;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x - 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	break;
-	
-      case rival:
-	
-	cost_to_move = 9999;
-	min_x_next = 0;
-	min_y_next = 0;
-	
-	if(distance_rival[rand_x + 1][rand_y].cost < cost_to_move &&
-	   distance_rival[rand_x + 1][rand_y].cost >= 0) {
-	  min_x_next = rand_x + 1;
-	  min_y_next = rand_y;
-	  
-	  cost_to_move = distance_rival[rand_x + 1][rand_y].cost;
-	}
-	
-	if(distance_rival[rand_x][rand_y + 1].cost < cost_to_move &&
-	   distance_rival[rand_x][rand_y + 1].cost >= 0) {
-	  min_x_next = rand_x;
-	  min_y_next = rand_y + 1;
-	  
-	  cost_to_move = distance_rival[rand_x][rand_y + 1].cost;
-	}
-	
-	if(distance_rival[rand_x - 1][rand_y].cost < cost_to_move &&
-	   distance_rival[rand_x - 1][rand_y].cost >= 0) {
-	  min_x_next = rand_x - 1;
-	  min_y_next = rand_y;
-	  
-	  cost_to_move = distance_rival[rand_x - 1][rand_y].cost;
-	}
-	
-	if(distance_rival[rand_x][rand_y - 1].cost < cost_to_move &&
-	   distance_rival[rand_x][rand_y - 1].cost >= 0) {
-	  min_x_next = rand_x;
-	  min_y_next = rand_y - 1;
-	  
-	  cost_to_move = distance_rival[rand_x][rand_y - 1].cost;
-	}
-	
-	if(distance_rival[rand_x + 1][rand_y + 1].cost < cost_to_move &&
-	   distance_rival[rand_x + 1][rand_y + 1].cost >= 0) {
-	  min_x_next = rand_x + 1;
-	  min_y_next = rand_y + 1;
-	  
-	  cost_to_move = distance_rival[rand_x + 1][rand_y + 1].cost;
-	}
-	
-	if(distance_rival[rand_x + 1][rand_y - 1].cost < cost_to_move &&
-	   distance_rival[rand_x + 1][rand_y - 1].cost >= 0) {
-	  min_x_next = rand_x + 1;
-	  min_y_next = rand_y - 1;
-	  
-	  cost_to_move = distance_rival[rand_x + 1][rand_y - 1].cost;
-	}
-	
-	if(distance_rival[rand_x - 1][rand_y + 1].cost < cost_to_move &&
-	   distance_rival[rand_x - 1][rand_y + 1].cost >= 0) {
-	  min_x_next = rand_x - 1;
-	  min_y_next = rand_y + 1;
-	  
-	  cost_to_move = distance_rival[rand_x - 1][rand_y + 1].cost;
-	}
-	
-	if(distance_rival[rand_x - 1][rand_y - 1].cost < cost_to_move &&
-	   distance_rival[rand_x - 1][rand_y - 1].cost >= 0) {
-	  min_x_next = rand_x - 1;
-	  min_y_next = rand_y - 1;
-	  
-	  cost_to_move = distance_rival[rand_x - 1][rand_y - 1].cost;
-	}
-	
-	m -> character_positions[rand_x][rand_y] -> cost_to_move = distance_rival[rand_x][rand_y].cost - cost_to_move;
-	m -> character_positions[rand_x][rand_y] -> next_x = min_x_next;
-	m -> character_positions[rand_x][rand_y] -> next_y = min_y_next;
-	
-	break;
-	
-      case hiker:
-	
-	cost_to_move = 9999;
-	min_x_next = 0;
-	min_y_next = 0;
-	
-	if(distance_hiker[rand_x + 1][rand_y].cost < cost_to_move &&
-	   distance_hiker[rand_x + 1][rand_y].cost >= 0) {
-	  min_x_next = rand_x + 1;
-	  min_y_next = rand_y;
-	  
-	  cost_to_move = distance_hiker[rand_x + 1][rand_y].cost;
-	}
-	
-	if(distance_hiker[rand_x][rand_y + 1].cost < cost_to_move &&
-	   distance_hiker[rand_x][rand_y + 1].cost >= 0) {
-	  min_x_next = rand_x;
-	  min_y_next = rand_y + 1;
-	  
-	  cost_to_move = distance_hiker[rand_x][rand_y + 1].cost;
-	}
-	
-	if(distance_hiker[rand_x - 1][rand_y].cost < cost_to_move &&
-	   distance_hiker[rand_x - 1][rand_y].cost >= 0) {
-	  min_x_next = rand_x - 1;
-	  min_y_next = rand_y;
-	  
-	  cost_to_move = distance_hiker[rand_x - 1][rand_y].cost;
-	}
-	
-	if(distance_hiker[rand_x][rand_y - 1].cost < cost_to_move &&
-	   distance_hiker[rand_x][rand_y - 1].cost >= 0) {
-	  min_x_next = rand_x;
-	  min_y_next = rand_y - 1;
-	  
-	  cost_to_move = distance_hiker[rand_x][rand_y - 1].cost;
-	}
-	
-	if( distance_hiker[rand_x + 1][rand_y + 1].cost < cost_to_move &&
-	    distance_hiker[rand_x + 1][rand_y + 1].cost >= 0) {
-	  min_x_next = rand_x + 1;
-	  min_y_next = rand_y + 1;
-	  
-	  cost_to_move = distance_hiker[rand_x + 1][rand_y + 1].cost;
-	}
-	
-	if( distance_hiker[rand_x + 1][rand_y - 1].cost < cost_to_move &&
-	    distance_hiker[rand_x + 1][rand_y - 1].cost >= 0) {
-	  min_x_next = rand_x + 1;
-	  min_y_next = rand_y - 1;
-	  
-	  cost_to_move = distance_hiker[rand_x + 1][rand_y - 1].cost;
-	}
-	
-	if(distance_hiker[rand_x - 1][rand_y + 1].cost < cost_to_move &&
-	   distance_hiker[rand_x - 1][rand_y + 1].cost >= 0) {
-	  min_x_next = rand_x - 1;
-	  min_y_next = rand_y + 1;
-	  
-	  cost_to_move = distance_hiker[rand_x - 1][rand_y + 1].cost;
-	}
-	
-	if(distance_hiker[rand_x - 1][rand_y - 1].cost < cost_to_move &&
-	   distance_hiker[rand_x - 1][rand_y - 1].cost >= 0) {
-	  min_x_next = rand_x - 1;
-	  min_y_next = rand_y - 1;
-	  
-	  cost_to_move = distance_hiker[rand_x - 1][rand_y - 1].cost;
-	}
-	
-	m -> character_positions[rand_x][rand_y] -> cost_to_move = distance_rival[rand_x][rand_y].cost - cost_to_move;
-	m -> character_positions[rand_x][rand_y] -> next_x = min_x_next;
-	m -> character_positions[rand_x][rand_y] -> next_y = min_y_next;
-	
-	break; 
-      }
-
-      heap_insert(h, m -> character_positions[rand_x][rand_y]);
-      placed_characters++;
-    }
-  }
-
-}
-
-void characterLogic::move_pacer(generatedMap *m, NPC_char *pacer_to_move, heap_t *h) {
-
-  characterLogic characterLogic;
-  
-  int current_x = (int) pacer_to_move -> x_pos;
-  int current_y = (int) pacer_to_move -> y_pos;
-
-  int last_x;
-  int last_y;
-
-  if(m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] != NULL) {
-    if(m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> player_type == PC &&
-       m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> battled == 0) {
-      
-      characterLogic.engage_battle();
-      m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> battled = 1;
-      
-    }
-  }
-
-  // Always try to move the pacer
-  if((m -> generate_map[pacer_to_move -> next_x][pacer_to_move -> next_y] != tree) &&
-     (m -> generate_map[pacer_to_move -> next_x][pacer_to_move -> next_y] != boulder) &&
-     (m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] == NULL)) {
-
-    current_x = pacer_to_move -> next_x;
-    current_y = pacer_to_move -> next_y;
-
-    last_x = pacer_to_move -> x_pos;
-    last_y = pacer_to_move -> y_pos;
-    
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] =  (NPC_char*) malloc(sizeof(NPC_char));
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> player_type = pacer;
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> cost_to_move = pacer_to_move -> cost_to_move;
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> cur_direction = pacer_to_move -> cur_direction;
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> x_pos = current_x;
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> y_pos = current_y;
-    m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> battled = pacer_to_move -> battled;
-
-    m -> character_positions[last_x][last_y] = NULL;
-    free(m -> character_positions[last_x][last_y]);
-  }
-
-  // Always find the next move so we don't get stuck
-  switch(pacer_to_move -> cur_direction) {
-      
-  case down:
-    characterLogic.move_down(m, h, pacer_to_move, current_x, current_y);
-    break;
-      
-  case up:
-    characterLogic.move_up(m, h, pacer_to_move, current_x, current_y);
-    break;
-      
-  case right:
-    characterLogic.move_right(m, h, pacer_to_move, current_x, current_y);
-    break;
-      
-  case left:
-    characterLogic.move_left(m, h, pacer_to_move, current_x, current_y);     
-    break;
-    
-  }
-  
-}
-
-void characterLogic::move_up(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> y_pos - 1 > 0 ) {
-    if(
-       (m -> generate_map[current_x][current_y - 1] != tree) &&
-       (m -> generate_map[current_x][current_y - 1] != boulder) &&
-       (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-       (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-       (m -> character_positions[current_x][current_y - 1] == NULL)) {
-    
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost +  pathfind.determine_cost_rival(m, current_x, current_y - 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-    
-    
-    }
-    else {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-      m -> character_positions[current_x][current_y] -> cur_direction = down;
-    
-    
-    }
-  }
- 
-  if(m -> character_positions[current_x][current_y - 1] != NULL) {
-    if(m -> character_positions[current_x][current_y - 1] -> player_type == PC) {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost +  pathfind.determine_cost_rival(m, current_x, current_y - 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-     
-     
-    }
-  }
-
-  heap_insert(h, m -> character_positions[current_x][current_y]);
-  
-}
-
-void characterLogic::move_down(generatedMap *m, heap_t *h, NPC_char *character_to_move,  int current_x, int current_y) {
-
-  movementCosts pathfind;
-  
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-  if( character_to_move -> y_pos + 1 < 21 ) {
-    if(
-       (m -> generate_map[current_x][current_y + 1] != tree) &&
-       (m -> generate_map[current_x][current_y + 1] != boulder) &&
-       (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-       (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-       (m -> character_positions[current_x][current_y + 1] == NULL)) {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y  = current_y + 1;
-	  
-	  
-    }
-    else {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y  = current_y - 1;
-      m -> character_positions[current_x][current_y] -> cur_direction = up;
-	  
-	  
-    }
-  }
-
-  if(m -> character_positions[current_x][current_y + 1] != NULL) {
-    if(m -> character_positions[current_x][current_y + 1] -> player_type == PC) {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    
-	   
-    }
-  }
-  heap_insert(h, m -> character_positions[current_x][current_y]);
-}
-
-void characterLogic::move_left(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-  
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> x_pos - 1 > 0 ) {
-    if(
-       (m -> generate_map[current_x - 1][current_y] != tree) &&
-       (m -> generate_map[current_x - 1][current_y] != boulder) &&
-       (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-       (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-       (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	  
-	  
-    }
-    else {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-      m -> character_positions[current_x][current_y] -> cur_direction = right;
-	  
-	  
-    }
-  }
-
-  if(m -> character_positions[current_x - 1][current_y] != NULL) {
-    if(m -> character_positions[current_x - 1][current_y] -> player_type == PC) {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    
-	    
-    }
-  }
-
-  heap_insert(h, m -> character_positions[current_x][current_y]);
-}
-
-void characterLogic::move_right(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> x_pos + 1 < 80 ) {
-    if(
-       (m -> generate_map[current_x + 1][current_y] != tree) &&
-       (m -> generate_map[current_x + 1][current_y] != boulder) &&
-       (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-       (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-       (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	  
-	  
-    }
-    else {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-      m -> character_positions[current_x][current_y] -> cur_direction = left;
-	  
-	  
-    }
-  }
-
-  if(m -> character_positions[current_x + 1][current_y] != NULL) {
-    if(m -> character_positions[current_x + 1][current_y] -> player_type == PC) {
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    
-	    
-    }
-  }
-
-  heap_insert(h, m -> character_positions[current_x][current_y]);
-}
-
-
-void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], NPC_char *character_to_move, heap_t *h) {
-
-  int min_x_next;
-  int min_y_next;
-
-  // I really shouldn't have used INT_MAX because my comparisons are messed up but idk if I'm gonna change it
-  int cost_to_move = INT_MAX;
-
-  movementCosts pathfind;
-
-  if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] != NULL) {
-    if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type == PC &&
-       m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled == 0) {
-      
-      engage_battle();
-      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled = 1;
-    }
-  }
-
-  // Check to see if we are going to run into another character
-  if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] == NULL &&
-     m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled != 1) {
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type = character_to_move -> player_type;
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> battled = character_to_move -> battled;
-    
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move;
-    
-    
-    if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost >= 0) {
-      min_x_next = character_to_move -> next_x + 1;
-      min_y_next = character_to_move -> next_y;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y].cost;
-    }
-    
-    if( dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost >= 0) {
-      min_x_next = character_to_move -> next_x;
-      min_y_next = character_to_move -> next_y + 1;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x][character_to_move -> next_y + 1].cost;
-    }
-    
-    if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost >= 0) {
-      min_x_next = character_to_move -> next_x - 1;
-      min_y_next = character_to_move -> next_y;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y].cost;
-    }
-    
-    if( dijkstra[character_to_move -> next_x][character_to_move -> y_pos - 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x][character_to_move -> next_y - 1].cost >= 0) {
-      min_x_next = character_to_move -> next_x;
-      min_y_next = character_to_move -> next_y - 1;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x][character_to_move -> next_y - 1].cost;
-    }
-    
-    if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost >= 0) {
-      min_x_next = character_to_move -> next_x + 1;
-      min_y_next = character_to_move -> next_y + 1;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y + 1].cost;
-    }
-    
-    
-    if( dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost >= 0) {
-      min_x_next = character_to_move -> next_x + 1;
-      min_y_next = character_to_move -> next_y - 1;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x + 1][character_to_move -> next_y - 1].cost;
-    }
-    
-    
-    if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost >= 0) {
-      min_x_next = character_to_move -> next_x - 1;
-      min_y_next = character_to_move -> next_y + 1;
-      
-      cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y + 1].cost;
-    }
-    
-    
-    if( dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost < cost_to_move &&
-	dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost >= 0 ) {
-      min_x_next = character_to_move -> next_x - 1;
-      min_y_next = character_to_move -> next_y - 1;
-  
-      cost_to_move = dijkstra[character_to_move -> next_x - 1][character_to_move -> next_y - 1].cost;
-    }
-
-    int x_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_x;
-    int y_position = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> next_y;
-    
-    int prev_x = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> x_pos;
-    int prev_y = m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> y_pos;
-    
-    if(character_to_move -> player_type == rival) {
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += pathfind.determine_cost_rival(m, min_x_next, min_y_next);
-    }
-    else {
-      m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> cost_to_move += pathfind.determine_cost_hiker(m, min_x_next, min_y_next);
-    }
-    
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_x = min_x_next;
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> next_y = min_y_next;
-    
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> x_pos = x_position;
-    m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> y_pos = y_position;
-    
-    m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] = NULL;
-    free(m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
-    heap_insert(h, m -> character_positions[x_position][y_position]);
-
-  }
-  else {
-    if(character_to_move -> player_type == rival) {
-      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move += pathfind.determine_cost_rival(m, character_to_move -> x_pos, character_to_move -> y_pos);
-    }
-    else {
-      m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> cost_to_move += pathfind.determine_cost_hiker(m, character_to_move -> x_pos, character_to_move -> y_pos);
-    }
-    heap_insert(h, m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos]);
-  }
-}
-
-
-
-void characterLogic::move_wanderer(generatedMap *m, NPC_char *wanderer_to_move, heap_t *h) {
-
-  int current_x = wanderer_to_move -> x_pos;
-  int current_y = wanderer_to_move -> y_pos;
-
-  int last_x;
-  int last_y;
-
-  if(m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] != NULL) {
-    if((m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> player_type == PC) &&
-       (m -> character_positions[wanderer_to_move -> x_pos][wanderer_to_move -> y_pos] -> battled == 0)) {
-      
-      engage_battle();
-      m -> character_positions[wanderer_to_move -> x_pos][wanderer_to_move -> y_pos] -> battled = 1;
-      
-    }
-  }
-
-  // Check to see if the move is valid first
-  if((m -> generate_map[wanderer_to_move -> next_x][wanderer_to_move -> next_y] != tree) &&
-     (m -> generate_map[wanderer_to_move -> next_x][wanderer_to_move -> next_y] != boulder) &&
-     (m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] == NULL)) {
-
-    current_x = wanderer_to_move -> next_x;
-    current_y = wanderer_to_move -> next_y;
-
-    last_x = wanderer_to_move -> x_pos;
-    last_y = wanderer_to_move -> y_pos;
-    
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> player_type = wanderer;
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> cost_to_move = wanderer_to_move -> cost_to_move;
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> cur_direction = wanderer_to_move -> cur_direction;
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> terrain_type = wanderer_to_move -> terrain_type;
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> x_pos = current_x;
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> y_pos = current_y;
-    m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> battled = wanderer_to_move -> battled;
-    
-    m -> character_positions[last_x][last_y] = NULL;
-    free(m -> character_positions[last_x][last_y]);
-
-  }
-
-  // Always check for a new move or we will stop
-  // If we find we can't move the assigned direction,
-  // We will attempt to move a random direction that
-  // Isn't the same direction we were just moving
-  switch(wanderer_to_move -> cur_direction) {
-  case down:
-    move_down_random(m, h, wanderer_to_move, current_x, current_y);
-    break;
-  case up:
-    move_up_random(m, h, wanderer_to_move, current_x, current_y);
-    break;
-  case right:
-    move_right_random(m, h, wanderer_to_move, current_x, current_y);
-    break;
-  case left:
-    move_left_random(m, h, wanderer_to_move, current_x, current_y);     
-    break;
-  }
-
-}
-
-void characterLogic::move_up_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> y_pos - 1 >= 0 ) {
-    if(
-       (m -> generate_map[current_x][current_y - 1] != tree) &&
-       (m -> generate_map[current_x][current_y - 1] != boulder) &&
-       (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-       (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
-       (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	  
-	  
-    }
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y + 1] != tree) &&
-	     (m -> generate_map[current_x][current_y + 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
-	     (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = down;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x + 1][current_y] != tree) &&
-	     (m -> generate_map[current_x + 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
-	     (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = right;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x - 1][current_y] != tree) &&
-	     (m -> generate_map[current_x - 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
-	     (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = left;
-	    valid = 1;
-	  }
-
-	  break;
-	}
-      }	  
-	  
-	  
-    }
-    if(m -> character_positions[current_x][current_y - 1] != NULL &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1])) {
-      if((m -> character_positions[current_x][current_y - 1] -> player_type == PC)) {
-	char buffer[50];
-	sprintf(buffer, "got into up PC assignment");
-	mvaddstr(22, 5, buffer);
-	refresh();
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	m -> character_positions[current_x][current_y] -> next_x = current_x;
-	m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    
-	    
-      }
-    }
-
-    heap_insert(h, m -> character_positions[current_x][current_y]); 
-  }
-  
-}
-
-void characterLogic::move_down_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-  
-  movementCosts pathfind;
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> y_pos + 1 < 21 ) {
-    if(
-       (m -> generate_map[current_x][current_y + 1] != tree) &&
-       (m -> generate_map[current_x][current_y + 1] != boulder) &&
-       (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-       (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
-       (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	  
-	  
-    }
-	
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y - 1] != tree) &&
-	     (m -> generate_map[current_x][current_y - 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
-	     (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = up;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x + 1][current_y] != tree) &&
-	     (m -> generate_map[current_x + 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
-	     (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = right;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x - 1][current_y] != tree) &&
-	     (m -> generate_map[current_x - 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
-	     (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = left;
-	    valid = 1;
-	  }
-
-	  break;
-	}
-      }
-	  
-	  
-	  
-    }
-	
-    if(m -> character_positions[current_x][current_y + 1] != NULL &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1])) {
-      if(m -> character_positions[current_x][current_y + 1] -> player_type == PC) {
-	char buffer[50];
-	sprintf(buffer, "got into down PC assignment");
-	mvaddstr(22, 5, buffer);
-	refresh();
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	m -> character_positions[current_x][current_y] -> next_x = current_x;
-	m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    
-	   
-      }
-    }
-    heap_insert(h, m -> character_positions[current_x][current_y]); 
-  }
-  
-}
-
-void characterLogic::move_right_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> x_pos + 1 < 80 ) {
-    if(
-       (m -> generate_map[current_x + 1][current_y] != tree) &&
-       (m -> generate_map[current_x + 1][current_y] != boulder) &&
-       (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-       (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
-       (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	  
-	  
-    }
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y + 1] != tree) &&
-	     (m -> generate_map[current_x][current_y + 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
-	     (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = down;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x][current_y - 1] != tree) &&
-	     (m -> generate_map[current_x][current_y - 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
-	     (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = up;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x - 1][current_y] != tree) &&
-	     (m -> generate_map[current_x - 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
-	     (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = left;
-	    valid = 1;
-	  }
-
-	  break;
-	}
-      }
-	  
-	  
-	  
-    }
-
-    if(m -> character_positions[current_x + 1][current_y] != NULL &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1])) {
-      if(m -> character_positions[current_x + 1][current_y] -> player_type == PC) {
-	char buffer[50];
-	sprintf(buffer, "got into right PC assignment");
-	mvaddstr(22, 5, buffer);
-	refresh();
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    
-	    
-      }
-    }
-    heap_insert(h, m -> character_positions[current_x][current_y]);
-  }
-  
-}
-
-void characterLogic::move_left_random(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> x_pos - 1 >= 0 ) {
-    if(
-       (m -> generate_map[current_x - 1][current_y] != tree) &&
-       (m -> generate_map[current_x - 1][current_y] != boulder) &&
-       (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-       (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x - 1][current_y]) &&
-       (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost +  pathfind.determine_cost_rival(m, current_x - 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	  
-
-    }
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y + 1] != tree) &&
-	     (m -> generate_map[current_x][current_y + 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y + 1]) &&
-	     (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost +  pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = down;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x + 1][current_y] != tree) &&
-	     (m -> generate_map[current_x + 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x + 1][current_y]) &&
-	     (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = right;
-	    valid = 1;
-	  }
-
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x][current_y - 1] != tree) &&
-	     (m -> generate_map[current_x][current_y - 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1]) &&
-	     (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost +  pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = up;
-	    valid = 1;
-	  }
-
-	  break;
-	}
-      }
-     
-    }
-
-    if(m -> character_positions[current_x - 1][current_y] != NULL &&
-       (m -> character_positions[current_x][current_y] -> terrain_type == m -> generate_map[current_x][current_y - 1])) {
-      if(m -> character_positions[current_x - 1][current_y] -> player_type == PC) {
-	char buffer[50];
-	sprintf(buffer, "got into left PC assignment");
-	mvaddstr(22, 5, buffer);
-	refresh();
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	m -> character_positions[current_x][current_y] -> next_y = current_y;
-      }
-    }
-    heap_insert(h, m -> character_positions[current_x][current_y]);
-  }
-  
-}
-
-void characterLogic::move_random_walker(generatedMap *m, NPC_char *walker_to_move, heap_t *h) {
-
-  characterLogic characterLogic;
-
-  int current_x = walker_to_move -> x_pos;
-  int current_y = walker_to_move -> y_pos;;
-
-  int last_x;
-  int last_y;
-
-  if(m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] != NULL) {
-    if(m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> player_type == PC &&
-       m -> character_positions[walker_to_move -> x_pos][walker_to_move -> y_pos] -> battled == 0) {
-      
-      engage_battle();
-      m -> character_positions[walker_to_move -> x_pos][walker_to_move -> y_pos] -> battled = 1;
-      
-    }
-  }
-
-  // We only want to move if it's valid
-  if((m -> generate_map[walker_to_move -> next_x][walker_to_move -> next_y] != tree) &&
-     (m -> generate_map[walker_to_move -> next_x][walker_to_move -> next_y] != boulder) &&
-     (m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] == NULL)) {
-
-    current_x = walker_to_move -> next_x;
-    current_y = walker_to_move -> next_y;
-
-    last_x = walker_to_move -> x_pos;
-    last_y = walker_to_move -> y_pos;
-    
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] = (NPC_char*) malloc(sizeof(NPC_char));
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> player_type = random_walker;
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> cost_to_move = walker_to_move -> cost_to_move;
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> cur_direction = walker_to_move -> cur_direction;
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> x_pos = current_x;
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> y_pos = current_y;
-    m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> battled = walker_to_move -> battled;
-    
-    
-    m -> character_positions[last_x][last_y] = NULL;
-    free(m -> character_positions[last_x][last_y]);
-
-  }
-
-  // Always check for a new move or we will stop
-  // Random walker moves are a like wanderer moves
-  // But they don't check for same terrain
-  switch(walker_to_move -> cur_direction) {
-  case down:
-    characterLogic.move_down_walker(m, h, walker_to_move, current_x, current_y);
-    break;
-  case up:
-    characterLogic.move_up_walker(m, h, walker_to_move, current_x, current_y);
-    break;
-  case right:
-    characterLogic.move_right_walker(m, h, walker_to_move, current_x, current_y);
-    break;
-  case left:
-    characterLogic.move_left_walker(m, h, walker_to_move, current_x, current_y);     
-    break;
-    
-  }
-}
-
-void characterLogic::move_left_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> x_pos - 1 > 0 ) {
-    if(
-       (m -> generate_map[current_x - 1][current_y] != tree) &&
-       (m -> generate_map[current_x - 1][current_y] != boulder) &&
-       (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-       (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-       (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	 
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	 
-	 
-    }
-    else {
-	 
-      direction direction_to_move;
-      int valid = 0;
-	 
-      while(!valid) {
-	   
-	direction_to_move = static_cast<direction>(rand() % 3);
-	   
-	switch (direction_to_move) {
-	     
-	case 0:
-	  if(( m -> generate_map[current_x][current_y + 1] != tree) &&
-	     (m -> generate_map[current_x][current_y + 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move += pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = down;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x][current_y + 1] != NULL) {
-	    if(m -> character_positions[current_x][current_y + 1] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	      m -> character_positions[current_x][current_y] -> cur_direction = down;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	     
-	case 1:
-	  if(( m -> generate_map[current_x + 1][current_y] != tree) &&
-	     (m -> generate_map[current_x + 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = right;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x + 1][current_y] != NULL) {
-	    if(m -> character_positions[current_x + 1][current_y] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	      m -> character_positions[current_x][current_y] -> cur_direction = right;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	     
-	case 2:
-	  if(( m -> generate_map[current_x][current_y - 1] != tree) &&
-	     (m -> generate_map[current_x][current_y - 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = up;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x][current_y - 1] != NULL) {
-	    if(m -> character_positions[current_x][current_y - 1] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	      m -> character_positions[current_x][current_y] -> cur_direction = up;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	}
-      }
-	 
-	
-	 
-    }
-
-    if ( m -> character_positions[current_x - 1][current_y] != NULL) {
-      if (m -> character_positions[current_x - 1][current_y] -> player_type == PC) {
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	m -> character_positions[current_x][current_y] -> next_y = current_y;
-	 
-      }
-	 
-    }
-
-    heap_insert(h, m -> character_positions[current_x][current_y]);
-  }
-}
-
-void characterLogic::move_right_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> x_pos + 1 < 80 ) {
-    if(
-       (m -> generate_map[current_x + 1][current_y] != tree) &&
-       (m -> generate_map[current_x + 1][current_y] != boulder) &&
-       (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-       (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-       (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	  
-	  
-    }
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y + 1] != tree) &&
-	     (m -> generate_map[current_x][current_y + 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = down;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x][current_y + 1] != NULL) {
-	    if(m -> character_positions[current_x][current_y + 1] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	      m -> character_positions[current_x][current_y] -> cur_direction = down;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x - 1][current_y] != tree) &&
-	     (m -> generate_map[current_x - 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = left;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x - 1][current_y] != NULL) {
-	    if(m -> character_positions[current_x - 1][current_y] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	      m -> character_positions[current_x][current_y] -> cur_direction = left;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x][current_y - 1] != tree) &&
-	     (m -> generate_map[current_x][current_y - 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = up;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x][current_y - 1] != NULL) {
-	    if(m -> character_positions[current_x][current_y - 1] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	      m -> character_positions[current_x][current_y] -> cur_direction = up;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	}
-      }
-	  
-	  
-	  
-    }
-    if(m -> character_positions[current_x + 1][current_y] != NULL) {
-      if(m -> character_positions[current_x + 1][current_y] -> player_type == PC) {
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    
-	   
-      }
-    }
-    heap_insert(h, m -> character_positions[current_x][current_y]);
-  }
-  
-}
-
-void characterLogic::move_up_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> y_pos - 1 > 0 ) {
-    if(
-       (m -> generate_map[current_x][current_y - 1] != tree) &&
-       (m -> generate_map[current_x][current_y - 1] != boulder) &&
-       (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-       (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-       (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	  
-	  
-    }
-
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y + 1] != tree) &&
-	     (m -> generate_map[current_x][current_y + 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = down;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x][current_y + 1] != NULL) {
-	    if(m -> character_positions[current_x][current_y + 1] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	      m -> character_positions[current_x][current_y] -> cur_direction = down;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x + 1][current_y] != tree) &&
-	     (m -> generate_map[current_x + 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = right;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x + 1][current_y] != NULL) {
-	    if(m -> character_positions[current_x + 1][current_y] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	      m -> character_positions[current_x][current_y] -> cur_direction = right;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x - 1][current_y] != tree) &&
-	     (m -> generate_map[current_x - 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = left;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x - 1][current_y] != NULL) {
-	    if(m -> character_positions[current_x - 1][current_y] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	      m -> character_positions[current_x][current_y] -> cur_direction = left;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	}
-      }
-	  
-	  
-	  
-    }
-    if(m -> character_positions[current_x][current_y - 1] != NULL) {
-      if(m -> character_positions[current_x][current_y - 1] -> player_type == PC) {
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	m -> character_positions[current_x][current_y] -> next_x = current_x;
-	m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    
-	    
-      }
-    }
-    heap_insert(h, m -> character_positions[current_x][current_y]);
-  }
-  
-}
-
-void characterLogic::move_down_walker(generatedMap *m, heap_t *h, NPC_char *character_to_move, int current_x, int current_y) {
-
-  movementCosts pathfind;
-
-  int current_cost = m -> character_positions[current_x][current_y] -> cost_to_move;
-
-  if( character_to_move -> y_pos + 1 < 21 ) {
-    if(
-       (m -> generate_map[current_x][current_y + 1] != tree) &&
-       (m -> generate_map[current_x][current_y + 1] != boulder) &&
-       (m -> generate_map[current_x][current_y + 1] != pokemon_mart) &&
-       (m -> generate_map[current_x][current_y + 1] != pokemon_center) &&
-       (m -> character_positions[current_x][current_y + 1] == NULL)) {
-	  
-      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-      m -> character_positions[current_x][current_y] -> next_x = current_x;
-      m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	  
-	  
-    }
-    else {
-	  
-      direction direction_to_move;
-      int valid = 0;
-
-      while(!valid) {
-
-	direction_to_move = static_cast<direction>(rand() % 3);
-	  
-	switch (direction_to_move) {
-	      
-	case 0:
-	  if(( m -> generate_map[current_x][current_y - 1] != tree) &&
-	     (m -> generate_map[current_x][current_y - 1] != boulder) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_mart) &&
-	     (m -> generate_map[current_x][current_y - 1] != pokemon_center) &&
-	     (m -> character_positions[current_x][current_y - 1] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	    m -> character_positions[current_x][current_y] -> cur_direction = up;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x][current_y - 1] != NULL) {
-	    if(m -> character_positions[current_x][current_y - 1] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y - 1);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y - 1;
-	      m -> character_positions[current_x][current_y] -> cur_direction = up;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	      
-	case 1:
-	  if(( m -> generate_map[current_x + 1][current_y] != tree) &&
-	     (m -> generate_map[current_x + 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x + 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x + 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = right;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x + 1][current_y] != NULL) {
-	    if(m -> character_positions[current_x + 1][current_y] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x + 1, current_y);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x + 1;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	      m -> character_positions[current_x][current_y] -> cur_direction = right;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	      
-	case 2:
-	  if(( m -> generate_map[current_x - 1][current_y] != tree) &&
-	     (m -> generate_map[current_x - 1][current_y] != boulder) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_mart) &&
-	     (m -> generate_map[current_x - 1][current_y] != pokemon_center) &&
-	     (m -> character_positions[current_x - 1][current_y] == NULL)) {
-	    m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	    m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	    m -> character_positions[current_x][current_y] -> next_y = current_y;
-	    m -> character_positions[current_x][current_y] -> cur_direction = left;
-	    valid = 1;
-	  }
-	  else if (m -> character_positions[current_x - 1][current_y] != NULL) {
-	    if(m -> character_positions[current_x - 1][current_y] -> player_type == PC) {
-	      m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x - 1, current_y);
-	      m -> character_positions[current_x][current_y] -> next_x = current_x - 1;
-	      m -> character_positions[current_x][current_y] -> next_y = current_y;
-	      m -> character_positions[current_x][current_y] -> cur_direction = left;
-	      valid = 1;
-	    }
-	  }
-	  break;
-	}
-      }
-	  
-	  
-    }
-    if(m -> character_positions[current_x][current_y + 1] != NULL) {
-      if(m -> character_positions[current_x][current_y + 1] -> player_type == PC) {
-	m -> character_positions[current_x][current_y] -> cost_to_move = current_cost + pathfind.determine_cost_rival(m, current_x, current_y + 1);
-	m -> character_positions[current_x][current_y] -> next_x = current_x;
-	m -> character_positions[current_x][current_y] -> next_y = current_y + 1;
-	    
-	    
-      }
-    }
-    heap_insert(h, m -> character_positions[current_x][current_y]);
-  }
-  
-}
-
-void characterLogic::attempt_move_PC(int x_move, int y_move, generatedMap *m, heap_t *h, int *PC_added_to_heap) {
-
-  movementCosts pathfind;
-  char buffer[50];
-
-  if(x_move >= 0
-     && x_move < 80
-     && y_move >= 0
-     && y_move < 21) {
-    if(m -> generate_map[x_move][y_move] != boulder &&
-       m -> generate_map[x_move][y_move] != tree) {
-      m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> next_x = x_move;
-      m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> next_y = y_move;
-
-      if(m -> character_positions[x_move][y_move] != NULL) {
-	if(m -> character_positions[x_move][y_move] -> player_type == stationary) {
-	  m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + 10;
-	}
-      }
-      else {	
-	m -> character_positions[m -> PC_position_x][m -> PC_position_y] -> cost_to_move = m -> game_time + pathfind.determine_cost_PC(m, x_move, y_move);
-      }
-
-      int x = m -> PC_position_x;
-      int y = m -> PC_position_y;
-      
-      heap_insert(h, m -> character_positions[x][y]);
-      *PC_added_to_heap = 1;
-    }
-  }
-  
-}
-
-void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
-
-  int prev_x = player_char -> x_pos;
-  int prev_y = player_char -> y_pos;
-
-  int next_x_move = player_char -> next_x;
-  int next_y_move = player_char -> next_y;
-
-  if(m -> character_positions[player_char -> next_x][player_char -> next_y] != NULL) {
-    char buffer[50];
-    sprintf(buffer, "battled: %d", m -> character_positions[player_char -> next_x][player_char -> next_y] -> battled);
-    mvaddstr(21, 0, buffer);
-    refresh();
-  }
-  
-  if(m -> character_positions[player_char -> next_x][player_char -> next_y] == NULL) {
-    
-    m -> character_positions[next_x_move][next_y_move] = (PC_char*) malloc(sizeof(PC_char));
-    m -> character_positions[next_x_move][next_y_move] -> player_type = PC;
-    
-    m -> character_positions[next_x_move][next_y_move] -> x_pos = next_x_move;
-    m -> character_positions[next_x_move][next_y_move] -> y_pos = next_y_move;
-
-    m -> PC_position_x = next_x_move;
-    m -> PC_position_y = next_y_move;
-
-    m -> character_positions[prev_x][prev_y] = NULL;
-    free(m -> character_positions[prev_x][prev_y]);
-
-    if (m -> generate_map[next_x_move][next_y_move] == tall_grass) {
-      wild_pokemon_battle wild_encounter;
-
-      int enter_battle = 0;
-      
-      enter_battle = wild_encounter.determine_battle();
-
-      if(enter_battle) {
-	wild_encounter.engage_battle_wild(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
-      }
-    }
-    
-  }
-  else if (m -> character_positions[next_x_move][next_y_move] -> battled == 0) {
-     
-    engage_battle();
-    m -> character_positions[next_x_move][next_y_move] -> battled = 1;
-      
-  }
-}
-
 void displayList::update_list(generatedMap *m, NPC_char *list_copy, int window, int size) {
 
   int to_print_final;
@@ -3390,291 +1454,4 @@ void characterLogic::engage_battle() {
   
 }
 
-int wild_pokemon_battle::determine_battle() {
 
-  int temp = rand() % 100;
-
-  if(temp >= 90) {
-    return 1;
-  }
-
-  return 0;
-}
-
-void wild_pokemon_battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
-
-  in_game_pokemon to_spawn = generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
-
-  clear();
-  char buffer1[100];
-  sprintf(buffer1, "POKEMON: %s", to_spawn.get_name().c_str());
-  char buffer2[100];
-  sprintf(buffer2, "LEVEL: %d", to_spawn.get_level());
-  char buffer3[100];
-  sprintf(buffer3, "HP: %d", to_spawn.get_HP());
-  char buffer4[100];
-  sprintf(buffer4, "ATTACK: %d", to_spawn.get_attack());
-  char buffer5[100];
-  sprintf(buffer5, "DEFENSE: %d", to_spawn.get_defense());
-  char buffer6[100];
-  sprintf(buffer6, "SPECIAL ATTACK: %d", to_spawn.get_special_attack());
-  char buffer7[100];
-  sprintf(buffer7, "SPECIAL DEFENSE: %d", to_spawn.get_special_defense());
-  char buffer8[100];
-  sprintf(buffer8, "SPEED: %d", to_spawn.get_speed());
-  char buffer9[100];
-  sprintf(buffer9, "MOVE 1: %s", to_spawn.get_move_1().c_str());
-  char buffer10[100];
-  sprintf(buffer10, "MOVE 2: %s", to_spawn.get_move_2().c_str());
-  char buffer11[100];
-  sprintf(buffer11, "SHINY: %s", to_spawn.get_shiny().c_str());
-  char buffer12[100];
-  sprintf(buffer12, "GENDER: %s", to_spawn.get_gender().c_str());
-  mvaddstr(5, 20, buffer1);
-  mvaddstr(7, 20, buffer2);
-  mvaddstr(8, 20, buffer3);
-  mvaddstr(9, 20, buffer4);
-  mvaddstr(10, 20, buffer5);
-  mvaddstr(11, 20, buffer6);
-  mvaddstr(12, 20, buffer7);
-  mvaddstr(13, 20, buffer8);
-  mvaddstr(15, 20, buffer9);
-  mvaddstr(16, 20, buffer10);
-  mvaddstr(10, 50, buffer11);
-  mvaddstr(11, 50, buffer12);
-  refresh();
-
-  int stay = 1;
-
-  while(stay) {
-
-    if(getchar() == 27) {
-      if(getchar() == 27) {
-	stay = 0;
-      }
-    }
-  }
-
-  
-  
-}
-
-in_game_pokemon wild_pokemon_battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
-
-  in_game_pokemon to_spawn;
-  choose_random_pokemon(to_spawn, pkmn_list);
-  get_pokemon_stats(to_spawn, pkmn_st);
-  assign_ivs(to_spawn);
-  level_up(to_spawn, manhattan_x, manhattan_y);
-  get_pokemon_moves(to_spawn, pkmn_mv);
-  resolve_pokemon_move_names(to_spawn, mv);
-
-  int random = rand() % 8192;
-
-  if(random == 0) {
-    to_spawn.set_shiny("Shiny");
-  }
-
-  random = rand() % 2;
-
-  if(random == 0) {
-    to_spawn.set_gender("Male");
-  }
-  else if(random == 1) {
-    to_spawn.set_gender("Female");
-  }
-
-  return to_spawn;
-  
-}
-
-void wild_pokemon_battle::choose_random_pokemon(in_game_pokemon &pkmn, std::vector<pokemon> pkmn_list) {
-
-  int chosen_index = rand() % pkmn_list.size();
-  pokemon selected_pkmn = pkmn_list[chosen_index];
-
-  pkmn.set_id(stoi(selected_pkmn.id));
-  pkmn.set_name(selected_pkmn.identifier);
-  
-}
-
-void wild_pokemon_battle::get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats> pkmn_st) {
-  std::vector<pokemon_stats> selected_stats;
-   
-  for(int i = 0; i < pkmn_st.size(); i++) {
-    if(pkmn.get_id() == stoi(pkmn_st[i].pokemon_id)) {
-      selected_stats.push_back(pkmn_st[i]);
-    }
-  }
-
-  // We should be parsing the stats in this order
-  pkmn.set_HP(stoi(selected_stats[0].base_stat));
-  pkmn.set_attack(stoi(selected_stats[1].base_stat));
-  pkmn.set_defense(stoi(selected_stats[2].base_stat));
-  pkmn.set_special_attack(stoi(selected_stats[3].base_stat));
-  pkmn.set_special_defense(stoi(selected_stats[4].base_stat));
-  pkmn.set_speed(stoi(selected_stats[5].base_stat));
-}
-
-void wild_pokemon_battle::get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv) {
-  std::vector<pokemon_moves> selected_moves;
-
-  // Look among the most common version_ids to find moves. There's still a chance we won't find some, but looking among the most common version_ids,
-  // You really should
-
-  int chosen_version_id = 15;
-
-  while(selected_moves.size() == 0
-	&& chosen_version_id < 21) {
-    
-    for(int i = 0; i < pkmn_mv.size(); i++) {
-      
-      if(stoi(pkmn_mv[i].version_group_id) == chosen_version_id
-	 && stoi(pkmn_mv[i].pokemon_id) == pkmn.get_id()
-	 && pkmn.get_level() >= stoi(pkmn_mv[i].level)
-	 && stoi(pkmn_mv[i].pokemon_move_method_id) == 1) {
-	selected_moves.push_back(pkmn_mv[i]);
-      }
-      
-    }
-    
-    chosen_version_id++;
-  }
-
-  int moves_to_learn = selected_moves.size();
-
-  if(moves_to_learn == 0) {
-
-    // Instead of crashing, let's just not assign any moves if we somehow don't find any
-  }
-  else if(moves_to_learn == 1) {
-    pkmn.set_move_id_1(stoi(selected_moves[0].move_id));
-  }
-
-  else if(moves_to_learn >= 2) {
-    int rand_move_1;
-    int rand_move_2;
-
-    rand_move_1 = rand() % selected_moves.size();
-    pkmn.set_move_id_1(stoi(selected_moves[rand_move_1].move_id));
-
-    
-    rand_move_2 = rand() % selected_moves.size();
-
-    while(rand_move_2 == rand_move_1) {
-      rand_move_2 = rand() % selected_moves.size();
-    }
-    
-    pkmn.set_move_id_2(stoi(selected_moves[rand_move_2].move_id));
-  }
-
-    
-}
-
-void wild_pokemon_battle::assign_ivs(in_game_pokemon &pkmn) {
-
-  int rand_iv;
-
-  rand_iv = rand() % 15;
-  pkmn.set_HP_iv(rand_iv);
-  rand_iv = rand() % 15;
-  pkmn.set_attack_iv(rand_iv);
-  rand_iv = rand() % 15;
-  pkmn.set_defense_iv(rand_iv);
-  rand_iv = rand() % 15;
-  pkmn.set_special_attack_iv(rand_iv);
-  rand_iv = rand() % 15;
-  pkmn.set_special_defense_iv(rand_iv);
-  rand_iv = rand() % 15;
-  pkmn.set_speed_iv(rand_iv);
-  
-}
-
-int wild_pokemon_battle::generate_HP_lv_up(int base_HP, int HP_iv, int level) {
-
-  int calc_1 = (base_HP + HP_iv) * 2 * level;
-  double calc_2 = calc_1 / 100.0;
-  calc_2 = floor(calc_2);
-  int calc_3 = ((int) calc_2) + level + 10;
-  
-
-  return calc_3;
-  
-}
-
-int wild_pokemon_battle::generate_otherstat_lv_up(int base_stat, int base_iv, int level) {
-
-  int calc_1 = (base_stat + base_iv) * 2 * level;
-  double calc_2 = calc_1 / 100.0;
-  calc_2 = floor(calc_2);
-  int calc_3 = ((int) calc_2) + 5;
-  
-
-  return calc_3;
-  
-}
-
-
-void wild_pokemon_battle::level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y) {
-
-  int abs_man_x = abs(manhattan_x);
-  int abs_man_y = abs(manhattan_y);
-  int distance = abs_man_x + abs_man_y;
-
-  if((distance) <= 200) {
-    int min = 1;
-    int max;
-    if(distance == 0) {
-      max = 1;
-    }
-    else if(distance != 0) {
-      max = (int) distance / 2;
-    }
-    pkmn.set_level((rand() % (max - min + 1)) + min);
-  }
-  else if((distance) > 200) {
-    int min = (int) (distance - 200) / 2;
-    int max = 100;
-    pkmn.set_level(((rand() % (max - min + 1)) + min));
-  }
-
-  int to_assign;
-
-  to_assign = generate_HP_lv_up(pkmn.get_HP(), pkmn.get_HP_iv(), pkmn.get_level());
-  pkmn.set_HP(to_assign);
-
-  to_assign = generate_otherstat_lv_up(pkmn.get_attack(), pkmn.get_attack_iv(), pkmn.get_level());
-  pkmn.set_attack(to_assign);
-  
-  to_assign = generate_otherstat_lv_up(pkmn.get_defense(), pkmn.get_defense_iv(), pkmn.get_level());
-  pkmn.set_defense(to_assign);
-  
-  to_assign = generate_otherstat_lv_up(pkmn.get_special_attack(), pkmn.get_special_attack_iv(), pkmn.get_level());
-  pkmn.set_special_attack(to_assign);
-  
-  to_assign = generate_otherstat_lv_up(pkmn.get_special_defense(), pkmn.get_special_defense_iv(), pkmn.get_level());
-  pkmn.set_special_defense(to_assign);
-  
-  to_assign = generate_otherstat_lv_up(pkmn.get_speed(), pkmn.get_speed_iv(), pkmn.get_level());
-  pkmn.set_speed(to_assign);
-}
-
-void wild_pokemon_battle::resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves> mv) {
-
-  if(pkmn.get_move_id_1() != -1) {
-    for(int i = 0; i < mv.size(); i++) {
-      if(pkmn.get_move_id_1() == stoi(mv[i].id)) {
-	pkmn.set_move_1(mv[i].identifier);
-      }
-    }
-  }
-
-  if(pkmn.get_move_id_2() != -1) {
-    for(int i = 0; i < mv.size(); i++) {
-      if(pkmn.get_move_id_2() == stoi(mv[i].id)) {
-	pkmn.set_move_2(mv[i].identifier);
-      }
-    }
-  }
-  
-}

@@ -15,3 +15,5 @@ Apr 4: Implemented dynamic levels, gender, and shiny chance. The moves ID issue 
 For now, I'm going to filter wild pokemon moves to only be chosen from their learned moveset. Not TMs, HMs, or egg moves. This is to avoid getting Quagsires that know Giga Impact and Earthquake on the first map.
 
 Do README, will probably submit later.
+
+Apr 5: Finally figured out the linker problem and split my program up into a handful of appropriately named files. Refactor my readme a bit, fix a bug with PC engaging in battles and submit. Actually there's not an assignment up for 1.07 on Canvas yet, that's odd considering it's due tomorrow. I'm probably gonna forget to submit it ngl

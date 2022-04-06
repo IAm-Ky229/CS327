@@ -1,4 +1,4 @@
-*The wild_pokemon_battle class encapsulates most of what I worked on for this assignment
+*wild_battle.h and wild_battle.cpp encapsulates most of my work for this assignment
 
 *The following directories need to be passed in for the program to not seg fault:
 	- share/cs327/moves.csv
@@ -8,23 +8,13 @@
 	
 (Execute should look like: ./battle share/cs327/moves.csv share/cs327/pokemon.csv share/cs327/pokemon_moves.csv share/cs327/pokemon_stats.csv)
 
------> file_parsing.h <-----
+-----> character_movement.cpp and character_movement.h <-----
 
-file_reader: New method to read in pokemon_stats. Also refactored class methods as a whole to take in vectors related to the data they are parsing in. So we can update a vector back in our main, making the data available when we need it
-	
-pokemon_stats: New class to parse in stat mappings for all pokemon
-	- pokemon_id
-	- stat_id
-	- base_stat
-	- effort
+New files to house the movement functions, seperate from the main game loop
 
------> file_parsing.cpp <-----
+move_PC: Refactored to take in the list of pokemon, pokemon stats, moves, and pokemon moveset mappings, in addition to the current manhattan_x and manhattan_y. If we move onto tall grass, check to see if we should start a wild battle. If so, call engage_battle_wild and pass in the needed data.
 
-read_in_file: accomodates for parsing pokemon_stats now
-
-read_lines_pokemon_stats: parses in entire csv file of style pokemon_stats
-
------> world_generation.h <-----
+-----> wild_battle.h <-----
 
 in_game_pokemon: New class to generate a pokemon in_game seperate from the data we have parsed in. Has fields for
 	- id
@@ -74,21 +64,8 @@ wild_pokemon_battle: New class to handle wild pokemon battle logic. Consists of 
 	- generate_otherstat_lv_up(int base_stat, int base_iv, int level)
 	
 	- level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y)
-
------> world_generation.cpp <-----
-
-main: Create 6 different vectors, one for each class:
-	- experience
-	- moves
-	- pokemon
-	- pokemon_moves
-	- pokemon_species
-	- type_names
-	- pokemon_stats
 	
-Pass in the vectors to our file reader class method so they are updated as needed
-
-move_PC: Refactored to take in the list of pokemon, pokemon stats, moves, and pokemon moveset mappings, in addition to the current manhattan_x and manhattan_y. If we move onto tall grass, check to see if we should start a wild battle. If so, call engage_battle_wild and pass in the needed data.
+-----> wild_battle.cpp <-----
 
 determine_battle: 10% of the time, returns 1
 
@@ -111,3 +88,36 @@ generate_otherstat_lv_up: Calculate what a stat other than HP should be, based o
 level_up: Generate a level for the pokemon, given a manhattan_x and manhattan_y distance from (0,0). Assign base stats for HP, attack, defense, special attack, special defense, and speed.
 
 resolve_pokemon_move_names: Using the IDs of the moves for this pokemon, resolve the moves by name, using the list of moves we parsed in
+
+-----> file_parsing.h <-----
+
+file_reader: New method to read in pokemon_stats. Also refactored class methods as a whole to take in vectors related to the data they are parsing in. So we can update a vector back in our main, making the data available when we need it
+	
+pokemon_stats: New class to parse in stat mappings for all pokemon
+	- pokemon_id
+	- stat_id
+	- base_stat
+	- effort
+
+-----> file_parsing.cpp <-----
+
+read_in_file: accomodates for parsing pokemon_stats now
+
+read_lines_pokemon_stats: parses in entire csv file of style pokemon_stats
+
+-----> world_generation.h <-----
+
+
+
+-----> world_generation.cpp <-----
+
+main: Create 6 different vectors, one for each class:
+	- experience
+	- moves
+	- pokemon
+	- pokemon_moves
+	- pokemon_species
+	- type_names
+	- pokemon_stats
+	
+Pass in the vectors to our file reader class method so they are updated as needed
