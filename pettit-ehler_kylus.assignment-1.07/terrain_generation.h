@@ -1,5 +1,11 @@
 #include <stdint.h>
 
+#define GRASS_PAIR 1
+#define PATH_PAIR 2
+#define PLAYER_PAIR 3
+#define BOULDER_PAIR 4
+#define TREE_PAIR 5
+
 #include "heap.h"
 
 

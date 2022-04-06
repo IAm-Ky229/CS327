@@ -37,7 +37,9 @@ void generatedMap::print_map(generatedMap *map_data) {
 	    mvaddch(i, j, 'N');
 	    break;
 	  case PC:
+	    attron(COLOR_PAIR(PLAYER_PAIR));
 	    mvaddch(i, j, '@');
+	    attroff(COLOR_PAIR(PLAYER_PAIR));
 	    break;
 	break;
 	  }
@@ -45,19 +47,25 @@ void generatedMap::print_map(generatedMap *map_data) {
       else {
       switch(map_data -> generate_map[j][i]) {
       case boulder :
+	attron(COLOR_PAIR(BOULDER_PAIR));
 	mvaddch(i, j, '%');
+	attroff(COLOR_PAIR(BOULDER_PAIR));
 	break;
       case clearing :
 	mvaddch(i, j, '.');
 	break;
       case tall_grass :
+	attron(COLOR_PAIR(GRASS_PAIR));
 	mvaddch(i, j, ',');
+	attroff(COLOR_PAIR(GRASS_PAIR));
 	break;
       case border_exit :
 	mvaddch(i, j, '#');
 	break;
       case path :
+	attron(COLOR_PAIR(PATH_PAIR));
 	mvaddch(i, j, '#');
+	attroff(COLOR_PAIR(PATH_PAIR));
 	break;
       case pokemon_center :
 	mvaddch(i, j, 'C');
@@ -69,7 +77,9 @@ void generatedMap::print_map(generatedMap *map_data) {
 	mvaddch(i, j, ':');
 	break;
       case tree :
+	attron(COLOR_PAIR(TREE_PAIR));
 	mvaddch(i, j, '^');
+	attroff(COLOR_PAIR(TREE_PAIR));
 	break;
       default :
 	mvaddch(i, j, ' ');
@@ -77,7 +87,6 @@ void generatedMap::print_map(generatedMap *map_data) {
 	}
       }
       }
-    //printf("\n");
   }
   refresh();
 }

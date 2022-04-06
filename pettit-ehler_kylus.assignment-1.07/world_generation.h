@@ -3,6 +3,12 @@
 #define WORLD_X_START 199
 #define WORLD_Y_START 199
 
+#define GRASS_PAIR 1
+#define PATH_PAIR 2
+#define PLAYER_PAIR 3
+#define BOULDER_PAIR 4
+#define TREE_PAIR 5
+
 #include "heap.h"
 #include "wild_battle.h"
 #include "character_movement.h"

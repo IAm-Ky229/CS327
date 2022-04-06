@@ -21,10 +21,12 @@ static int32_t path_cmp(const void *key, const void *with) {
   return ((movementCosts *) key)->cost - ((movementCosts *) with)->cost;
 }
 
+// These have to be static, so they have to be in the main game loop file
 static int32_t move_cost_cmp(const void *key, const void *with) {
   return ((characterData *) key)-> cost_to_move - ((characterData *) with)-> cost_to_move;
 }
 
+// These have to be static, so they have to be in the main game loop file
 static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y)
 {
 
@@ -217,7 +219,7 @@ static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONT
   
 }
 
-// This is the same as dijkstra_path_rival, we're just calling a different cost computation function
+// These have to be static, so they have to be in the main game loop file
 static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], int from_x, int from_y)
 {
 
@@ -480,6 +482,14 @@ int main(int argc, char *argv[]) {
   cbreak();
   halfdelay(1);
   noecho();
+
+  start_color();
+
+  init_pair(GRASS_PAIR, COLOR_GREEN, COLOR_BLACK);
+  init_pair(PATH_PAIR, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(PLAYER_PAIR, COLOR_CYAN, COLOR_BLACK);
+  init_pair(BOULDER_PAIR, COLOR_RED, COLOR_BLACK);
+  init_pair(TREE_PAIR, COLOR_BLUE, COLOR_BLACK);
 
   // Initialize map
   for(i = 0; i < WORLD_Y_LENGTH; i++) {

@@ -186,6 +186,7 @@ void wild_pokemon_battle::get_pokemon_moves(in_game_pokemon &pkmn, std::vector<p
     
     rand_move_2 = rand() % selected_moves.size();
 
+    // I'm only selecting from one moveset ID, so just checking if we generated the same number should be fine
     while(rand_move_2 == rand_move_1) {
       rand_move_2 = rand() % selected_moves.size();
     }
