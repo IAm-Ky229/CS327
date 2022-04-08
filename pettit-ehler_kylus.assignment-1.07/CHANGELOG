@@ -17,3 +17,5 @@ For now, I'm going to filter wild pokemon moves to only be chosen from their lea
 Do README, will probably submit later.
 
 Apr 5: Finally figured out the linker problem and split my program up into a handful of appropriately named files. Refactor my readme a bit, fix a bug with PC engaging in battles and submit. Actually there's not an assignment up for 1.07 on Canvas yet, that's odd considering it's due tomorrow. I'm probably gonna forget to submit it ngl
+
+Apr 6: Submit. I'm not sure if we are meant to have a true "capture" sequence, I'm not going to add one for now because I could just process a "c" keypress or something to take you to a screen that says "You caught <pokemon>." And I feel like the bulk of the assignment was just parsing all the moves and stats and stuff
