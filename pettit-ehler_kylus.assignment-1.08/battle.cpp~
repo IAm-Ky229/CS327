@@ -304,3 +304,40 @@ void battle::resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves
   }
   
 }
+
+void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
+
+  clear();
+
+  battle NPC_pokemon;
+
+  in_game_pokemon generated = NPC_pokemon.generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
+
+  char buffer1[50];
+  char buffer2[50];
+  char buffer3[50];
+  char buffer4[50];
+
+
+  sprintf(buffer1, "NPC Pokemon: %s", generated.get_name().c_str());
+  sprintf(buffer2, "Your Pokemon: %s", PC_s.getPokemon()[0].get_name().c_str());
+  sprintf(buffer3, "HP: %d", generated.get_HP());
+  sprintf(buffer4, "HP: %d", PC_s.getPokemon()[0].get_HP());
+
+  mvaddstr(2, 15, buffer1);
+  mvaddstr(3, 15, buffer3);
+  mvaddstr(17, 60, buffer2);
+  mvaddstr(18, 60, buffer4);
+  mvaddstr(17, 15, "1: FIGHT");
+  mvaddstr(18, 15, "2: BAG");
+  mvaddstr(19, 15, "3: POKEMON");
+  
+  refresh();
+
+  int stay = 1;
+
+  while(stay) {
+
+    
+  }
+}

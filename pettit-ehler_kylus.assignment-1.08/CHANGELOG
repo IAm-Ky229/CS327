@@ -1,1 +1,3 @@
 Apr 8: Choosing random pokemon from 3 random pokemon functional, will try and get PC pokemon to display in NPC / wild battles tomorrow
+
+Apr 9: PC and NPC pokemon now display in battles, along with current/max HP. In the process of selecting moves, successfully selecting a PC move and now need to select an NPC move, before actually attacking. Placeholders for the bag and pokemon list in-battle are present, need to be implemented still.

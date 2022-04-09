@@ -133,3 +133,16 @@ public:
   void level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y);
   
 };
+
+class PC_state {
+
+private:
+
+  std::vector<in_game_pokemon> PC_pokemon;
+
+public:
+
+  void addPokemon(in_game_pokemon p) { PC_pokemon.push_back(p); }
+  std::vector<in_game_pokemon> getPokemon() { return PC_pokemon; }
+  
+};

@@ -481,7 +481,7 @@ void characterLogic::place_characters(generatedMap *m, heap_t *h, movementCosts 
 
 }
 
-void characterLogic::move_pacer(generatedMap *m, NPC_char *pacer_to_move, heap_t *h) {
+void characterLogic::move_pacer(generatedMap *m, NPC_char *pacer_to_move, heap_t *h, PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
   characterLogic characterLogic;
   
@@ -495,7 +495,7 @@ void characterLogic::move_pacer(generatedMap *m, NPC_char *pacer_to_move, heap_t
     if(m -> character_positions[pacer_to_move -> next_x][pacer_to_move -> next_y] -> player_type == PC &&
        m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> battled == 0) {
       
-      characterLogic.engage_battle();
+      characterLogic.engage_battle(PC_s, manhattan_x, manhattan_y, pkmn_list, pkmn_st, pkmn_mv, mv);
       m -> character_positions[pacer_to_move -> x_pos][pacer_to_move -> y_pos] -> battled = 1;
       
     }
@@ -717,7 +717,7 @@ void characterLogic::move_right(generatedMap *m, heap_t *h, NPC_char *character_
 }
 
 
-void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], NPC_char *character_to_move, heap_t *h) {
+void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL], NPC_char *character_to_move, heap_t *h, PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
   int min_x_next;
   int min_y_next;
@@ -731,7 +731,7 @@ void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijks
     if(m -> character_positions[character_to_move -> next_x][character_to_move -> next_y] -> player_type == PC &&
        m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled == 0) {
       
-      engage_battle();
+      engage_battle(PC_s, manhattan_x, manhattan_y, pkmn_list, pkmn_st, pkmn_mv, mv);
       m -> character_positions[character_to_move -> x_pos][character_to_move -> y_pos] -> battled = 1;
     }
   }
@@ -850,7 +850,7 @@ void characterLogic::move_via_shortest_path(generatedMap *m, movementCosts dijks
 
 
 
-void characterLogic::move_wanderer(generatedMap *m, NPC_char *wanderer_to_move, heap_t *h) {
+void characterLogic::move_wanderer(generatedMap *m, NPC_char *wanderer_to_move, heap_t *h, PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
   int current_x = wanderer_to_move -> x_pos;
   int current_y = wanderer_to_move -> y_pos;
@@ -862,7 +862,7 @@ void characterLogic::move_wanderer(generatedMap *m, NPC_char *wanderer_to_move, 
     if((m -> character_positions[wanderer_to_move -> next_x][wanderer_to_move -> next_y] -> player_type == PC) &&
        (m -> character_positions[wanderer_to_move -> x_pos][wanderer_to_move -> y_pos] -> battled == 0)) {
       
-      engage_battle();
+      engage_battle(PC_s, manhattan_x, manhattan_y, pkmn_list, pkmn_st, pkmn_mv, mv);
       m -> character_positions[wanderer_to_move -> x_pos][wanderer_to_move -> y_pos] -> battled = 1;
       
     }
@@ -1330,7 +1330,7 @@ void characterLogic::move_left_random(generatedMap *m, heap_t *h, NPC_char *char
   
 }
 
-void characterLogic::move_random_walker(generatedMap *m, NPC_char *walker_to_move, heap_t *h) {
+void characterLogic::move_random_walker(generatedMap *m, NPC_char *walker_to_move, heap_t *h, PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
 
   characterLogic characterLogic;
 
@@ -1344,7 +1344,7 @@ void characterLogic::move_random_walker(generatedMap *m, NPC_char *walker_to_mov
     if(m -> character_positions[walker_to_move -> next_x][walker_to_move -> next_y] -> player_type == PC &&
        m -> character_positions[walker_to_move -> x_pos][walker_to_move -> y_pos] -> battled == 0) {
       
-      engage_battle();
+      engage_battle(PC_s, manhattan_x, manhattan_y, pkmn_list, pkmn_st, pkmn_mv, mv);
       m -> character_positions[walker_to_move -> x_pos][walker_to_move -> y_pos] -> battled = 1;
       
     }
@@ -1906,7 +1906,7 @@ void characterLogic::attempt_move_PC(int x_move, int y_move, generatedMap *m, he
   
 }
 
-void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
+void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y, PC_state &PC_s) {
 
   int prev_x = player_char -> x_pos;
   int prev_y = player_char -> y_pos;
@@ -1950,7 +1950,7 @@ void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<
   }
   else if (m -> character_positions[next_x_move][next_y_move] -> battled == 0) {
      
-    engage_battle();
+    engage_battle(PC_s, manhattan_x, manhattan_y, pkmn_list, pkmn_st, pkmn_mv, mv);
     m -> character_positions[next_x_move][next_y_move] -> battled = 1;
       
   }

@@ -12,7 +12,7 @@
 
 #include <vector>
 #include "heap.h"
-#include "wild_battle.h"
+#include "battle.h"
 #include "character_movement.h"
 
 using String = std::string;
@@ -30,19 +30,6 @@ static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONT
 
 // Actually navigate through the map
 static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONTAL][VERTICAL],  int from_x, int from_y);
-
-class PC_state {
-
-private:
-
-  std::vector<in_game_pokemon> PC_pokemon;
-
-public:
-
-  void addPokemon(in_game_pokemon p) { PC_pokemon.push_back(p); }
-  std::vector<in_game_pokemon> getPokemon() { return PC_pokemon; }
-  
-};
 
 class mapGen {
 

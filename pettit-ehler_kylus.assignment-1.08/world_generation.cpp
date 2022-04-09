@@ -564,32 +564,31 @@ int main(int argc, char *argv[]) {
 
 	switch (to_move -> player_type) {
 	case random_walker:
-	  processAction.move_random_walker(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	  processAction.move_random_walker(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
 	  break;
 	 
 	case wanderer:
-	  processAction.move_wanderer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	  processAction.move_wanderer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
 	  break;
 	 
 	case pacer:
-	  processAction.move_pacer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	  processAction.move_pacer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
 	  break;
 	 
 	case hiker:
 	  dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, map_exploration[y_explore_position][x_explore_position] -> PC_position_x , map_exploration[y_explore_position][x_explore_position] -> PC_position_y);
-	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
 	  break;
 	 
 	case rival:
 	  dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], distance_rival, map_exploration[y_explore_position][x_explore_position] -> PC_position_x, map_exploration[y_explore_position][x_explore_position] -> PC_position_y);
-	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
+	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
 	  break;
 
 	case PC:
-	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
+	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y, player_character);
 	  PC_added_to_heap = 0;
 	  break;
-	 
 	}
        
 	to_move = (characterData*) heap_peek_min(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move);
@@ -1458,25 +1457,6 @@ void displayList::update_list(generatedMap *m, NPC_char *list_copy, int window, 
     refresh();
     
   }
-}
-
-void characterLogic::engage_battle() {
-
-  clear();
-  mvaddstr(11, 20, "PLACEHOLDER FOR POKEMON BATTLE");
-  refresh();
-
-  int stay = 1;
-
-  while(stay) {
-
-    if(getchar() == 27) {
-      if(getchar() == 27) {
-	stay = 0;
-      }
-    }
-  }
-  
 }
 
 
