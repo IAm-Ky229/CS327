@@ -126,6 +126,17 @@ public:
   String effort;
 };
 
+class pokemon_types {
+private:
+
+public:
+
+  String pokemon_id;
+  String type_id;
+  String slot;
+  
+};
+
 class file_reader {
 
  public:
@@ -137,7 +148,8 @@ class file_reader {
 		    std::vector<pokemon_moves> &pkmn_mv,
 		    std::vector<pokemon_species> &pkmn_spc,
 		    std::vector<type_names> &typ_nm,
-		    std::vector<pokemon_stats> &pkmn_st);
+		    std::vector<pokemon_stats> &pkmn_st,
+		    std::vector<pokemon_types> &pkmn_typ);
   void read_lines_experience(ifstream &input_file, int num_lines, std::vector<experience> &exp);
   void read_lines_moves(ifstream &input_file, int num_lines, std::vector<moves> &mv);
   void read_lines_pokemon(ifstream &input_file, int num_lines, std::vector<pokemon> &pkmn);
@@ -145,6 +157,7 @@ class file_reader {
   void read_lines_pokemon_species(ifstream &input_file, int num_lines, std::vector<pokemon_species> &pkmn_spc);
   void read_lines_type_names(ifstream &input_file, int num_lines, std::vector<type_names> &typ_nm);
   void read_lines_pokemon_stats(ifstream &input_file, int num_lines, std::vector<pokemon_stats> &pkmn_st);
+  void read_lines_pokemon_types(ifstream &input_file, int num_lines, std::vector<pokemon_types> &pkmn_typ);
   void check_if_null(String *value);
   void format_for_printing(String value, String *to_print);
   int determine_num_lines(ifstream &input_file);

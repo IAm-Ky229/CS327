@@ -30,9 +30,9 @@ int battle::determine_battle() {
   return 0;
 }
 
-void battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
+void battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y) {
 
-  in_game_pokemon to_spawn = generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
+  in_game_pokemon to_spawn = generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, pkmn_typ, manhattan_x, manhattan_y);
 
   clear();
   char buffer1[100];
@@ -83,12 +83,20 @@ void battle::engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<poke
       }
     }
   }
-
-  
   
 }
 
-in_game_pokemon battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y) {
+void battle::get_types(in_game_pokemon &pkmn, std::vector<pokemon_types> pkmn_typ) {
+
+  for(int i = 0; i < pkmn_typ.size(); i++) {
+    if(pkmn.get_id() == stoi(pkmn_typ[i].pokemon_id)) {
+      pkmn.add_type(stoi(pkmn_typ[i].type_id));
+    }						    
+  }
+  
+}
+
+in_game_pokemon battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y) {
 
   in_game_pokemon to_spawn;
   choose_random_pokemon(to_spawn, pkmn_list);
@@ -97,6 +105,7 @@ in_game_pokemon battle::generate_pokemon(std::vector<pokemon> pkmn_list, std::ve
   level_up(to_spawn, manhattan_x, manhattan_y);
   get_pokemon_moves(to_spawn, pkmn_mv);
   resolve_pokemon_move_names(to_spawn, mv);
+  get_types(to_spawn, pkmn_typ);
 
   int random = rand() % 8192;
 
@@ -272,6 +281,7 @@ void battle::level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y) {
 
   to_assign = generate_HP_lv_up(pkmn.get_HP(), pkmn.get_HP_iv(), pkmn.get_level());
   pkmn.set_HP(to_assign);
+  pkmn.set_curr_HP(to_assign);
 
   to_assign = generate_otherstat_lv_up(pkmn.get_attack(), pkmn.get_attack_iv(), pkmn.get_level());
   pkmn.set_attack(to_assign);
@@ -309,16 +319,16 @@ void battle::resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves
   
 }
 
-void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv) {
+void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhattan_y, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ) {
 
   clear();
 
   battle NPC_pokemon_battle;
 
-  in_game_pokemon generated = NPC_pokemon_battle.generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y);
+  in_game_pokemon generated = NPC_pokemon_battle.generate_pokemon(pkmn_list, pkmn_st, pkmn_mv, mv, pkmn_typ, manhattan_x, manhattan_y);
 
-  int current_PC_HP = PC_s.getPokemon()[0].get_HP();
-  int current_NPC_HP = generated.get_HP();
+  int current_PC_HP = PC_s.getPokemon()[0].get_curr_HP();
+  int current_NPC_HP = generated.get_curr_HP();
 
   char buffer1[50];
   char buffer2[50];
@@ -338,13 +348,13 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
     
     sprintf(buffer1, "NPC Pokemon: %s", generated.get_name().c_str());
     sprintf(buffer2, "Your Pokemon: %s", PC_s.getPokemon()[0].get_name().c_str());
-    sprintf(buffer3, "HP: %d / %d", current_NPC_HP, generated.get_HP());
-    sprintf(buffer4, "HP: %d / %d", current_PC_HP, PC_s.getPokemon()[0].get_HP());
+    sprintf(buffer3, "HP: %d / %d", current_NPC_HP, generated.get_curr_HP());
+    sprintf(buffer4, "HP: %d / %d", current_PC_HP, PC_s.getPokemon()[0].get_curr_HP());
 
     mvaddstr(2, 15, buffer1);
     mvaddstr(3, 15, buffer3);
-    mvaddstr(17, 60, buffer2);
-    mvaddstr(18, 60, buffer4);
+    mvaddstr(17, 50, buffer2);
+    mvaddstr(18, 50, buffer4);
     mvaddstr(17, 15, "1: FIGHT");
     mvaddstr(18, 15, "2: BAG");
     mvaddstr(19, 15, "3: POKEMON");
@@ -373,8 +383,23 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
 
     if(PC_move_id != -1) {
       
-      NPC_pokemon_battle.process_attacks(PC_s, generated, mv, PC_move_id);
+      NPC_pokemon_battle.process_attacks(PC_s, generated, mv, PC_move_id, &current_PC_HP, &current_NPC_HP);
 
+    }
+
+    if(current_NPC_HP <= 0) {
+      clear();
+      mvaddstr(10, 45, "NPC loses!");
+      stay = 0;
+      refresh();
+      sleep(1);
+    }
+    else if(current_PC_HP <= 0) {
+      clear();
+      mvaddstr(10, 45, "PC loses!");
+      stay = 0;
+      refresh();
+      sleep(1);
     }
     
   }
@@ -382,28 +407,148 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
 
 int battle::enter_bag_NPC_battle(PC_state &PC_s) {
 
+  std::vector<item> bag_copy;
+
+  for(int i = 0; i < PC_s.get_items().size(); i++) {
+
+    if(PC_s.get_items()[i].get_item_ID() != 3) {
+      bag_copy.push_back(PC_s.get_items()[i]);
+    }
+    
+  }
+
   char pressed_key;
-  
-  clear();
-  mvaddstr(12, 15, "bag placeholder");
-  refresh();
+  int position = 0;
   
   while(1) {
+    clear();
+    print_bag(bag_copy, 1, position / 10);
+    mvaddstr((position % 10) + 3, 8, ">");
+    refresh();
+
+    pressed_key = getch();
+
+    if (pressed_key == '2') {
+      if(position + 1 < bag_copy.size()) {
+	position++;
+      }
+    }
+
+    if (pressed_key == '8') {
+      if(position - 1 >= 0) {
+	position--;
+      }
+    }
+
+    if (pressed_key == 27) {
+      return -1;
+    }
+    
   }
   
+}
+
+void battle::print_bag(std::vector<item> bag_copy, int in_battle, int window) {
+
+  int to_print_final;
+  int pages;
+  int total;
+  
+  to_print_final = bag_copy.size() % 10;
+  pages = bag_copy.size() / 10;
+  total = pages * 10 + to_print_final;
+  
+  int position;
+  int i;
+  
+  char buffer[100];
+  int iterate = 3;
+
+  clear();
+  
+  if(window == pages) {
+    position = 10 * window;
+    
+    for(i = position; i < to_print_final + pages * 10; i++) {
+
+      sprintf(buffer, "ITEM: %s", bag_copy[i].get_item_name().c_str());
+      mvaddstr(iterate, 10, buffer);
+      
+      iterate += 1;
+      
+    }
+  }
+  
+  else {
+    
+    position = window * 10;
+    
+    for(i = position; i < window * 10 + 10; i++) {
+
+      sprintf(buffer, "ITEM: %s", bag_copy[i].get_item_name().c_str());
+      mvaddstr(iterate, 10, buffer);
+      
+      iterate += 1;
+    }
+
+    refresh();
+    
+  }
 }
 
 int battle::view_pokemon_in_battle(PC_state &PC_s) {
 
   char pressed_key;
-  
-  clear();
-  mvaddstr(12, 15, "pokemon list placeholder");
-  refresh();
+
+  int position = 0;
   
   while(1) {
+    
+    clear();
+    print_pokemon(PC_s);
+    mvaddstr((position % 10) + 3, 8, ">");
+    refresh();
+
+    pressed_key = getch();
+
+    if(pressed_key == 27) {
+      return -1;
+    }
+
+    if (pressed_key == '2') {
+      if(position + 1 < PC_s.getPokemon().size()) {
+	position++;
+      }
+    }
+
+    if (pressed_key == '8') {
+      if(position - 1 >= 0) {
+	position--;
+      }
+    }
+    
   }
   
+}
+
+void battle::print_pokemon(PC_state &PC_s) {
+  
+  int i;
+  
+  char buffer[100];
+  int iterate = 3;
+ 
+  for(i = 0; i < PC_s.getPokemon().size(); i++) {
+    
+    sprintf(buffer, "POKEMON: %s HP: %d / %d", PC_s.getPokemon()[i].get_name().c_str(), PC_s.getPokemon()[i].get_curr_HP(), PC_s.getPokemon()[i].get_HP());
+    mvaddstr(iterate, 10, buffer);
+    
+    iterate += 1;
+      
+  }
+
+  refresh();
+    
 }
 
 int battle::process_move(PC_state &PC_s) {
@@ -430,11 +575,11 @@ int battle::process_move(PC_state &PC_s) {
     }
 
     if(pressed_key == '1') {
-      return PC_s.getPokemon()[0].get_move_id_1();
+      return PC_s.getPokemon()[0].get_move_id_1() - 1;
     }
 
     if(pressed_key == '2') {
-      return PC_s.getPokemon()[0].get_move_id_2();
+      return PC_s.getPokemon()[0].get_move_id_2() - 1;
     }
     
     refresh();
@@ -442,10 +587,140 @@ int battle::process_move(PC_state &PC_s) {
   
 }
 
-void battle::process_attacks(PC_state &PC_s, in_game_pokemon NPC_s, std::vector<moves> mv, int PC_move_id) {
+void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector<moves> mv, int PC_move_id, int *PC_hp, int *NPC_hp) {
 
   int rand_NPC_attack = rand() % 2;
+  int NPC_move_id = -1;
+
+  if(NPC_s.get_move_id_2() == -1) {
+    NPC_move_id = NPC_s.get_move_id_1();
+  }
+  else {
+    if(rand_NPC_attack == 0) {
+
+      NPC_move_id = NPC_s.get_move_id_1() - 1;
+    
+    }
+    else if(rand_NPC_attack == 1) {
+
+      NPC_move_id = NPC_s.get_move_id_2() - 1;
+    
+    }
+  }
+
+  int NPC_attacking_damage = calculate_damage(NPC_s, PC_s.getPokemon()[0], NPC_move_id, mv);
+  int PC_attacking_damage = calculate_damage(PC_s.getPokemon()[0], NPC_s, PC_move_id, mv);
+
+  if(PC_s.getPokemon()[0].get_speed() > NPC_s.get_speed()) {
+
+    char buffer1[100];
+    char buffer2[100];
+    char buffer3[100];
+    char buffer4[100];
+
+    sprintf(buffer1, "%s used %s", PC_s.getPokemon()[0].get_name().c_str(), mv[PC_move_id].identifier.c_str());
+    mvaddstr(4, 45, buffer1);
+    refresh();
+
+    sleep(1);
+    if(rand() % 100 > stoi(mv[PC_move_id].accuracy) && stoi(mv[PC_move_id].power) > 0) {
+      sprintf(buffer3, "%s's move missed!", PC_s.getPokemon()[0].get_name().c_str());
+      mvaddstr(5, 45, buffer3);
+      refresh();
+      sleep(1);
+    } else {
+    *NPC_hp -= PC_attacking_damage;
+    }
+
+    sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
+    mvaddstr(6, 45, buffer2);
+    refresh();
+
+    sleep(1);
+    if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
+      sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
+      mvaddstr(7, 45, buffer4);
+      refresh();
+      sleep(1);
+    } else {
+    *PC_hp -= PC_attacking_damage;
+    }
+    
+  }
+  else {
+
+    char buffer1[100];
+    char buffer2[100];
+    char buffer3[100];
+    char buffer4[100];
+
+    sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
+    mvaddstr(6, 45, buffer2);
+    refresh();
+
+    sleep(1);
+    if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
+      sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
+      mvaddstr(7, 45, buffer4);
+      refresh();
+      sleep(1);
+    } else {
+    *PC_hp -= PC_attacking_damage;
+    }
+
+    sprintf(buffer1, "%s used %s", PC_s.getPokemon()[0].get_name().c_str(), mv[PC_move_id].identifier.c_str());
+    mvaddstr(4, 45, buffer1);
+    refresh();
+
+    sleep(1);
+    if(rand() % 100 > stoi(mv[PC_move_id].accuracy) && stoi(mv[PC_move_id].power) > 0) {
+      sprintf(buffer3, "%s's move missed!", PC_s.getPokemon()[0].get_name().c_str());
+      mvaddstr(5, 45, buffer3);
+      refresh();
+      sleep(1);
+    } else {
+    *NPC_hp -= PC_attacking_damage;
+    }
+    
+  }
 
   
   
+}
+
+int battle::calculate_damage(in_game_pokemon attacking, in_game_pokemon defending, int move_id, std::vector<moves> mv) {
+
+  double calc1 = (2 * attacking.get_level()) / 5;
+  calc1 += 2;
+
+  double calc2 = stoi(mv[move_id].power) * (attacking.get_attack() / defending.get_defense());
+
+  double calc3 = calc1 * calc2;
+
+  calc3 /= 50;
+  calc3 += 2;
+
+  double crit = 1;
+
+  if((rand() % 256) == 0) {
+    crit = 1.5;
+  }
+
+  //int random = (rand() % (100 - 85 + 1)) + 85;
+
+  double STAB = 1;
+
+  for(int i = 0; i < attacking.get_type_ids().size(); i++) {
+    if(stoi(mv[move_id].type_id) == attacking.get_type_ids()[i]) {
+      STAB = 1.5;
+    }
+  }
+
+  // Type advantages not implemented in this assignment
+  double type = 1;
+
+  int calc4 = calc3 * crit * STAB * type;
+
+  return calc4;
+
 }

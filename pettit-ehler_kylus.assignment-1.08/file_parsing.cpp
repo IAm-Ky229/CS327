@@ -17,7 +17,8 @@ void file_reader::read_in_file(String file_to_open,
 			       std::vector<pokemon_moves> &pkmn_mv,
 			       std::vector<pokemon_species> &pkmn_spc,
 			       std::vector<type_names> &typ_nm,
-			       std::vector<pokemon_stats> &pkmn_st) {
+			       std::vector<pokemon_stats> &pkmn_st,
+			       std::vector<pokemon_types> &pkmn_typ) {
 
   ifstream my_input_file;
   String home_env(getenv("HOME"));
@@ -51,6 +52,9 @@ void file_reader::read_in_file(String file_to_open,
     else if(file_to_open.compare("share/cs327/pokemon_stats.csv") == 0) {
       read_lines_pokemon_stats(my_input_file, num_lines, pkmn_st);
     }
+    else if(file_to_open.compare("share/cs327/pokemon_types.csv") == 0) {
+      read_lines_pokemon_types(my_input_file, num_lines, pkmn_typ);
+    }
     
   }
 
@@ -80,6 +84,9 @@ void file_reader::read_in_file(String file_to_open,
     }
     else if(file_to_open.compare(home_env + "/.poke327/pokemon_stats.csv") == 0) {
       read_lines_pokemon_stats(my_input_file, num_lines, pkmn_st);
+    }
+    else if(file_to_open.compare(home_env + "/.poke327/pokemon_types.csv") == 0) {
+      read_lines_pokemon_types(my_input_file, num_lines, pkmn_typ);
     }
 
   }
@@ -471,6 +478,38 @@ void file_reader::read_lines_pokemon_stats(ifstream &input_file, int num_lines, 
     temp.effort = read4;
 
     pkmn_st.push_back(temp);
+  }
+}
+
+void file_reader::read_lines_pokemon_types(ifstream &input_file, int num_lines, std::vector<pokemon_types> &pkmn_typ) {
+
+  // Skip first line
+  String line;
+  std::getline(input_file, line);
+  
+  for(int i = 0; i < num_lines; i++) {
+    std::getline(input_file, line);
+    std::istringstream lineStream(line);
+
+    String read1;
+    String read2;
+    String read3;
+
+    std::getline(lineStream, read1, ',');
+    std::getline(lineStream, read2, ',');
+    std::getline(lineStream, read3, ',');
+
+    check_if_null(&read1);
+    check_if_null(&read2);
+    check_if_null(&read3);
+
+    pokemon_types temp;
+
+    temp.pokemon_id = read1;
+    temp.type_id = read2;
+    temp.slot = read3;
+
+    pkmn_typ.push_back(temp);
   }
 }
 

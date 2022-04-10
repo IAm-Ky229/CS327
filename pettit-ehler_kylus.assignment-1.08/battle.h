@@ -1,6 +1,7 @@
 #include "file_parsing.h"
 #include <cstdio> 
 #include <algorithm>
+#include <vector>
 
 // I actually made a proper class for once
 class in_game_pokemon {
@@ -31,6 +32,8 @@ private:
   int move_id_2;
 
   String name;
+  std::vector<int> type_ids;
+  int current_HP;
 
   String shiny;
   String gender;
@@ -63,6 +66,7 @@ public:
     move_id_2 = -1;
 
     name = "UNASSIGNED";
+    current_HP = 0;
 
     shiny = "Not shiny";
     gender = "UNASSIGNED";
@@ -91,6 +95,8 @@ public:
   void set_name(String val) { name = val; }
   void set_shiny(String val) { shiny = val; }
   void set_gender(String val) { gender = val; }
+  void add_type(int val) { type_ids.push_back(val); }
+  void set_curr_HP(int val) { current_HP = val; }
 
   int get_id() { return id; }
   int get_level() { return level; }
@@ -115,6 +121,8 @@ public:
   String get_name() { return name; }
   String get_shiny() { return shiny; }
   String get_gender() { return gender; }
+  std::vector<int> get_type_ids() { return type_ids; }
+  int get_curr_HP() { return current_HP; }
   
 };
 
@@ -151,6 +159,7 @@ public:
 
   void addItem(item i) { bag.push_back(i); }
   void removeItem(item i) { bag.erase(std::remove(bag.begin(), bag.end(), i), bag.end()); }
+  std::vector<item> get_items() { return bag; }
   
 };
 
@@ -160,11 +169,12 @@ class battle {
 public:
 
   int determine_battle();
-  void engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y);
-  in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, int manhattan_x, int manhattan_y);
+  void engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y);
+  in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y);
   void get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats> pkmn_st);
   void get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv);
   void resolve_pokemon_move_names(in_game_pokemon &pkmn, std::vector<moves> mv);
+  void get_types(in_game_pokemon &pkmn, std::vector<pokemon_types> pkmn_typ);
   void choose_random_pokemon(in_game_pokemon &pkmn, std::vector<pokemon> pkmn_list);
   void assign_ivs(in_game_pokemon &pkmn);
   int generate_HP_lv_up(int base_HP, int HP_iv, int level);
@@ -173,6 +183,9 @@ public:
   int enter_bag_NPC_battle(PC_state &PC_s);
   int view_pokemon_in_battle(PC_state &PC_s);
   int process_move(PC_state &PC_s);
-  void process_attacks(PC_state &PC_s, in_game_pokemon NPC_s, std::vector<moves> mv, int PC_move_id);
+  void process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector<moves> mv, int PC_move_id, int *PC_hp, int *NPC_hp);
+  int calculate_damage(in_game_pokemon attacking, in_game_pokemon defending, int move_id, std::vector<moves> mv);
+  void print_bag(std::vector<item> bag_copy, int in_battle, int window);
+  void print_pokemon(PC_state &PC_s);
   
 };

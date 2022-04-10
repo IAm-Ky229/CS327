@@ -1,3 +1,11 @@
-Apr 8: Choosing random pokemon from 3 random pokemon functional, will try and get PC pokemon to display in NPC / wild battles tomorrow
+Apr 7: Choosing random pokemon from 3 random pokemon functional, will try and get PC pokemon to display in NPC / wild battles tomorrow
 
-Apr 9: PC and NPC pokemon now display in battles, along with current/max HP. In the process of selecting moves, successfully selecting a PC move and now need to select an NPC move, before actually attacking. Placeholders for the bag and pokemon list in-battle are present, need to be implemented still.
+Apr 8: PC and NPC pokemon now display in battles, along with current/max HP. In the process of selecting moves, successfully selecting a PC move and now need to select an NPC move, before actually attacking. Placeholders for the bag and pokemon list in-battle are present, need to be implemented still.
+
+Apr 9: Basic turns are implemented, along with a list for items and PC pokemon. Battles can be fought all the way through and a winner / loser can be determined. Items can't be consumed, and pokemon can't be switched out yet. Also can't access bag outside of battle. And haven't updated the wild battle UI at all. Going to implement this in the next few days hopefully.
+
+To calculate STAB, I had to parse in the pokemon_types.csv in addition to everything else
+
+Also, I don't know what the purpose of the random multiplier in move damage is, but it makes the moves deal like 200 - 300 damage. Is it supposed to be a percentage or something? That might make sense. I've removed the random multiplier for now, because I have no idea
+
+Another problem I'm seeing is that there's no restriction on adding status moves to our Pokemon's movesets, but there was no instruction to implement status affects (reduce attack, defense, etc) in the assignment? So there might be pokemon with only status moves in their level 1 movepool, rendering them useless. I'll just filter out powerless moves for now

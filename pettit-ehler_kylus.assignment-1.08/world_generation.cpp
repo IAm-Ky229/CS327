@@ -463,6 +463,7 @@ int main(int argc, char *argv[]) {
   std::vector<pokemon_species> pkmn_spc;
   std::vector<type_names> typ_nm;
   std::vector<pokemon_stats> pkmn_st;
+  std::vector<pokemon_types> pkmn_typ;
 
   for(i = 1; i < argc; i++) {
     // Read in specified file
@@ -473,7 +474,8 @@ int main(int argc, char *argv[]) {
 			    pkmn_mv,
 			    pkmn_spc,
 			    typ_nm,
-			    pkmn_st);
+			    pkmn_st,
+			    pkmn_typ);
 
     // Assign the number of trainers
     if(strcmp(argv[i], "--numtrainers") == 0)
@@ -535,11 +537,32 @@ int main(int argc, char *argv[]) {
 
   for(int i = 0; i < 3; i++) {
 
-    starting_pokemon.push_back(player_pokemon.generate_pokemon(pkmn, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y));
+    starting_pokemon.push_back(player_pokemon.generate_pokemon(pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ, manhattan_x, manhattan_y));
     
   }
 
   createMap.select_starting_pokemon(starting_pokemon, player_character);
+
+  item it;
+  item it2;
+  item it3;
+
+  it.set_item_name("potion");
+  it.set_item_ID(1);
+  it2.set_item_name("revive");
+  it2.set_item_ID(2);
+  it3.set_item_name("pokeball");
+  it3.set_item_ID(3);
+
+  for(int i = 0; i < 5; i++) {
+
+    player_character.addItem(it);
+    player_character.addItem(it2);
+    player_character.addItem(it3);
+    
+  }
+
+  
 
  
   // Movement is implemented here
@@ -564,29 +587,29 @@ int main(int argc, char *argv[]) {
 
 	switch (to_move -> player_type) {
 	case random_walker:
-	  processAction.move_random_walker(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
+	  processAction.move_random_walker(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ);
 	  break;
 	 
 	case wanderer:
-	  processAction.move_wanderer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
+	  processAction.move_wanderer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ);
 	  break;
 	 
 	case pacer:
-	  processAction.move_pacer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
+	  processAction.move_pacer(map_exploration[y_explore_position][x_explore_position], (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ);
 	  break;
 	 
 	case hiker:
 	  dijkstra_path_hiker(map_exploration[y_explore_position][x_explore_position], distance_hiker, map_exploration[y_explore_position][x_explore_position] -> PC_position_x , map_exploration[y_explore_position][x_explore_position] -> PC_position_y);
-	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
+	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_hiker, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ);
 	  break;
 	 
 	case rival:
 	  dijkstra_path_rival(map_exploration[y_explore_position][x_explore_position], distance_rival, map_exploration[y_explore_position][x_explore_position] -> PC_position_x, map_exploration[y_explore_position][x_explore_position] -> PC_position_y);
-	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv);
+	  processAction.move_via_shortest_path(map_exploration[y_explore_position][x_explore_position], distance_rival, (NPC_char*) to_move, &map_exploration[y_explore_position][x_explore_position] -> characters_to_move, player_character, manhattan_x, manhattan_y, pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ);
 	  break;
 
 	case PC:
-	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv, manhattan_x, manhattan_y, player_character);
+	  processAction.move_PC((PC_char*) to_move, map_exploration[y_explore_position][x_explore_position], pkmn, pkmn_st, pkmn_mv, mv, pkmn_typ, manhattan_x, manhattan_y, player_character);
 	  PC_added_to_heap = 0;
 	  break;
 	}
@@ -1474,13 +1497,13 @@ void mapGen::select_starting_pokemon(std::vector<in_game_pokemon> starting_pkmn,
   sprintf(buffer2, "%s", starting_pkmn[1].get_name().c_str());
   sprintf(buffer3, "%s", starting_pkmn[2].get_name().c_str());
 
-  mvaddstr(4, 10, buffer1);
-  mvaddstr(4, 30, buffer2);
-  mvaddstr(4, 50, buffer3);
+  mvaddstr(4, 25, buffer1);
+  mvaddstr(7, 25, buffer2);
+  mvaddstr(10, 25, buffer3);
 
-  mvaddstr(5, 10, "press 1");
-  mvaddstr(5, 30, "press 2");
-  mvaddstr(5, 50, "press 3");
+  mvaddstr(5, 25, "press 1");
+  mvaddstr(8, 25, "press 2");
+  mvaddstr(11, 25, "press 3");
 
   refresh();
   
@@ -1494,12 +1517,15 @@ void mapGen::select_starting_pokemon(std::vector<in_game_pokemon> starting_pkmn,
   switch (pressed_key) {
   case '1':
     PC.addPokemon(starting_pkmn[0]);
-
+    break;
+    
   case '2':
     PC.addPokemon(starting_pkmn[1]);
-
+    break;
+    
   case '3':
     PC.addPokemon(starting_pkmn[2]);
+    break;
     
   }
   
