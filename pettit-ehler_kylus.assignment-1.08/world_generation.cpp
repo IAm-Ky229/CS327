@@ -982,6 +982,17 @@ int main(int argc, char *argv[]) {
 	endwin();
 	break;
       }
+
+    case 'B':
+      {
+
+	battle battle_ui;
+	in_game_pokemon dummy;
+
+	// Open bag with pokeballs unusable
+	battle_ui.enter_bag(player_character, dummy, 0);
+	
+      }
      
     }
 
@@ -1525,15 +1536,15 @@ void mapGen::select_starting_pokemon(std::vector<in_game_pokemon> starting_pkmn,
   switch (pressed_key) {
   case '1':
     PC.addPokemon(starting_pkmn[0]);
-
+    break;
     
   case '2':
     PC.addPokemon(starting_pkmn[1]);
-
+    break;
     
   case '3':
     PC.addPokemon(starting_pkmn[2]);
-  
+    break;
     
   }
   

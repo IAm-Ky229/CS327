@@ -202,7 +202,7 @@ public:
   void print_pokemon(PC_state &PC_s);
   void use_potion(PC_state &PC_s, int pokemon_rec, item itm);
   void use_revive(PC_state &PC_s, int pokemon_rec, item itm);
-  void use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm);
+  int use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm);
   int run(PC_state &PC_s, int PC_active_pokemon, in_game_pokemon opposing_pokemon, int *attempts_to_run);
   
 };

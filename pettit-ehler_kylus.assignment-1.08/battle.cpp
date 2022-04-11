@@ -23,7 +23,7 @@ int battle::determine_battle() {
 
   int temp = rand() % 100;
 
-  if(temp >= 90) {
+  if(temp <= 90) {
     return 1;
   }
 
@@ -639,9 +639,9 @@ int battle::enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int poke
 	    
 	    use_potion(PC_s, position2, itm);
 	    return -99;
-
+	    
 	  case 2:
-
+	    
 	    use_revive(PC_s, position2, itm);
 	    return -99;
 	    
@@ -653,10 +653,12 @@ int battle::enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int poke
       
     }
     // Allows pokeball use in wild battles
-    //else if (pokeballs_usable) {
-    //item itm = PC_s.get_items()[position];
-    //use_pokeball(PC_s, opposing_pokemon, itm);
-    //}
+    else if (pressed_key == '+' &&
+	     PC_s.get_items()[position].get_item_ID() == 3 &&
+	     pokeballs_usable) {
+      item itm = PC_s.get_items()[position];
+      return use_pokeball(PC_s, opposing_pokemon, itm);
+    }
     
   }
   
@@ -698,7 +700,7 @@ void battle::use_revive(PC_state &PC_s, int pokemon_rec, item itm) {
   
 }
 
-void battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
+int battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
 
   char buffer[100];
 
@@ -708,14 +710,19 @@ void battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
 
   sleep(1);
 
-
+  // For this assignment, using a pokeball is going to end the battle either way
+  // So both cases return -999. Otherwise, pokeball failure would result in
+  // Wild pokemon attacking
   if(PC_s.getPokemon().size() < 6) {
-  PC_s.getPokemon().push_back(wild_pkmn);
+    PC_s.getPokemon().push_back(wild_pkmn);
 
-  clear();
-  sprintf(buffer, "Wild %s was caught", wild_pkmn.get_name().c_str());
-  mvaddstr(10, 45, buffer);
-  refresh();
+    clear();
+    sprintf(buffer, "Wild %s was caught", wild_pkmn.get_name().c_str());
+    mvaddstr(10, 45, buffer);
+    refresh();
+    sleep(1);
+    PC_s.removeItem(itm);
+    return -999;
   }
   else {
 
@@ -724,12 +731,11 @@ void battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
     sprintf(buffer, "Wild %s got away", wild_pkmn.get_name().c_str());
     mvaddstr(10, 45, buffer);
     refresh();
+    sleep(1);
+    PC_s.removeItem(itm);
+    return -999;
     
   }
-  
-  sleep(1);
-
-  PC_s.removeItem(itm);
   
 }
 

@@ -11,3 +11,5 @@ Also, I don't know what the purpose of the random multiplier in move damage is, 
 Another problem I'm seeing is that there's no restriction on adding status moves to our Pokemon's movesets, but there was no instruction to implement status affects (reduce attack, defense, etc) in the assignment? So there might be pokemon with only status moves in their level 1 movepool, rendering them useless. I'll just filter out powerless moves for now
 
 Apr 10: Consumables now work for potions and revives. Can also switch between active pokemon in battle. Run functionality works now too. Still need to implement correct capture functionality, and the bag placeholder outside of battles.
+
+Apr 11: Fixed pokeball consumption issue, now works correctly in wild battles. Bag is also accessible in the open world. Not sure if we're supposed to implement logic to switch pokemon around, so that we can start whoever we want to in our party. At this point I will probably start working on the README
