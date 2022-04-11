@@ -132,14 +132,17 @@ private:
 
   String item_name;
   int item_ID;
+  int item_UID;
 
 public:
 
   void set_item_name(String val) { item_name = val; }
   void set_item_ID(int val) { item_ID = val; }
+  void set_UID(int val) { item_UID = val; }
 
   String get_item_name() { return item_name; }
   int get_item_ID() { return item_ID; }
+  int get_UID() { return item_UID; }
 
   bool operator==(const item &i) const;
   
@@ -151,15 +154,24 @@ private:
 
   std::vector<in_game_pokemon> PC_pokemon;
   std::vector<item> bag;
+  int PC_fainted_pokemon;
 
 public:
 
+  PC_state() {
+    PC_fainted_pokemon = 0;
+  }
+  
   void addPokemon(in_game_pokemon p) { PC_pokemon.push_back(p); }
-  std::vector<in_game_pokemon> getPokemon() { return PC_pokemon; }
+  std::vector<in_game_pokemon> &getPokemon() { return PC_pokemon; }
 
   void addItem(item i) { bag.push_back(i); }
   void removeItem(item i) { bag.erase(std::remove(bag.begin(), bag.end(), i), bag.end()); }
-  std::vector<item> get_items() { return bag; }
+  std::vector<item> &get_items() { return bag; }
+
+  void increment_PC_fainted() { PC_fainted_pokemon++; }
+  void decrement_PC_fainted() { PC_fainted_pokemon--; }
+  int get_PC_fainted() { return PC_fainted_pokemon; }
   
 };
 
@@ -169,7 +181,7 @@ class battle {
 public:
 
   int determine_battle();
-  void engage_battle_wild(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y);
+  void engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y);
   in_game_pokemon generate_pokemon(std::vector<pokemon> pkmn_list, std::vector<pokemon_stats> pkmn_st, std::vector<pokemon_moves> pkmn_mv, std::vector<moves> mv, std::vector<pokemon_types> pkmn_typ, int manhattan_x, int manhattan_y);
   void get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats> pkmn_st);
   void get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv);
@@ -180,12 +192,17 @@ public:
   int generate_HP_lv_up(int base_HP, int HP_iv, int level);
   int generate_otherstat_lv_up(int base_stat, int base_iv, int level);
   void level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y);
-  int enter_bag_NPC_battle(PC_state &PC_s);
-  int view_pokemon_in_battle(PC_state &PC_s);
-  int process_move(PC_state &PC_s);
-  void process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector<moves> mv, int PC_move_id, int *PC_hp, int *NPC_hp);
+  
+  int enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int pokeballs_usable);
+  int view_pokemon_in_battle(PC_state &PC_s, int *PC_active_pokemon, int must_choose);
+  int process_move(PC_state &PC_s, int PC_active_pokemon);
+  void process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector<moves> mv, int PC_move_id, int PC_active_pokemon);
   int calculate_damage(in_game_pokemon attacking, in_game_pokemon defending, int move_id, std::vector<moves> mv);
   void print_bag(std::vector<item> bag_copy, int in_battle, int window);
   void print_pokemon(PC_state &PC_s);
+  void use_potion(PC_state &PC_s, int pokemon_rec, item itm);
+  void use_revive(PC_state &PC_s, int pokemon_rec, item itm);
+  void use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm);
+  int run(PC_state &PC_s, int PC_active_pokemon, in_game_pokemon opposing_pokemon, int *attempts_to_run);
   
 };

@@ -1943,7 +1943,7 @@ void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<
       enter_battle = wild_encounter.determine_battle();
 
       if(enter_battle) {
-	wild_encounter.engage_battle_wild(pkmn_list, pkmn_st, pkmn_mv, mv, pkmn_typ, manhattan_x, manhattan_y);
+	wild_encounter.engage_battle_wild(PC_s, pkmn_list, pkmn_st, pkmn_mv, mv, pkmn_typ, manhattan_x, manhattan_y);
       }
     }
     

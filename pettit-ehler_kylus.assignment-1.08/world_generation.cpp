@@ -554,11 +554,19 @@ int main(int argc, char *argv[]) {
   it3.set_item_name("pokeball");
   it3.set_item_ID(3);
 
+  int UID_assign = 0;
+  
   for(int i = 0; i < 5; i++) {
 
+    it.set_UID(UID_assign);
     player_character.addItem(it);
+    UID_assign++;
+    it2.set_UID(UID_assign);
     player_character.addItem(it2);
+    UID_assign++;
+    it3.set_UID(UID_assign);
     player_character.addItem(it3);
+    UID_assign++;
     
   }
 
@@ -1517,15 +1525,15 @@ void mapGen::select_starting_pokemon(std::vector<in_game_pokemon> starting_pkmn,
   switch (pressed_key) {
   case '1':
     PC.addPokemon(starting_pkmn[0]);
-    break;
+
     
   case '2':
     PC.addPokemon(starting_pkmn[1]);
-    break;
+
     
   case '3':
     PC.addPokemon(starting_pkmn[2]);
-    break;
+  
     
   }
   
