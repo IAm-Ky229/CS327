@@ -260,6 +260,7 @@ void battle::get_pokemon_stats(in_game_pokemon &pkmn, std::vector<pokemon_stats>
   pkmn.set_special_attack(stoi(selected_stats[3].base_stat));
   pkmn.set_special_defense(stoi(selected_stats[4].base_stat));
   pkmn.set_speed(stoi(selected_stats[5].base_stat));
+  pkmn.set_base_speed(stoi(selected_stats[5].base_stat));
 }
 
 void battle::get_pokemon_moves(in_game_pokemon &pkmn, std::vector<pokemon_moves> pkmn_mv) {
@@ -1027,7 +1028,7 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
     }
 
   }
-  // PC did something like switch pokemon / potion, so NPC attacks
+  // PC did something like switch pokemon / use potion, so NPC attacks
   else {
 
       char buffer2[100];
@@ -1073,7 +1074,7 @@ int battle::calculate_damage(in_game_pokemon attacking, in_game_pokemon defendin
 
   double crit = 1;
 
-  if((rand() % 256) == 0) {
+  if(rand() % 256 < (attacking.get_base_speed() / 2)) {
     crit = 1.5;
   }
 

@@ -16,6 +16,7 @@ private:
   int special_attack;
   int special_defense;
   int speed;
+  int base_speed;
   int accuracy;
   int evasion;
 
@@ -49,6 +50,7 @@ public:
     special_attack = 0;
     special_defense = 0;
     speed = 0;
+    base_speed = 0;
     accuracy = 0;
     evasion = 0;
 
@@ -80,6 +82,7 @@ public:
   void set_special_attack(int val) { special_attack = val; }
   void set_special_defense(int val) { special_defense = val; }
   void set_speed(int val) { speed = val; }
+  void set_base_speed(int val) { base_speed = val; }
   void set_accuracy(int val) { accuracy = val; }
   void set_evasion(int val) { evasion = val; }
   void set_HP_iv(int val) { HP_iv = val; }
@@ -105,6 +108,7 @@ public:
   int get_defense() { return defense; }
   int get_special_attack() { return special_attack; }
   int get_special_defense() { return special_defense; }
+  int get_base_speed() { return base_speed; }
   int get_speed() { return speed; }
   int get_accuracy() { return accuracy; }
   int get_evasion() { return evasion; }
