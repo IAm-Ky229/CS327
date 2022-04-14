@@ -276,50 +276,80 @@ void characterLogic::place_characters(generatedMap *m, heap_t *h, movementCosts 
 	break;
       case stationary:
 	m -> generate_map[rand_x][rand_y] = stationary_occupied;
+	
+	// This is a bad solution to making staionaries battle-able but idk what else to do for now
 	m -> character_positions[rand_x][rand_y] -> cost_to_move = 2000000000;
 	break;
       case pacer:
-	if(m -> generate_map[rand_x][rand_y + 1] != tree &&
-	   m -> generate_map[rand_x][rand_y + 1] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = down;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y + 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
+	{
+	
+	  int random_num;
+	  int assigned = 0;
+
+	  while(!assigned) {
+
+	    random_num = rand() % 4;
+
+	    switch (random_num) {
+
+	    case 0:
+	      if(m -> generate_map[rand_x][rand_y + 1] != tree &&
+		 m -> generate_map[rand_x][rand_y + 1] != boulder) {
+		m -> character_positions[rand_x][rand_y] -> cur_direction = down;
+		m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+		  pathfind.determine_cost_rival(m, rand_x, rand_y + 1);
+		m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+		m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+		m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
+		m -> character_positions[rand_x][rand_y] -> next_y = rand_y + 1;
+		assigned = 1;
+	      }
+	      break;
+	    case 1: 
+	      if(m -> generate_map[rand_x][rand_y - 1] != tree &&
+		 m -> generate_map[rand_x][rand_y - 1] != boulder) {
+		m -> character_positions[rand_x][rand_y] -> cur_direction = up;
+		m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+		  pathfind.determine_cost_rival(m, rand_x, rand_y - 1);
+		m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+		m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+		m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
+		m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
+		assigned = 1;
+	      }
+	      break;
+	    case 2: 
+	      if(m -> generate_map[rand_x + 1][rand_y] != tree &&
+		 m -> generate_map[rand_x + 1][rand_y] != boulder) {
+		m -> character_positions[rand_x][rand_y] -> cur_direction = right;
+		m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+		  pathfind.determine_cost_rival(m, rand_x + 1, rand_y);
+		m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+		m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+		m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
+		m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
+		assigned = 1;
+	      }
+	      break;
+	    case 3: 
+	      if(m -> generate_map[rand_x - 1][rand_y] != tree &&
+		 m -> generate_map[rand_x - 1][rand_y] != boulder) {
+		m -> character_positions[rand_x][rand_y] -> cur_direction = left;
+		m -> character_positions[rand_x][rand_y] -> cost_to_move +=
+		  pathfind.determine_cost_rival(m, rand_x - 1, rand_y);
+		m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
+		m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
+		m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
+		m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
+		assigned = 1;
+	      }
+	      break;
+	    
+	    }
+	  }
+	
+	  break;
 	}
-	else if(m -> generate_map[rand_x][rand_y - 1] != tree &&
-		m -> generate_map[rand_x][rand_y - 1] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = up;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x, rand_y - 1);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y - 1;
-	}
-	else if(m -> generate_map[rand_x + 1][rand_y] != tree &&
-		m -> generate_map[rand_x + 1][rand_y] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = right;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x + 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x + 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	else if(m -> generate_map[rand_x - 1][rand_y] != tree &&
-		m -> generate_map[rand_x - 1][rand_y] != boulder) {
-	  m -> character_positions[rand_x][rand_y] -> cur_direction = left;
-	  m -> character_positions[rand_x][rand_y] -> cost_to_move +=
-	    pathfind.determine_cost_rival(m, rand_x - 1, rand_y);
-	  m -> character_positions[rand_x][rand_y] -> x_pos = rand_x;
-	  m -> character_positions[rand_x][rand_y] -> y_pos = rand_y;
-	  m -> character_positions[rand_x][rand_y] -> next_x = rand_x - 1;
-	  m -> character_positions[rand_x][rand_y] -> next_y = rand_y;
-	}
-	break;
 	
       case rival:
 	

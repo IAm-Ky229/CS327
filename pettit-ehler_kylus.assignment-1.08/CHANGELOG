@@ -15,3 +15,7 @@ Apr 10: Consumables now work for potions and revives. Can also switch between ac
 Apr 11: Fixed pokeball consumption issue, now works correctly in wild battles. Bag is also accessible in the open world. Not sure if we're supposed to implement logic to switch pokemon around, so that we can start whoever we want to in our party. At this point I will probably start working on the README
 
 Apr 12: Implement correct critical chance. Work on README, may submit later, I have another week to work on this now
+
+Apr 13: Implemented move priority, double checked that my run logic is ok with Jeremy's clarification. Finished up the README, going to submit now and re-submit later if anything comes up. I still don't get the whole random part of move damage, the damages seem to be just fine without including a random number in range [85, 100]
+
+Of course right as I go to submit I find a bug with recording fainted pokemon. Guess I'll just check all PC pokemon's current HP before I go into battles instead of trying to record it. Might as well make Pacers able to move right and left while I'm at it

@@ -197,7 +197,7 @@ public:
   int generate_otherstat_lv_up(int base_stat, int base_iv, int level);
   void level_up(in_game_pokemon &pkmn, int manhattan_x, int manhattan_y);
   
-  int enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int pokeballs_usable);
+  int enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int pokeballs_usable, int *PC_fainted);
   int view_pokemon_in_battle(PC_state &PC_s, int *PC_active_pokemon, int must_choose);
   int process_move(PC_state &PC_s, int PC_active_pokemon);
   void process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector<moves> mv, int PC_move_id, int PC_active_pokemon);
@@ -205,7 +205,7 @@ public:
   void print_bag(std::vector<item> bag_copy, int in_battle, int window);
   void print_pokemon(PC_state &PC_s);
   void use_potion(PC_state &PC_s, int pokemon_rec, item itm);
-  void use_revive(PC_state &PC_s, int pokemon_rec, item itm);
+  void use_revive(PC_state &PC_s, int pokemon_rec, item itm, int *PC_fainted);
   int use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm);
   int run(PC_state &PC_s, int PC_active_pokemon, in_game_pokemon opposing_pokemon, int *attempts_to_run);
   

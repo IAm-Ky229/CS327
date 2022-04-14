@@ -1,3 +1,5 @@
+*This all mostly works, I didn't playtest it for a really long time but I playtested it a bit and tried to iron out the gamebreaking stuff
+
 *Controls for your convenience. They work pretty well with your numpad if you have one. In any case you should be able to back out to the battle screen using ESC:
 
 in-battle:
@@ -34,7 +36,7 @@ out-of-battle:
 		
 *Status moves simply do a small amount of damage right now, to avoid some pokemon from being completely useless. I also removed the random number multiplier from the damage we are calculating, because I was getting like 200 - 300 damage at level 1 when I included it
 
-*Also you can waste items if you use a potion on a max HP pokemon, or a revive on a not fainted pokemon
+*Also you can waste items if you use a potion on a max HP pokemon, or a revive on a not fainted pokemon. But you can't use a potion on a fainted pokemon
 
 *In my code you will see return values of -1, -99, and -999 in the battle logic
 	* -1 means that the PC has not yet taken an action
@@ -57,7 +59,7 @@ PC_state: Contains a vector to store the PC pokemon, vector to store the bag, an
 
 get_types: New function to add the correct type ID's to a pokemon's types vector when it is being generated
 
-enter_bag: Enter the bag, taking in a PC state reference, the opposing pokemon, and whether pokeballs are usable. The pokeballs_usable flag will only be set if called in a wild battle. Print out the whole bag, then create a pointer to select an item within the bag. Once an item is selected, print out all the PC pokemon, and print out another pointer to select which pokemon you want to use the item on. Will return -99 if the PC uses an item, otherwise -1 if PC goes back to battle menu
+enter_bag: Enter the bag, taking in a PC state reference, the opposing pokemon, whether pokeballs are usable, and the number of fainted PC pokemon. The pokeballs_usable flag will only be set if called in a wild battle. Print out the whole bag, then create a pointer to select an item within the bag. Once an item is selected, print out all the PC pokemon, and print out another pointer to select which pokemon you want to use the item on. Will return -99 if the PC uses an item, otherwise -1 if PC goes back to battle menu
 
 view_pokemon_in_battle: Take in a PC state reference, a reference integer to the active PC pokemon, and whether the PC must choose a pokemon to switch to. The must_switch flag is only set if the PC's pokemon just fainted in battle, and must switch to a new one. Will return -99 if the PC switches pokemon, otherwise -1 if PC goes back to battle menu
 
@@ -65,7 +67,7 @@ process_move: Take in a PC state reference, and an integer representing the acti
 
 process_attacks: Takes in the PC state, the opposing pokemon, the database of moves, the PC's move id, and an integer representing the PC's active pokemon. Select a random move for the NPC, and determine if the PC should attack. If PC should attack (move ID is not -99), calculate damage for both PC and NPC. If PC's pokemon is faster, PC goes first. Otherwise, NPC goes first. The pokemon attacking second will be prevented from attacking if it faints. If PC should not attack, only NPC the pokemon will attack.
 
-calculate_damage: Takes in an attacking pokemon, a defending pokemon, a move id, and the database of moves. Calculates and returns damage based on attacking power, defending power, level, crit chance, and STAB. I did not include the random number in range 85 to 100 because it was giving me damage in the range of 200 - 300 at level 1
+calculate_damage: Takes in an attacking pokemon, a defending pokemon, a move id, and the database of moves. Calculates and returns damage based on attacking power, the type of move (special, physical, or anything other than those two), defending power, level, crit chance, and STAB. I did not include the random number in range 85 to 100 because it was giving me damage in the range of 200 - 300 at level 1. And damage seemed to be just fine without it
 
 print_bag: Takes in a vector of items, whether we are in battle, and the window to print. Print out all the items in the bag at the correct window position. I don't think we actually use the in_battle flag, but for now I'm not going to remove it.
 
@@ -73,21 +75,25 @@ print_pokemon: Takes in the PC state reference, and prints out the vector of pok
 
 use_potion: Takes in a PC state reference, an integer representing the pokemon receiving the potion, and the item to use. Adds 20 to the pokemon receiving and deletes the item from the bag. Checks if max pokemon HP was exceeded
 
-use_revive: Takes in a PC state reference, the pokemon receiving the revive, and the item to use. Takes a pokemon from 0 to half max HP, and deletes the item from the bag. Checks if pokemon has 0 HP first
+use_revive: Takes in a PC state reference, the pokemon receiving the revive, the item to use, and a reference to the PC fainted pokemon. Takes a pokemon from 0 to half max HP, and deletes the item from the bag. Also decrements fainted PC_fainted_pokemon by 1 upon success. Checks if pokemon has 0 HP first
 
 use_pokeball: Takes in a PC state reference, the wild pokemon to catch, and the item to use. Currently, will always succeed if the PC's party size is less than 6. Adds the wild pokemon to the PC's vector, and returns -999 to prematurely exit the battle. Otherwise, the wild pokemon is not added to the PC's pokemon vector, and the wild pokemon gets away (-999 stil returned)
 
 run: Takes in the PC state reference, the active PC pokemon, the wild pokemon, and a pointer to the attempts to run. Uses the PC pokemon's speed and the wild pokemon's speed to determine if the run succeeds. If the run succeeds, return -999. Otherwise, return -99 (wild pokemon attacks).
 
-chacacterLogic::engage_battle: NPC battle function. Generate n+1 NPC pokemon based on probability, update the UI to display state of the battle (active pokemon, HP). Wait for input of either 1, 2, 3. Open the corresponding menu. Once the PC decides on a move, remember its code (either -1, -99, or an actual move ID) and process it. Finally, check to see if any pokemon have fainted. If NPC pokemon faints, deploy next pokemon in NPC's vector. If PC pokemon faints, make PC choose next pokemon to deploy. If all of one side's pokemon faints, the battle is over and a winner is declared.
+chacacterLogic::engage_battle: NPC battle function. Generate n+1 NPC pokemon based on probability, check for the first PC pokemon with more than 0 HP. Also count the amount of fainted PC pokemon. Update the UI to display state of the battle (active pokemon, HP). Wait for input of either 1, 2, 3. Open the corresponding menu. Once the PC decides on a move, remember its code (either -1, -99, or an actual move ID) and process it. Finally, check to see if any pokemon have fainted. If NPC pokemon faints, deploy next pokemon in NPC's vector. If PC pokemon faints, make PC choose next pokemon to deploy. If all of one side's pokemon faints, the battle is over and a winner is declared.
 
 battle::engage_battle: Wild pokemon battle function. Functions similarly to the NPC battle function, but we only generate 1 pokemon, and it's possible to catch it (pokeballs_usable flag in our bag function is set). Also, we can attempt to run by pressing 4. A code of -999 can be passed from the bag in wild battles, signaling that the battle ended early and either the wild pokemon was caught or we successfully ran.
 
 -----> character_movement.cpp <-----
 
-Movement functions have been refactored to take in a vector of the pokemon moves, so that we can pass in the database of moves once an NPC battle begins. Also now takes in the PC state, so that the PC's information will be saved across battles. Also takes in the pokemon types database, so we can assign types to randomly generated pokemon.
+Movement functions have been refactored to take in a vector of the pokemon moves, so that we can pass in the database of moves once an NPC battle begins. Also now takes in the PC state, so that the PC's information will be saved across battles. Also takes in the pokemon types database, so we can assign types to randomly generated pokemon
 
 -----> file_parsing.cpp <-----
 
 New code to parse in the pokemon_types.csv, and update a reference to a vector
+
+-----> world_generation.cpp <-----
+
+New functionality to detect a 'B' keypress in addition to directional keypresses, sending you into the bag so you can heal pokemon
 

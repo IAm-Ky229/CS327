@@ -567,6 +567,9 @@ int main(int argc, char *argv[]) {
     it3.set_UID(UID_assign);
     player_character.addItem(it3);
     UID_assign++;
+    it3.set_UID(UID_assign);
+    player_character.addItem(it3);
+    UID_assign++;
     
   }
 
@@ -988,9 +991,10 @@ int main(int argc, char *argv[]) {
 
 	battle battle_ui;
 	in_game_pokemon dummy;
+	int PC_fainted_dummy = 0;
 
 	// Open bag with pokeballs unusable
-	battle_ui.enter_bag(player_character, dummy, 0);
+	battle_ui.enter_bag(player_character, dummy, 0, &PC_fainted_dummy);
 	
       }
      

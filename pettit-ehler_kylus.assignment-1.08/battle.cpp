@@ -54,8 +54,33 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
 
   // Start with the head of the PC pokemon array
   int PC_active_pokemon = 0;
- 
-  int PC_fainted_pokemon = PC_s.get_PC_fainted();
+
+  // Be sure we aren't starting with a pokemon that has 0 HP
+  int iter = 0;
+  int PC_fainted = 0;
+  while(iter < PC_s.getPokemon().size()) {
+    if(PC_s.getPokemon()[iter].get_curr_HP() != 0) {
+      PC_active_pokemon = iter;
+      break;
+    }
+    iter++;
+  }
+
+  iter = 0;
+  while(iter < PC_s.getPokemon().size()) {
+    if(PC_s.getPokemon()[iter].get_curr_HP() == 0) {
+      PC_fainted++;
+    }
+    iter++;
+  }
+
+  if (PC_fainted == PC_s.getPokemon().size()) {
+    clear();
+    mvaddstr(10, 45, "PC has no pokemon to battle!");
+    refresh();
+    sleep(1);
+    return;
+  }
 
   int attempts_to_run = 1;
 
@@ -72,8 +97,8 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
 
     mvaddstr(2, 15, buffer1);
     mvaddstr(3, 15, buffer3);
-    mvaddstr(17, 50, buffer2);
-    mvaddstr(18, 50, buffer4);
+    mvaddstr(17, 40, buffer2);
+    mvaddstr(18, 40, buffer4);
     mvaddstr(17, 15, "1: FIGHT");
     mvaddstr(18, 15, "2: BAG");
     mvaddstr(19, 15, "3: POKEMON");
@@ -91,7 +116,7 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
 
     case '2':
       
-      PC_move_id = wild_pokemon_battle.enter_bag(PC_s, generated, 1);
+      PC_move_id = wild_pokemon_battle.enter_bag(PC_s, generated, 1, &PC_fainted);
       break;
 
     case '3':
@@ -111,7 +136,6 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
       break;
     }
 
-    // This needs to be displayed again in case we exit out of the bag or our pokemon or something
     clear();
     
     sprintf(buffer1, "NPC Pokemon: %s", generated.get_name().c_str());
@@ -121,12 +145,14 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
 
     mvaddstr(2, 15, buffer1);
     mvaddstr(3, 15, buffer3);
-    mvaddstr(17, 50, buffer2);
-    mvaddstr(18, 50, buffer4);
+    mvaddstr(17, 40, buffer2);
+    mvaddstr(18, 40, buffer4);
     mvaddstr(17, 15, "1: FIGHT");
     mvaddstr(18, 15, "2: BAG");
     mvaddstr(19, 15, "3: POKEMON");
     mvaddstr(20, 15, "4: RUN");
+  
+    refresh();
 
     if(PC_move_id != -1) {
       
@@ -148,8 +174,8 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
     }
     else if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() <= 0) {
 
-      PC_s.increment_PC_fainted();
-      if(PC_s.get_PC_fainted() == PC_total_pokemon) {
+      PC_fainted++;
+      if(PC_fainted == PC_total_pokemon) {
 	clear();
 	mvaddstr(10, 45, "All PC pokemon fainted!");
 	stay = 0;
@@ -169,24 +195,24 @@ void battle::engage_battle_wild(PC_state &PC_s, std::vector<pokemon> pkmn_list, 
 int battle::run(PC_state &PC_s, int PC_active_pokemon, in_game_pokemon opposing_pokemon, int *attempts_to_run) {
 
   int calc1 = PC_s.getPokemon()[PC_active_pokemon].get_speed() * 32;
-  int calc2 = (opposing_pokemon.get_speed() / 4) % 256;
+  double calc2 = (opposing_pokemon.get_speed() / 4) % 256;
 
-  int calc3 = calc1 / calc2;
+  double calc3 = calc1 / calc2;
   int calc4 = (calc3) + (30 * (*attempts_to_run));
-
-  mvaddstr(17, 40, "Attempting to run");
+  
+  mvaddstr(13, 30, "Attempting to run");
   refresh();
   sleep(1);
 
-  if(rand() % 100 < calc4) {
-    mvaddstr(18, 40, "Fled from the battle");
+  if(rand() % 256 < calc4) {
+    mvaddstr(14, 30, "Fled from the battle");
     refresh();
     sleep(1);
     return -999;
   }
   else {
-    *attempts_to_run++;
-    mvaddstr(18, 40, "Could not escape");
+    *attempts_to_run += 1;
+    mvaddstr(14, 30, "Could not escape");
     refresh();
     sleep(1);
     return -99;
@@ -470,9 +496,36 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
 
   // Start with the head of the PC pokemon array
   int PC_active_pokemon = 0;
+
+  // We have to be sure we start the battle with a non-fainted pokemon
+  int iter = 0;
+  int PC_fainted = 0;
+  while(iter < PC_s.getPokemon().size()) {
+    if(PC_s.getPokemon()[iter].get_curr_HP() != 0) {
+      PC_active_pokemon = iter;
+      break;
+    }
+    iter++;
+  }
+
+  // Manually check PC fainted pokemon, IDK what the issue was with updating PC fainted dynamically
+  iter = 0;
+  while(iter < PC_s.getPokemon().size()) {
+    if(PC_s.getPokemon()[iter].get_curr_HP() == 0) {
+      PC_fainted++;
+    }
+    iter++;
+  }
+
+  if(PC_fainted  == PC_s.getPokemon().size()) {
+    clear();
+    mvaddstr(10, 45, "PC has no pokemon to battle!");
+    refresh();
+    sleep(1);
+    return;
+  }
+  
   int NPC_active_pokemon = 0;
- 
-  int PC_fainted_pokemon = PC_s.get_PC_fainted();
   int NPC_fainted_pokemon = 0;
 
   while(stay) {
@@ -488,8 +541,8 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
 
     mvaddstr(2, 15, buffer1);
     mvaddstr(3, 15, buffer3);
-    mvaddstr(17, 50, buffer2);
-    mvaddstr(18, 50, buffer4);
+    mvaddstr(17, 40, buffer2);
+    mvaddstr(18, 40, buffer4);
     mvaddstr(17, 15, "1: FIGHT");
     mvaddstr(18, 15, "2: BAG");
     mvaddstr(19, 15, "3: POKEMON");
@@ -506,7 +559,7 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
 
     case '2':
       
-      PC_move_id = NPC_pokemon_battle.enter_bag(PC_s, NPC_generated[NPC_active_pokemon], 0);
+      PC_move_id = NPC_pokemon_battle.enter_bag(PC_s, NPC_generated[NPC_active_pokemon], 0, &PC_fainted);
       break;
 
     case '3':
@@ -516,7 +569,6 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
       
     }
 
-    // This needs to be displayed again in case we exit out of the bag or our pokemon or something
     clear();
     
     sprintf(buffer1, "NPC Pokemon: %s", NPC_generated[NPC_active_pokemon].get_name().c_str());
@@ -526,8 +578,8 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
 
     mvaddstr(2, 15, buffer1);
     mvaddstr(3, 15, buffer3);
-    mvaddstr(17, 50, buffer2);
-    mvaddstr(18, 50, buffer4);
+    mvaddstr(17, 40, buffer2);
+    mvaddstr(18, 40, buffer4);
     mvaddstr(17, 15, "1: FIGHT");
     mvaddstr(18, 15, "2: BAG");
     mvaddstr(19, 15, "3: POKEMON");
@@ -544,9 +596,9 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
       if(NPC_fainted_pokemon == NPC_total_pokemon) {
 	clear();
 	mvaddstr(10, 45, "NPC loses!");
-	stay = 0;
 	refresh();
 	sleep(1);
+	break;
       }
       // The AI for trainers is pretty bad so we can just increment the active pokemon counter
       else {
@@ -555,13 +607,13 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
     }
     else if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() <= 0) {
 
-      PC_s.increment_PC_fainted();
-      if(PC_s.get_PC_fainted() == PC_total_pokemon) {
+      PC_fainted++;
+      if(PC_fainted == PC_total_pokemon) {
 	clear();
 	mvaddstr(10, 45, "PC loses!");
-	stay = 0;
 	refresh();
 	sleep(1);
+	break;
       }
       else {
         NPC_pokemon_battle.view_pokemon_in_battle(PC_s, &PC_active_pokemon, 1);
@@ -571,7 +623,7 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
   }
 }
 
-int battle::enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int pokeballs_usable) {
+int battle::enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int pokeballs_usable, int *PC_fainted) {
 
   char pressed_key;
   int position = 0;
@@ -643,7 +695,7 @@ int battle::enter_bag(PC_state &PC_s, in_game_pokemon opposing_pokemon, int poke
 	    
 	  case 2:
 	    
-	    use_revive(PC_s, position2, itm);
+	    use_revive(PC_s, position2, itm, PC_fainted);
 	    return -99;
 	    
 	  }
@@ -670,11 +722,13 @@ void battle::use_potion(PC_state &PC_s, int pokemon_rec, item itm) {
   char buffer[100];
 
   sprintf(buffer, "Used a potion on %s", PC_s.getPokemon()[pokemon_rec].get_name().c_str());
-  mvaddstr(20, 50, buffer);
+  mvaddstr(20, 40, buffer);
   refresh();
   sleep(1);
 
-  PC_s.getPokemon()[pokemon_rec].set_curr_HP(PC_s.getPokemon()[pokemon_rec].get_curr_HP() + 20);
+  if(!(PC_s.getPokemon()[pokemon_rec].get_curr_HP() <= 0)) {
+    PC_s.getPokemon()[pokemon_rec].set_curr_HP(PC_s.getPokemon()[pokemon_rec].get_curr_HP() + 20);
+  }
 
   if(PC_s.getPokemon()[pokemon_rec].get_curr_HP() > PC_s.getPokemon()[pokemon_rec].get_HP()) {
     PC_s.getPokemon()[pokemon_rec].set_curr_HP(PC_s.getPokemon()[pokemon_rec].get_HP());
@@ -683,18 +737,18 @@ void battle::use_potion(PC_state &PC_s, int pokemon_rec, item itm) {
   PC_s.removeItem(itm);
 }
 
-void battle::use_revive(PC_state &PC_s, int pokemon_rec, item itm) {
+void battle::use_revive(PC_state &PC_s, int pokemon_rec, item itm, int *PC_fainted) {
 
   char buffer[100];
   
   sprintf(buffer, "Used a revive on %s", PC_s.getPokemon()[pokemon_rec].get_name().c_str());
-  mvaddstr(20, 50, buffer);
+  mvaddstr(20, 40, buffer);
   refresh();
   sleep(1);
 
   if(PC_s.getPokemon()[pokemon_rec].get_curr_HP() <= 0) {
     PC_s.getPokemon()[pokemon_rec].set_curr_HP(PC_s.getPokemon()[pokemon_rec].get_HP() / 2);
-    PC_s.decrement_PC_fainted();
+    *PC_fainted -= 1;
   }
 
   PC_s.removeItem(itm);
@@ -706,7 +760,7 @@ int battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
   char buffer[100];
 
   sprintf(buffer, "Using a pokeball");
-  mvaddstr(5, 55, buffer);
+  mvaddstr(5, 40, buffer);
   refresh();
 
   sleep(1);
@@ -719,7 +773,7 @@ int battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
 
     clear();
     sprintf(buffer, "Wild %s was caught", wild_pkmn.get_name().c_str());
-    mvaddstr(10, 45, buffer);
+    mvaddstr(10, 40, buffer);
     refresh();
     sleep(1);
     PC_s.removeItem(itm);
@@ -730,7 +784,7 @@ int battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
     clear();
 
     sprintf(buffer, "Wild %s got away", wild_pkmn.get_name().c_str());
-    mvaddstr(10, 45, buffer);
+    mvaddstr(10, 40, buffer);
     refresh();
     sleep(1);
     PC_s.removeItem(itm);
@@ -868,8 +922,8 @@ int battle::process_move(PC_state &PC_s, int PC_active_pokemon) {
   sprintf(buffer1, "MOVE 1: %s", PC_s.getPokemon()[PC_active_pokemon].get_move_1().c_str());
   sprintf(buffer2, "MOVE 2: %s", PC_s.getPokemon()[PC_active_pokemon].get_move_2().c_str());
 
-  mvaddstr(17, 30, buffer1);
-  mvaddstr(18, 30, buffer2);
+  mvaddstr(14, 20, buffer1);
+  mvaddstr(15, 20, buffer2);
 
   refresh();
   
@@ -926,7 +980,9 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
     int PC_attacking_damage = calculate_damage(PC_s.getPokemon()[PC_active_pokemon], NPC_s, PC_move_id, mv);
 
     // PC is faster
-    if(PC_s.getPokemon()[PC_active_pokemon].get_speed() > NPC_s.get_speed()) {
+    if(((PC_s.getPokemon()[PC_active_pokemon].get_speed() > NPC_s.get_speed())
+	&& !(stoi(mv[PC_move_id].priority) < stoi(mv[NPC_move_id].priority)))
+       || (stoi(mv[PC_move_id].priority) > stoi(mv[NPC_move_id].priority))) {
 
       char buffer1[100];
       char buffer2[100];
@@ -934,16 +990,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
       char buffer4[100];
 
       sprintf(buffer1, "%s used %s", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str(), mv[PC_move_id].identifier.c_str());
-      mvaddstr(4, 45, buffer1);
+      mvaddstr(6, 30, buffer1);
       refresh();
 
       sleep(1);
       if(rand() % 100 > stoi(mv[PC_move_id].accuracy) && stoi(mv[PC_move_id].power) > 0) {
 	sprintf(buffer3, "%s's move missed!", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str());
-	mvaddstr(5, 45, buffer3);
+	mvaddstr(7, 30, buffer3);
       } else {
 	sprintf(buffer3, "%d damage!", PC_attacking_damage);
-	mvaddstr(5, 45, buffer3);
+	mvaddstr(7, 30, buffer3);
 	NPC_s.set_curr_HP(NPC_s.get_curr_HP() - PC_attacking_damage);
 	if(NPC_s.get_curr_HP() < 0) {
 	  NPC_s.set_curr_HP(0);
@@ -954,16 +1010,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
 
       if (NPC_s.get_curr_HP() > 0) {
 	sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
-	mvaddstr(6, 45, buffer2);
+	mvaddstr(8, 30, buffer2);
 	refresh();
 
 	sleep(1);
 	if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
 	  sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
-	  mvaddstr(7, 45, buffer4);
+	  mvaddstr(9, 30, buffer4);
 	} else {
 	  sprintf(buffer4, "%d damage!", NPC_attacking_damage);
-	  mvaddstr(7, 45, buffer4);
+	  mvaddstr(9, 30, buffer4);
 	  PC_s.getPokemon()[PC_active_pokemon]
 	    .set_curr_HP(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() - NPC_attacking_damage);
 	  if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() < 0) {
@@ -985,16 +1041,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
       char buffer4[100];
 
       sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
-      mvaddstr(6, 45, buffer2);
+      mvaddstr(8, 30, buffer2);
       refresh();
 
       sleep(1);
       if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
 	sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
-	mvaddstr(7, 45, buffer4);
+	mvaddstr(9, 30, buffer4);
       } else {
 	sprintf(buffer4, "%d damage!", NPC_attacking_damage);
-	mvaddstr(7, 45, buffer4);
+	mvaddstr(9, 30, buffer4);
 	PC_s.getPokemon()[PC_active_pokemon]
 	  .set_curr_HP(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() - NPC_attacking_damage);
 	if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() < 0) {
@@ -1006,16 +1062,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
 
       if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() > 0) {
 	sprintf(buffer1, "%s used %s", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str(), mv[PC_move_id].identifier.c_str());
-	mvaddstr(4, 45, buffer1);
+	mvaddstr(6, 30, buffer1);
 	refresh();
 
 	sleep(1);
 	if(rand() % 100 > stoi(mv[PC_move_id].accuracy) && stoi(mv[PC_move_id].power) > 0) {
 	  sprintf(buffer3, "%s's move missed!", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str());
-	  mvaddstr(5, 45, buffer3);
+	  mvaddstr(7, 30, buffer3);
 	} else {
 	  sprintf(buffer3, "%d damage!", PC_attacking_damage);
-	  mvaddstr(5, 45, buffer3);
+	  mvaddstr(7, 30, buffer3);
 	  NPC_s.set_curr_HP(NPC_s.get_curr_HP() - PC_attacking_damage);
 	  if(NPC_s.get_curr_HP() < 0) {
 	    NPC_s.set_curr_HP(0);
@@ -1037,16 +1093,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
       int NPC_attacking_damage = calculate_damage(NPC_s, PC_s.getPokemon()[PC_active_pokemon], NPC_move_id, mv);
 
       sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
-      mvaddstr(6, 45, buffer2);
+      mvaddstr(8, 45, buffer2);
       refresh();
 
       sleep(1);
       if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
 	sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
-	mvaddstr(7, 45, buffer4);
+	mvaddstr(9, 45, buffer4);
       } else {
 	sprintf(buffer4, "%d damage!", NPC_attacking_damage);
-	mvaddstr(7, 45, buffer4);
+	mvaddstr(9, 45, buffer4);
 	PC_s.getPokemon()[PC_active_pokemon].set_curr_HP(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() - NPC_attacking_damage);
 	if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() < 0) {
 	  PC_s.getPokemon()[PC_active_pokemon].set_curr_HP(0);
@@ -1065,7 +1121,17 @@ int battle::calculate_damage(in_game_pokemon attacking, in_game_pokemon defendin
   double calc1 = (2 * attacking.get_level()) / 5;
   calc1 += 2;
 
-  double calc2 = stoi(mv[move_id].power) * (attacking.get_attack() / defending.get_defense());
+  double calc2 = 0;
+
+  if(stoi(mv[move_id].damage_class_id) == 2) {
+    calc2 = stoi(mv[move_id].power) * (attacking.get_attack() / defending.get_defense());
+  }
+  else if(stoi(mv[move_id].damage_class_id) == 3) {
+    calc2 = stoi(mv[move_id].power) * (attacking.get_special_attack() / defending.get_special_defense());
+  }
+  else {
+    calc2 = stoi(mv[move_id].power) * (attacking.get_attack() / defending.get_defense());
+  }
 
   double calc3 = calc1 * calc2;
 
