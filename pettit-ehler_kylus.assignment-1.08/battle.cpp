@@ -23,7 +23,7 @@ int battle::determine_battle() {
 
   int temp = rand() % 100;
 
-  if(temp <= 90) {
+  if(temp <= 10) {
     return 1;
   }
 

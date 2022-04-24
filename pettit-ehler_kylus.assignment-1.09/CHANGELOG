@@ -1,0 +1,21 @@
+Apr 7: Choosing random pokemon from 3 random pokemon functional, will try and get PC pokemon to display in NPC / wild battles tomorrow
+
+Apr 8: PC and NPC pokemon now display in battles, along with current/max HP. In the process of selecting moves, successfully selecting a PC move and now need to select an NPC move, before actually attacking. Placeholders for the bag and pokemon list in-battle are present, need to be implemented still.
+
+Apr 9: Basic turns are implemented, along with a list for items and PC pokemon. Battles can be fought all the way through and a winner / loser can be determined. Items can't be consumed, and pokemon can't be switched out yet. Also can't access bag outside of battle. And haven't updated the wild battle UI at all. Going to implement this in the next few days hopefully.
+
+To calculate STAB, I had to parse in the pokemon_types.csv in addition to everything else
+
+Also, I don't know what the purpose of the random multiplier in move damage is, but it makes the moves deal like 200 - 300 damage. Is it supposed to be a percentage or something? That might make sense. I've removed the random multiplier for now, because I have no idea
+
+Another problem I'm seeing is that there's no restriction on adding status moves to our Pokemon's movesets, but there was no instruction to implement status affects (reduce attack, defense, etc) in the assignment? So there might be pokemon with only status moves in their level 1 movepool, rendering them useless. I'll just make it so that status moves deal a small amount of damage for now
+
+Apr 10: Consumables now work for potions and revives. Can also switch between active pokemon in battle. Run functionality works now too. Still need to implement correct capture functionality, and the bag placeholder outside of battles.
+
+Apr 11: Fixed pokeball consumption issue, now works correctly in wild battles. Bag is also accessible in the open world. Not sure if we're supposed to implement logic to switch pokemon around, so that we can start whoever we want to in our party. At this point I will probably start working on the README
+
+Apr 12: Implement correct critical chance. Work on README, may submit later, I have another week to work on this now
+
+Apr 13: Implemented move priority, double checked that my run logic is ok with Jeremy's clarification. Finished up the README, going to submit now and re-submit later if anything comes up. I still don't get the whole random part of move damage, the damages seem to be just fine without including a random number in range [85, 100]
+
+Of course right as I go to submit I find a bug with recording fainted pokemon. Guess I'll just check all PC pokemon's current HP before I go into battles instead of trying to record it. Might as well make Pacers able to move right and left while I'm at it
