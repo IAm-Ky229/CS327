@@ -448,6 +448,8 @@ int main(int argc, char *argv[]) {
   // We only want to add 1 PC move at a time
   int PC_added_to_heap = 0;
 
+  char buffer[50];
+
   // Modify and create maps
   mapGen createMap;
   characterLogic processAction;
@@ -464,6 +466,9 @@ int main(int argc, char *argv[]) {
   std::vector<type_names> typ_nm;
   std::vector<pokemon_stats> pkmn_st;
   std::vector<pokemon_types> pkmn_typ;
+
+  // Hold 3 random starting pokemon
+  std::vector<in_game_pokemon> starting_pokemon;
 
   for(i = 1; i < argc; i++) {
     // Read in specified file
@@ -512,8 +517,6 @@ int main(int argc, char *argv[]) {
   x_explore_position = WORLD_X_START;
   y_explore_position = WORLD_Y_START;
 
-  char buffer[50];
-
   // Make first map. Malloc the first space, init the heap, then generate the map
   map_exploration[y_explore_position][x_explore_position] = (generatedMap*) malloc(sizeof(generatedMap));
   heap_init(&map_exploration[y_explore_position][x_explore_position] -> characters_to_move, move_cost_cmp, NULL);
@@ -531,9 +534,6 @@ int main(int argc, char *argv[]) {
 			     distance_rival,
 			     numtrainers,
 			     &first_map);
-
-  
-  std::vector<in_game_pokemon> starting_pokemon;
 
   for(int i = 0; i < 3; i++) {
 
@@ -573,9 +573,6 @@ int main(int argc, char *argv[]) {
     
   }
 
-  
-
- 
   // Movement is implemented here
   // It's based on peeking the minimum cost character move in the queue
   // If we find one should be removed (equal to game time), do it
@@ -633,6 +630,7 @@ int main(int argc, char *argv[]) {
     processMap.print_map(map_exploration[y_explore_position][x_explore_position]);
     map_exploration[y_explore_position][x_explore_position] -> game_time++;
 
+    // Used for debugging purposes
     char buffer[50];
     sprintf(buffer, "PC added to heap: %d", PC_added_to_heap);
     mvaddstr(22, 0, buffer);
@@ -852,20 +850,17 @@ int main(int argc, char *argv[]) {
 
       mvaddstr(22, 30, "got >");
 
+      enterBuilding interact;
      
-      if(map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_center ||
-	 map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_mart) {
-
-	clear();
-	mvaddstr(11, 20, "PLACEHOLDER FOR POKEMON MART / CENTER");
-	refresh();
-       
-	while(getchar() != '<') {
-	}  
-     
+      if(map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_center) {
+	interact.enter_pokecenter(player_character);
       }
-     
-       
+
+	 
+      if(map_exploration[y_explore_position][x_explore_position] -> generate_map[map_exploration[y_explore_position][x_explore_position] -> PC_position_x][map_exploration[y_explore_position][x_explore_position] -> PC_position_y] == pokemon_mart) {
+	interact.enter_pokemart(player_character);
+      }
+      
       break;
 
     case '5':
@@ -1549,6 +1544,185 @@ void mapGen::select_starting_pokemon(std::vector<in_game_pokemon> starting_pkmn,
   case '3':
     PC.addPokemon(starting_pkmn[2]);
     break;
+    
+  }
+  
+}
+
+void enterBuilding::enter_pokemart(PC_state &PC_s) {
+
+  char pressed_key;
+
+  int position = 0;
+  
+  while(1) {
+    
+    clear();
+    mvaddstr(1, 30, "POKEMON MART");
+    mvaddstr(2, 15, "SELECT THE ITEM YOU'D LIKE TO PURCHASE");
+
+    char buffer[50];
+    sprintf(buffer, "YOU HAVE: $%d", PC_s.get_money());
+    mvaddstr(3, 30, buffer);
+
+    mvaddstr(10, 30, "POTION (COST $150)");
+    mvaddstr(11, 30, "REVIVE (COST $500)");
+    mvaddstr(12, 30, "POKEBALL (COST $50)");
+    
+    mvaddstr(position + 10, 28, ">");
+    refresh();
+    
+    pressed_key = '0';
+    pressed_key = getch();
+
+    if(pressed_key == 27) {
+      return;
+    }
+
+    if (pressed_key == '2') {
+      if(position + 1 < 3) {
+	position++;
+      }
+    }
+
+    if (pressed_key == '8') {
+      if(position - 1 >= 0) {
+	position--;
+      }
+    }
+
+    if(pressed_key == '+') {
+      int item_id = position + 1;
+      int number_items = 1;
+      char buffer[50];
+
+      mvaddstr(15, 30, "HOW MANY?");
+      
+      while(pressed_key != 27) {
+	
+	sprintf(buffer, "%d", number_items);
+	move(16, 0);
+	clrtoeol();
+	mvaddstr(16, 34, buffer);
+	refresh();
+
+	pressed_key = '0';
+	pressed_key = getchar();
+
+	if(pressed_key == '8') {
+	  if(number_items < 100) {
+	    number_items += 1;
+	  }
+	}
+
+	if(pressed_key == '2') {
+	  if(number_items - 1 >= 1) {
+	    number_items -= 1;
+	  }
+	}
+
+	if(pressed_key == '+') {
+	  pressed_key = add_items(item_id, number_items, PC_s);
+	}
+	
+      }
+      
+    }
+  }
+}
+
+int enterBuilding::add_items(int item_id, int quantity, PC_state &PC_s) {
+
+  int cost;
+
+  switch(item_id) {
+  case 1:
+    cost = quantity * 150;
+    break;
+    
+  case 2:
+    cost = quantity * 500;
+    break;
+    
+  case 3:
+    cost = quantity * 50;
+    break;
+  }
+
+  if(cost <= PC_s.get_money()) {
+
+    for(int i = 0; i < quantity; i++) {
+      item it;
+      
+      it.set_item_ID(item_id);
+      it.set_UID(PC_s.get_UID_counter());
+      PC_s.increment_UID_counter();
+
+      switch(item_id) {
+      case 1:
+	it.set_item_name("potion");
+	break;
+    
+      case 2:
+        it.set_item_name("revive");
+	break;
+    
+      case 3:
+        it.set_item_name("pokeball");
+	break;
+      }
+
+      PC_s.addItem(it);
+    }
+
+    PC_s.decrement_money(cost);
+    return 27;
+  }
+
+  else {
+    mvaddstr(18, 20, "Cannot buy that quantity");
+  }
+
+  return 0;
+  
+}
+
+void enterBuilding::enter_pokecenter(PC_state &PC_s) {
+
+  clear();
+
+  char pressed_key;
+
+  mvaddstr(1, 30, "POKEMON CENTER");
+  mvaddstr(10, 20, "WOULD YOU LIKE TO HEAL YOUR POKEMON?");
+  mvaddstr(11, 30, "y/n");
+  refresh();
+  
+  while(1) {
+
+    pressed_key = getch();
+
+    if(pressed_key == 'y') {
+      mvaddstr(12, 20, "HEALING POKEMON...");
+      refresh();
+
+      for(int i = 0; i < PC_s.getPokemon().size(); i++) {
+	PC_s.getPokemon()[i].set_curr_HP(PC_s.getPokemon()[i].get_HP());
+      }
+
+      sleep(1);
+
+      mvaddstr(13, 20, "POKEMON HEALED. COME BACK AGAIN SOON!");
+      refresh();
+      sleep(1);
+
+      return;
+    }
+
+    if(pressed_key == 'n') {
+      return;
+    }
+    
     
   }
   

@@ -81,3 +81,11 @@ public:
   
 };
 
+class enterBuilding {
+
+public:
+  void enter_pokemart(PC_state &PC_s);
+  void enter_pokecenter(PC_state &PC_s);
+  int add_items(int item_id, int quantity, PC_state &PC_s);
+};
+

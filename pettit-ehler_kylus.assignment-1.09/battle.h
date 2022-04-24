@@ -158,12 +158,16 @@ private:
 
   std::vector<in_game_pokemon> PC_pokemon;
   std::vector<item> bag;
+  int money;
   int PC_fainted_pokemon;
+  int item_UID_counter;
 
 public:
 
   PC_state() {
     PC_fainted_pokemon = 0;
+    money = 1000;
+    item_UID_counter = 25;
   }
   
   void addPokemon(in_game_pokemon p) { PC_pokemon.push_back(p); }
@@ -176,6 +180,13 @@ public:
   void increment_PC_fainted() { PC_fainted_pokemon++; }
   void decrement_PC_fainted() { PC_fainted_pokemon--; }
   int get_PC_fainted() { return PC_fainted_pokemon; }
+
+  void increment_money(int val) { money += val; }
+  void decrement_money(int val) { money -= val; }
+  int get_money() { return money; }
+
+  void increment_UID_counter() { item_UID_counter += 1; }
+  int get_UID_counter() { return item_UID_counter; }
   
 };
 
