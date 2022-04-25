@@ -990,16 +990,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
       char buffer4[100];
 
       sprintf(buffer1, "%s used %s", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str(), mv[PC_move_id].identifier.c_str());
-      mvaddstr(6, 30, buffer1);
+      mvaddstr(6, 45, buffer1);
       refresh();
 
       sleep(1);
       if(rand() % 100 > stoi(mv[PC_move_id].accuracy) && stoi(mv[PC_move_id].power) > 0) {
 	sprintf(buffer3, "%s's move missed!", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str());
-	mvaddstr(7, 30, buffer3);
+	mvaddstr(7, 45, buffer3);
       } else {
 	sprintf(buffer3, "%d damage!", PC_attacking_damage);
-	mvaddstr(7, 30, buffer3);
+	mvaddstr(7, 45, buffer3);
 	NPC_s.set_curr_HP(NPC_s.get_curr_HP() - PC_attacking_damage);
 	if(NPC_s.get_curr_HP() < 0) {
 	  NPC_s.set_curr_HP(0);
@@ -1010,16 +1010,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
 
       if (NPC_s.get_curr_HP() > 0) {
 	sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
-	mvaddstr(8, 30, buffer2);
+	mvaddstr(8, 45, buffer2);
 	refresh();
 
 	sleep(1);
 	if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
 	  sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
-	  mvaddstr(9, 30, buffer4);
+	  mvaddstr(9, 45, buffer4);
 	} else {
 	  sprintf(buffer4, "%d damage!", NPC_attacking_damage);
-	  mvaddstr(9, 30, buffer4);
+	  mvaddstr(9, 45, buffer4);
 	  PC_s.getPokemon()[PC_active_pokemon]
 	    .set_curr_HP(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() - NPC_attacking_damage);
 	  if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() < 0) {
@@ -1041,16 +1041,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
       char buffer4[100];
 
       sprintf(buffer2, "%s used %s", NPC_s.get_name().c_str(), mv[NPC_move_id].identifier.c_str());
-      mvaddstr(8, 30, buffer2);
+      mvaddstr(8, 45, buffer2);
       refresh();
 
       sleep(1);
       if(rand() % 100 > stoi(mv[NPC_move_id].accuracy) && stoi(mv[NPC_move_id].power) > 0) {
 	sprintf(buffer4, "%s's move missed!", NPC_s.get_name().c_str());
-	mvaddstr(9, 30, buffer4);
+	mvaddstr(9, 45, buffer4);
       } else {
 	sprintf(buffer4, "%d damage!", NPC_attacking_damage);
-	mvaddstr(9, 30, buffer4);
+	mvaddstr(9, 45, buffer4);
 	PC_s.getPokemon()[PC_active_pokemon]
 	  .set_curr_HP(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() - NPC_attacking_damage);
 	if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() < 0) {
@@ -1062,16 +1062,16 @@ void battle::process_attacks(PC_state &PC_s, in_game_pokemon &NPC_s, std::vector
 
       if(PC_s.getPokemon()[PC_active_pokemon].get_curr_HP() > 0) {
 	sprintf(buffer1, "%s used %s", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str(), mv[PC_move_id].identifier.c_str());
-	mvaddstr(6, 30, buffer1);
+	mvaddstr(6, 45, buffer1);
 	refresh();
 
 	sleep(1);
 	if(rand() % 100 > stoi(mv[PC_move_id].accuracy) && stoi(mv[PC_move_id].power) > 0) {
 	  sprintf(buffer3, "%s's move missed!", PC_s.getPokemon()[PC_active_pokemon].get_name().c_str());
-	  mvaddstr(7, 30, buffer3);
+	  mvaddstr(7, 45, buffer3);
 	} else {
 	  sprintf(buffer3, "%d damage!", PC_attacking_damage);
-	  mvaddstr(7, 30, buffer3);
+	  mvaddstr(7, 45, buffer3);
 	  NPC_s.set_curr_HP(NPC_s.get_curr_HP() - PC_attacking_damage);
 	  if(NPC_s.get_curr_HP() < 0) {
 	    NPC_s.set_curr_HP(0);
@@ -1156,10 +1156,540 @@ int battle::calculate_damage(in_game_pokemon attacking, in_game_pokemon defendin
   }
 
   // Type advantages not implemented in this assignment
-  double type = 1;
+  double type_adv = determine_type_advantage(defending, move_id, mv);
 
-  int calc4 = calc3 * crit * STAB * type;
+  int calc4 = calc3 * crit * STAB * type_adv;
+
+  char buff[150];
+
+  if(type_adv != 1) {
+    if(type_adv > 1) {
+      sprintf(buff, "%s's move is super effective!", attacking.get_name().c_str());
+      mvaddstr(5, 15, buff);
+    }
+    if(type_adv < 1 && type_adv != 0) {
+      sprintf(buff, "%s's move is not very effective...", attacking.get_name().c_str());
+      mvaddstr(5, 15, buff);
+    }
+    if(type_adv == 0) {
+      sprintf(buff, "%s's move has no effect...", attacking.get_name().c_str());
+      mvaddstr(5, 15, buff);
+    }
+
+    refresh();
+    sleep(1);
+    
+    move(5, 0);
+    clrtoeol();
+    refresh();
+  }
 
   return calc4;
 
+}
+
+double battle::determine_type_advantage(in_game_pokemon defending, int move_id, std::vector<moves> mv) {
+
+  int attacking_move_type_id = stoi(mv[move_id].type_id);
+  std::vector<int> defending_types = defending.get_type_ids();
+  double multiplier = 1;
+
+  // 1 type
+  if(defending_types.size() == 1) {
+
+    multiplier *= determine_type_effectiveness(attacking_move_type_id, defending_types[0]);
+    
+  }
+  // 2 types
+  else {
+
+    multiplier *= determine_type_effectiveness(attacking_move_type_id, defending_types[0]);
+    multiplier *= determine_type_effectiveness(attacking_move_type_id, defending_types[1]);
+    
+  }
+
+  return multiplier;
+  
+}
+
+double battle::determine_type_effectiveness(int attacking_move_type_id, int defending_type) {
+
+  // Welcome to switch statement hell
+  
+  if(attacking_move_type_id == t_normal) {
+    switch(defending_type) {
+      
+    case t_rock:
+      return 0.5;
+      
+    case t_ghost:
+      return 0;
+      
+    case t_steel:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_fighting) {
+    switch(defending_type) {
+      
+    case t_normal:
+      return 2;
+      
+    case t_flying:
+      return 0.5;
+      
+    case t_poison:
+      return 0.5;
+
+    case t_rock:
+      return 2;
+
+    case t_bug:
+      return 0.5;
+
+    case t_ghost:
+      return 0;
+
+    case t_steel:
+      return 2;
+
+    case t_psychic:
+      return 0.5;
+
+    case t_ice:
+      return 2;
+
+    case t_dark:
+      return 2;
+
+    case t_fairy:
+      return 0.5;
+      
+    }
+
+  }
+
+  if(attacking_move_type_id == t_flying) {
+
+    switch(defending_type) {
+      
+    case t_fighting:
+      return 2;
+      
+    case t_rock:
+      return 0.5;
+      
+    case t_bug:
+      return 2;
+
+    case t_steel:
+      return 0.5;
+
+    case t_grass:
+      return 2;
+
+    case t_electric:
+      return 0.5;
+      
+    }
+
+  }
+
+  if(attacking_move_type_id == t_poison) {
+
+    switch(defending_type) {
+      
+    case t_poison:
+      return 0.5;
+      
+    case t_ground:
+      return 0.5;
+      
+    case t_rock:
+      return 0.5;
+
+    case t_ghost:
+      return 0.5;
+
+    case t_steel:
+      return 0;
+
+    case t_grass:
+      return 2;
+
+    case t_fairy:
+      return 2;
+      
+    }
+    
+  }
+
+  if(attacking_move_type_id == t_ground) {
+    switch(defending_type) {
+      
+    case t_flying:
+      return 0;
+      
+    case t_poison:
+      return 2;
+      
+    case t_rock:
+      return 2;
+
+    case t_bug:
+      return 0.5;
+
+    case t_steel:
+      return 2;
+
+    case t_fire:
+      return 2;
+
+    case t_grass:
+      return 0.5;
+
+    case t_electric:
+      return 2;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_rock) {
+    switch(defending_type) {
+	  
+    case t_fighting:
+      return 0.5;
+      
+    case t_flying:
+      return 2;
+      
+    case t_ground:
+      return 0.5;
+
+    case t_bug:
+      return 2;
+
+    case t_steel:
+      return 0.5;
+
+    case t_fire:
+      return 2;
+
+    case t_ice:
+      return 2;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_bug) {
+    switch(defending_type) {
+      
+    case t_fighting:
+      return 0.5;
+      
+    case t_flying:
+      return 0.5;
+      
+    case t_poison:
+      return 0.5;
+
+    case t_ghost:
+      return 0.5;
+
+    case t_steel:
+      return 0.5;
+
+    case t_fire:
+      return 0.5;
+
+    case t_grass:
+      return 2;
+
+    case t_psychic:
+      return 2;
+
+    case t_dark:
+      return 2;
+
+    case t_fairy:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_ghost) {
+    switch(defending_type) {
+	  
+    case t_normal:
+      return 0;
+      
+    case t_ghost:
+      return 2;
+      
+    case t_psychic:
+      return 2;
+
+    case t_dark:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_steel) {
+    switch(defending_type) {
+	  
+    case t_rock:
+      return 2;
+      
+    case t_steel:
+      return 0.5;
+      
+    case t_fire:
+      return 0.5;
+
+    case t_water:
+      return 0.5;
+
+    case t_electric:
+      return 0.5;
+
+    case t_ice:
+      return 2;
+
+    case t_fairy:
+      return 2;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_fire) {
+    switch(defending_type) {
+	  
+    case t_rock:
+      return 0.5;
+      
+    case t_bug:
+      return 2;
+      
+    case t_steel:
+      return 2;
+
+    case t_fire:
+      return 0.5;
+
+    case t_water:
+      return 0.5;
+
+    case t_grass:
+      return 2;
+
+    case t_ice:
+      return 2;
+
+    case t_dragon:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_water) {
+    switch(defending_type) {
+	  
+    case t_ground:
+      return 2;
+      
+    case t_rock:
+      return 2;
+      
+    case t_fire:
+      return 2;
+
+    case t_water:
+      return 0.5;
+
+    case t_grass:
+      return 0.5;
+
+    case t_dragon:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_grass) {
+    switch(defending_type) {
+	  
+    case t_flying:
+      return 0.5;
+      
+    case t_poison:
+      return 0.5;
+      
+    case t_ground:
+      return 2;
+
+    case t_rock:
+      return 2;
+
+    case t_bug:
+      return 0.5;
+
+    case t_steel:
+      return 0.5;
+
+    case t_fire:
+      return 0.5;
+
+    case t_water:
+      return 2;
+
+    case t_grass:
+      return 0.5;
+
+    case t_dragon:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_electric) {
+    switch(defending_type) {
+	  
+    case t_flying:
+      return 2;
+      
+    case t_ground:
+      return 0;
+      
+    case t_water:
+      return 2;
+
+    case t_grass:
+      return 0.5;
+
+    case t_electric:
+      return 0.5;
+
+    case t_dragon:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_psychic) {
+    switch(defending_type) {
+	  
+    case t_fighting:
+      return 2;
+      
+    case t_poison:
+      return 2;
+      
+    case t_steel:
+      return 0.5;
+
+    case t_psychic:
+      return 0.5;
+
+    case t_dark:
+      return 0;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_ice) {
+    switch(defending_type) {
+	  
+    case t_flying:
+      return 2;
+      
+    case t_ground:
+      return 2;
+      
+    case t_steel:
+      return 0.5;
+
+    case t_fire:
+      return 0.5;
+
+    case t_water:
+      return 0.5;
+
+    case t_grass:
+      return 2;
+
+    case t_ice:
+      return 0.5;
+
+    case t_dragon:
+      return 2;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_dragon) {
+    switch(defending_type) {
+	  
+    case t_steel:
+      return 0.5;
+      
+    case t_dragon:
+      return 2;
+      
+    case t_fairy:
+      return 0;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_dark) {
+    switch(defending_type) {
+	  
+    case t_fighting:
+      return 0.5;
+      
+    case t_ghost:
+      return 2;
+      
+    case t_psychic:
+      return 2;
+
+    case t_dark:
+      return 0.5;
+
+    case t_fairy:
+      return 0.5;
+      
+    }
+  }
+
+  if(attacking_move_type_id == t_fairy) {
+    switch(defending_type) {
+	  
+    case t_fighting:
+      return 2;
+      
+    case t_poison:
+      return 0.5;
+      
+    case t_steel:
+      return 0.5;
+
+    case t_fire:
+      return 0.5;
+
+    case t_dragon:
+      return 2;
+
+    case t_dark:
+      return 2;
+      
+    }
+  }
+
+  // no special type advantage / disadvantage
+  return 1;
+  
 }

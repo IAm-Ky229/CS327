@@ -1,3 +1,5 @@
 Apr 24: Got tired of waiting for 1.09 spec, implemented pokemon centers and marts. You can buy pokeballs, revives, and potions at marts. And you have the choice of fully healing all pokemon at centers. Just discovered a bug when the PC moves along the edges of the map, that crash the game. I have no idea what is causing it.
 
 Apr 25: Fixed the PC moving along the edges bug! Somehow my Dijkstra bounds checking was going outside of the map? I have no idea. All I know is it runs now. If I didn't know any better, I think that was the bug causing all of the Rivals and Hikers to randomly stand still as well...
+
+Also implemented type advantages in battles, using a lot of switch statements. For example now a water attack against a fire type will have 2x damage. Any type advantages are indicated before the attacks actually process. I believe that experience and pokemon capture probability are the last major things that need to be implemented. But I'm not sure, because Jeremy still hasn't posted the spec sheet.

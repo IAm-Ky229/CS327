@@ -3,6 +3,25 @@
 #include <algorithm>
 #include <vector>
 
+#define t_normal 1
+#define t_fighting 2
+#define t_flying 3
+#define t_poison 4
+#define t_ground 5
+#define t_rock 6
+#define t_bug 7
+#define t_ghost 8
+#define t_steel 9
+#define t_fire 10
+#define t_water 11
+#define t_grass 12
+#define t_electric 13
+#define t_psychic 14
+#define t_ice 15
+#define t_dragon 16
+#define t_dark 17
+#define t_fairy 18
+
 // I actually made a proper class for once
 class in_game_pokemon {
 
@@ -219,5 +238,7 @@ public:
   void use_revive(PC_state &PC_s, int pokemon_rec, item itm, int *PC_fainted);
   int use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm);
   int run(PC_state &PC_s, int PC_active_pokemon, in_game_pokemon opposing_pokemon, int *attempts_to_run);
+  double determine_type_advantage(in_game_pokemon defending, int move_id, std::vector<moves> mv);
+  double determine_type_effectiveness(int attacking_move_type_id, int defending_type);
   
 };
