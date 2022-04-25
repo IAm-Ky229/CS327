@@ -71,7 +71,7 @@ static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONT
     // Else do nothing
     
     // Try to go left
-    if(p-> x_pos - 1 > 0) {
+    if(p-> x_pos - 1 >= 0) {
       
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
@@ -98,7 +98,7 @@ static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONT
     }
 
     // Try to go down
-    if(p->y_pos - 1 > 0) {
+    if(p->y_pos - 1 >= 0) {
       if (
 	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
 	  (p->cost + computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1)
@@ -197,7 +197,7 @@ static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONT
     }
     
     // Check for valid up neighbor
-    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
+    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 >= 0) {
       if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
@@ -205,7 +205,7 @@ static void dijkstra_path_rival(generatedMap *m, movementCosts dijkstra[HORIZONT
     }
 
     // Check for valid down neighbor
-    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
+    if(p-> y_pos - 1 >= 0 && p-> y_pos + 1 < VERTICAL) {
       if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && computeCost.determine_cost_rival(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 
@@ -256,7 +256,7 @@ static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONT
     p->hn = NULL;
     
     
-    if(p-> x_pos - 1 > 0) {
+    if(p-> x_pos - 1 >= 0) {
       
       if (
 	  (dijkstra[p->x_pos - 1][p->y_pos    ].cost) >
@@ -282,7 +282,7 @@ static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONT
       }
     }
     
-    if(p->y_pos - 1 > 0) {
+    if(p->y_pos - 1 >= 0) {
       if (
 	  (dijkstra[p->x_pos][p->y_pos - 1    ].cost) >
 	  (p->cost + computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1)
@@ -371,14 +371,14 @@ static void dijkstra_path_hiker(generatedMap *m, movementCosts dijkstra[HORIZONT
     }
     
     
-    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 > 0) {
+    if(p-> y_pos + 1 < VERTICAL && p-> y_pos - 1 >= 0) {
       if(dijkstra[p->x_pos][p->y_pos + 1].visited != 1  && computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos + 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos + 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos + 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos + 1]); 
       }
     }
     
-    if(p-> y_pos - 1 > 0 && p-> y_pos + 1 < VERTICAL) {
+    if(p-> y_pos - 1 >= 0 && p-> y_pos + 1 < VERTICAL) {
       if(dijkstra[p->x_pos][p->y_pos - 1].visited != 1 && computeCost.determine_cost_hiker(m, p-> x_pos, p -> y_pos - 1) != INT_MAX) {
 	dijkstra[p->x_pos][p->y_pos - 1].visited = 1;
 	dijkstra[p-> x_pos][p -> y_pos - 1].hn = heap_insert(&h, &dijkstra[p-> x_pos][p-> y_pos - 1]); 

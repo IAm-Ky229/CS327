@@ -1944,11 +1944,13 @@ void characterLogic::move_PC(PC_char *player_char, generatedMap *m, std::vector<
   int next_x_move = player_char -> next_x;
   int next_y_move = player_char -> next_y;
 
+  char buff[50];
+
   if(m -> character_positions[player_char -> next_x][player_char -> next_y] != NULL) {
-    char buffer[50];
-    sprintf(buffer, "battled: %d", m -> character_positions[player_char -> next_x][player_char -> next_y] -> battled);
-    mvaddstr(21, 0, buffer);
-    refresh();
+  char buffer[50];
+  sprintf(buffer, "battled: %d", m -> character_positions[player_char -> next_x][player_char -> next_y] -> battled);
+  mvaddstr(21, 0, buffer);
+   refresh();
   }
   
   if(m -> character_positions[player_char -> next_x][player_char -> next_y] == NULL) {
