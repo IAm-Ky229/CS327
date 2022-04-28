@@ -596,7 +596,17 @@ void characterLogic::engage_battle(PC_state &PC_s, int manhattan_x, int manhatta
       if(NPC_fainted_pokemon == NPC_total_pokemon) {
 	clear();
 	mvaddstr(10, 45, "NPC loses!");
+
+	int money_to_add = rand() % 100;
+	money_to_add *= NPC_generated.size();
+	PC_s.increment_money(money_to_add);
+
+	char buff[50];
+
+	sprintf(buff, "PC won $%d", money_to_add);
+	mvaddstr(12, 45, buff);
 	refresh();
+	
 	sleep(1);
 	break;
       }
@@ -765,10 +775,25 @@ int battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
 
   sleep(1);
 
+  int attempt_catch = rand() % 255;
+  int caught = 0;
+
+  // I don't know where the catch rates are for the pokemon in our CSV files
+  // So for now we start at 51, and increase the catch rate based on missing HP
+  double catch_rate = 51;
+
+  double multiplier = wild_pkmn.get_HP() / wild_pkmn.get_curr_HP();
+
+  catch_rate *= multiplier;
+  
+  if(attempt_catch < catch_rate) {
+    caught = 1;
+  }
+
   // For this assignment, using a pokeball is going to end the battle either way
   // So both cases return -999. Otherwise, pokeball failure would result in
   // Wild pokemon attacking
-  if(PC_s.getPokemon().size() < 6) {
+  if(PC_s.getPokemon().size() < 6 && caught) {
     PC_s.getPokemon().push_back(wild_pkmn);
 
     clear();
@@ -783,12 +808,12 @@ int battle::use_pokeball(PC_state &PC_s, in_game_pokemon wild_pkmn, item itm) {
 
     clear();
 
-    sprintf(buffer, "Wild %s got away", wild_pkmn.get_name().c_str());
+    sprintf(buffer, "Wild %s broke free", wild_pkmn.get_name().c_str());
     mvaddstr(10, 40, buffer);
     refresh();
     sleep(1);
     PC_s.removeItem(itm);
-    return -999;
+    return -99;
     
   }
   
