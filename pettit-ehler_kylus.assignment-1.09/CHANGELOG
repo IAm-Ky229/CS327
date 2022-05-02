@@ -4,4 +4,10 @@ Apr 25: Fixed the PC moving along the edges bug! Somehow my Dijkstra bounds chec
 
 Also implemented type advantages in battles, using a lot of switch statements. For example now a water attack against a fire type will have 2x damage. Any type advantages are indicated before the attacks actually process. I believe that experience and pokemon capture probability are the last major things that need to be implemented. But I'm not sure, because Jeremy still hasn't posted the spec sheet.
 
-Apr 28: Implemented getting money after winning NPC battles, and variable catch rates. I don't know where in our database the catch rates are for all pokemon. And the 1.09 spec also doesn't tell me. So for now I'm just using a flat catch rate of 102 (40%) for all pokemon.
+Apr 28: Implemented getting money after winning NPC battles, and variable catch rates. I don't know where in our database the catch rates are for all pokemon. And the 1.09 spec also doesn't tell me. So for now I'm just using a flat catch rate of 51 (20%) for all pokemon. This catch rate increases dynamically as the wild pokemon takes damage.
+
+May 2: Playtested my changes. They all seem to work. I'm not going to implement the Pokemon storage mechanism, because we get 1 drop now, and I've gotten pretty good grades on all the other assignments. Do README and wait to submit.
+
+
+
+

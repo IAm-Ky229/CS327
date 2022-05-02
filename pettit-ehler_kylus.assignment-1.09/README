@@ -1,0 +1,31 @@
+RUN COMMAND: /poke327 share/cs327/moves.csv share/cs327/pokemon.csv share/cs327/pokemon_moves.csv share/cs327/pokemon_stats.csv share/cs327/pokemon_types.csv
+
+*These controls work best with a numpad
+
+CONTROLS IN THE POKEMART:
+8: Move selector up
+2: Move selector down
++: Select item
+	(Once an item is selected)
+	8: Increase number of items purchased
+	2: Decrease number of items purchased
+	+: Attempt to buy that number of items
+>: Exit the pokemart
+
+CONTROLS IN THE POKECENTER:
+y: Heal pokemon, return to the world
+n: Don't heal pokemon, return to the world
+
+*I did not implement the Pokemon storage mechanism, because I've gotten pretty good grades on all the other assignments, and we get 1 drop now
+
+-----> battle.cpp <-----
+
+-----> world_generation.cpp <-----
+
+dijkstra path functions: fixed a bug where moving right or left at the top of the map would cause a crash
+
+enter_pokemart: Implemented, and allows user to buy a quantity of the game's 3 items using their money
+
+enter_pokecenter: Implemented, and allows user to restore their pokemon to full HP
+
+

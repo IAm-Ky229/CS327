@@ -1565,8 +1565,8 @@ void enterBuilding::enter_pokemart(PC_state &PC_s) {
     sprintf(buffer, "YOU HAVE: $%d", PC_s.get_money());
     mvaddstr(3, 30, buffer);
 
-    mvaddstr(10, 30, "POTION (COST $150)");
-    mvaddstr(11, 30, "REVIVE (COST $500)");
+    mvaddstr(10, 30, "POTION (COST $100)");
+    mvaddstr(11, 30, "REVIVE (COST $100)");
     mvaddstr(12, 30, "POKEBALL (COST $50)");
     
     mvaddstr(position + 10, 28, ">");
@@ -1637,11 +1637,11 @@ int enterBuilding::add_items(int item_id, int quantity, PC_state &PC_s) {
 
   switch(item_id) {
   case 1:
-    cost = quantity * 150;
+    cost = quantity * 100;
     break;
     
   case 2:
-    cost = quantity * 500;
+    cost = quantity * 100;
     break;
     
   case 3:
